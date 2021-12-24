@@ -21,6 +21,7 @@ namespace BakalarskaPrace
         byte alpha = 255;
         enum tools {brush, erasor};
         tools currentTool = tools.brush;
+        const double scaleRate = 1.1;
 
         public MainWindow()
         {
@@ -30,7 +31,7 @@ namespace BakalarskaPrace
             InitializeComponent();
         }
 
-        private void Canvas_MouseDown_1(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void Canvas_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 currentPoint = e.GetPosition(paintSurface);
@@ -50,7 +51,59 @@ namespace BakalarskaPrace
             }
         }
 
-        private void Canvas_MouseMove_1(object sender, System.Windows.Input.MouseEventArgs e)
+        private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            UIElement element = (UIElement)sender;
+            Point position = e.GetPosition(element);
+            MatrixTransform transform = (MatrixTransform)element.RenderTransform;
+            Matrix matrix = transform.Matrix;
+            double scale;
+            if (e.Delta >= 0)
+            {
+                scale = 1.1;
+            }
+            else 
+            {
+                scale = 1.0 / 1.1;
+            }
+
+            matrix.ScaleAtPrepend(scale, scale, position.X, position.Y);
+            transform.Matrix = matrix;
+        }
+
+        Point m_start;
+        Vector m_startOffset;
+
+        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Middle) 
+            {
+                m_start = e.GetPosition(window);
+                m_startOffset = new Vector(tt.X, tt.Y);
+                grid.CaptureMouse();
+            }
+            
+        }
+
+        private void Grid_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (grid.IsMouseCaptured)
+            {
+                Vector offset = Point.Subtract(e.GetPosition(window), m_start);
+
+                tt.X = m_startOffset.X + offset.X;
+                tt.Y = m_startOffset.Y + offset.Y;
+            }
+        }
+
+        private void Grid_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Middle)
+            {
+                grid.ReleaseMouseCapture();
+            }
+        }
+        private void Canvas_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
             {
@@ -94,7 +147,6 @@ namespace BakalarskaPrace
                 brush.Color = colorPallete[Int32.Parse(buttonName)];
                 button.Background = brush;
             }
-            
         }
 
         private bool dragStarted = false;
