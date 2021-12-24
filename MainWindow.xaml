@@ -4,38 +4,39 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="515" Width="943" Background="DarkGray">
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
-    <Grid>
-        <Grid x:Name="grid" MouseDown="Grid_MouseDown" MouseMove="Grid_MouseMove" MouseUp="Grid_MouseUp" Margin="160,0,0,0">
-            <Grid.RenderTransform>
-                <TranslateTransform x:Name="tt"/>
-            </Grid.RenderTransform>
-            <Canvas Name="paintSurface" MouseDown="Canvas_MouseDown" MouseMove="Canvas_MouseMove" MouseWheel="Canvas_MouseWheel" Width="256" Height="256">
-                <Canvas.Background>
-                    <DrawingBrush TileMode="Tile" Viewport="0,0,16,16" ViewportUnits="Absolute">
-                        <DrawingBrush.Drawing>
-                            <GeometryDrawing Geometry="M0,0 H1 V1 H2 V2 H1 V1 H0Z" Brush="LightGray"/>
-                        </DrawingBrush.Drawing>
-                    </DrawingBrush>
-                </Canvas.Background>
+        <Grid>
+            <Grid x:Name="grid" MouseDown="Grid_MouseDown" MouseMove="Grid_MouseMove" MouseUp="Grid_MouseUp" Margin="160,0,0,0">
+                <Grid.RenderTransform>
+                    <TranslateTransform x:Name="Grid_TranslateTransform"/>
+                </Grid.RenderTransform>
+                <Canvas Name="paintSurface" MouseDown="Canvas_MouseDown" MouseMove="Canvas_MouseMove" MouseWheel="Canvas_MouseWheel" Width="256" Height="256">
+                    <Canvas.Background>
+                        <DrawingBrush TileMode="Tile" Viewport="0,0,16,16" ViewportUnits="Absolute">
+                            <DrawingBrush.Drawing>
+                                <GeometryDrawing Geometry="M0,0 H1 V1 H2 V2 H1 V1 H0Z" Brush="LightGray"/>
+                            </DrawingBrush.Drawing>
+                        </DrawingBrush>
+                    </Canvas.Background>
 
-                <Canvas.RenderTransform>
-                    <MatrixTransform/>
-                </Canvas.RenderTransform>
-            </Canvas>
-        </Grid>
-        <Canvas Background="#FF545454" HorizontalAlignment="Left" Width="155">
-            <Button x:Name="ColorSelector0" Click="ColorSelection_Click" BorderBrush="Black" Background="Black" Width="32" Height="32" Margin="10,10,5,10"/>
-            <Button x:Name="ColorSelector1" Click="ColorSelection_Click" BorderBrush="Black" Background="White" Width="32" Height="32" Margin="5,10,10,10" Canvas.Left="42"/>
+                    <Canvas.RenderTransform>
+                        <MatrixTransform/>
+                    </Canvas.RenderTransform>
+                </Canvas>
+            </Grid>
+            <Canvas Background="#FF545454" HorizontalAlignment="Left" Width="155">
+                <Button x:Name="ColorSelector0" Click="ColorSelection_Click" BorderBrush="Black" Background="Black" Width="32" Height="32" Margin="10,10,5,10"/>
+                <Button x:Name="ColorSelector1" Click="ColorSelection_Click" BorderBrush="Black" Background="White" Width="32" Height="32" Margin="5,10,10,10" Canvas.Left="42"/>
 
-            <Label Content="Transparency" Margin="0,0,0,0" Canvas.Top="47" Canvas.Left="7"/>
-            <Slider ValueChanged="Transparency_ValueChanged" Thumb.DragStarted="Transparency_DragStarted" Thumb.DragCompleted="Transparency_DragCompleted" 
+                <Label Content="Transparency" Margin="0,0,0,0" Canvas.Top="47" Canvas.Left="7"/>
+                <Slider ValueChanged="Transparency_ValueChanged" Thumb.DragStarted="Transparency_DragStarted" Thumb.DragCompleted="Transparency_DragCompleted" 
 				    Orientation="horizontal" Minimum="0" Maximum="255" Value="255" IsSnapToTickEnabled="True" TickFrequency="1" Width="138" Canvas.Top="73" Canvas.Left="7" />
 
-            <Label Content="Brush size" Margin="0,0,0,0" Canvas.Top="91" Canvas.Left="7"/>
-            <Slider ValueChanged="BrushSize_ValueChanged" Thumb.DragStarted="BrushSize_DragStarted" Thumb.DragCompleted="BrushSize_DragCompleted" 
+                <Label Content="Brush size" Margin="0,0,0,0" Canvas.Top="91" Canvas.Left="7"/>
+                <Slider ValueChanged="BrushSize_ValueChanged" Thumb.DragStarted="BrushSize_DragStarted" Thumb.DragCompleted="BrushSize_DragCompleted" 
 				    Orientation="horizontal" Minimum="1" Maximum="4" Value="1" IsSnapToTickEnabled="True" TickFrequency="1" Width="138" Canvas.Top="117" Canvas.Left="7" />
-        </Canvas>
+                <Button Content="Clear" Canvas.Left="7" Canvas.Top="140" Width="138" Click="Clear_Click"/>
+            </Canvas>
 
-    </Grid>
+        </Grid>
     </ScrollViewer>
 </Window>

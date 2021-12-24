@@ -22,6 +22,8 @@ namespace BakalarskaPrace
         enum tools {brush, erasor};
         tools currentTool = tools.brush;
         const double scaleRate = 1.1;
+        Point gridDragStartPoint;
+        Vector gridDragOffset;
 
         public MainWindow()
         {
@@ -33,8 +35,7 @@ namespace BakalarskaPrace
 
         private void Canvas_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                currentPoint = e.GetPosition(paintSurface);
+            if (e.ButtonState == MouseButtonState.Pressed) currentPoint = e.GetPosition(paintSurface);
             switch (currentTool)
             {
                 case tools.brush:
@@ -71,15 +72,12 @@ namespace BakalarskaPrace
             transform.Matrix = matrix;
         }
 
-        Point m_start;
-        Vector m_startOffset;
-
         private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Middle) 
             {
-                m_start = e.GetPosition(window);
-                m_startOffset = new Vector(tt.X, tt.Y);
+                gridDragStartPoint = e.GetPosition(window);
+                gridDragOffset = new Vector(Grid_TranslateTransform.X, Grid_TranslateTransform.Y);
                 grid.CaptureMouse();
             }
             
@@ -89,10 +87,10 @@ namespace BakalarskaPrace
         {
             if (grid.IsMouseCaptured)
             {
-                Vector offset = Point.Subtract(e.GetPosition(window), m_start);
+                Vector offset = Point.Subtract(e.GetPosition(window), gridDragStartPoint);
 
-                tt.X = m_startOffset.X + offset.X;
-                tt.Y = m_startOffset.Y + offset.Y;
+                Grid_TranslateTransform.X = gridDragOffset.X + offset.X;
+                Grid_TranslateTransform.Y = gridDragOffset.Y + offset.Y;
             }
         }
 
@@ -187,6 +185,11 @@ namespace BakalarskaPrace
             {
                 colorPallete[i].A = alpha;
             }
+        }
+
+        private void Clear_Click(object sender, RoutedEventArgs e)
+        {
+            paintSurface.Children.Clear();
         }
     }
 }
