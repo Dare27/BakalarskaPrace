@@ -7,6 +7,7 @@ using System.Windows.Shapes;
 using System.Windows.Media;
 using System.Windows.Forms;
 using System.Windows.Controls.Primitives;
+using System.Text.RegularExpressions;
 
 namespace BakalarskaPrace
 {
@@ -14,21 +15,39 @@ namespace BakalarskaPrace
     {
 
         Point currentPoint = new Point();
-        Color primaryColor = new Color();
-        Color secondaryColor = new Color();
+        int colorPalleteSize = 2;
+        Color[] colorPallete;
         int strokeThickness = 1;
+        byte alpha = 255;
+        enum tools {brush, erasor};
+        tools currentTool = tools.brush;
 
         public MainWindow()
         {
-            primaryColor = Color.FromArgb(255, 0, 0, 0);
-            secondaryColor = Color.FromArgb(255, 255, 0, 0);
+            colorPallete = new Color[colorPalleteSize];
+            colorPallete[0] = Color.FromArgb(alpha, 0, 0, 0);         //Primární barva
+            colorPallete[1] = Color.FromArgb(alpha, 255, 255, 255);   //Sekundární barva
             InitializeComponent();
         }
 
         private void Canvas_MouseDown_1(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
-                currentPoint = e.GetPosition(this);
+                currentPoint = e.GetPosition(paintSurface);
+            switch (currentTool)
+            {
+                case tools.brush:
+                    {
+                        
+                        break;
+                    }
+                case tools.erasor:
+                    {
+                        
+                        break;
+                    }
+                default: break;
+            }
         }
 
         private void Canvas_MouseMove_1(object sender, System.Windows.Input.MouseEventArgs e)
@@ -38,55 +57,84 @@ namespace BakalarskaPrace
                 SolidColorBrush brush = new SolidColorBrush();
                 if (e.LeftButton == MouseButtonState.Pressed)
                 {
-                    brush.Color = primaryColor;
+                    brush.Color = colorPallete[0];
                 }
-                else 
+                else
                 {
-                    brush.Color = secondaryColor;
+                    brush.Color = colorPallete[1];
                 }
                 Line line = new Line();
 
                 line.Stroke = SystemColors.WindowFrameBrush;
                 line.X1 = currentPoint.X;
                 line.Y1 = currentPoint.Y;
-                line.X2 = e.GetPosition(this).X;
-                line.Y2 = e.GetPosition(this).Y;
-                
+                line.X2 = e.GetPosition(paintSurface).X;
+                line.Y2 = e.GetPosition(paintSurface).Y;
+
                 line.Stroke = brush;
                 line.StrokeThickness = strokeThickness;
-                currentPoint = e.GetPosition(this);
+                currentPoint = e.GetPosition(paintSurface);
 
                 paintSurface.Children.Add(line);
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void ColorSelection_Click(object sender, RoutedEventArgs e)
         {
+            System.Windows.Controls.Button button = sender as System.Windows.Controls.Button;
+            String buttonName = button.Name.ToString();
+            buttonName = Regex.Replace(buttonName, "[^0-9]", "");
             ColorDialog colorDialog = new ColorDialog();
+
             if (colorDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) 
             {
                 System.Drawing.Color color = colorDialog.Color;
-                primaryColor = System.Windows.Media.Color.FromArgb(color.A, color.R, color.G, color.B);
+                colorPallete[Int32.Parse(buttonName)] = System.Windows.Media.Color.FromArgb(alpha, color.R, color.G, color.B);
+                SolidColorBrush brush = new SolidColorBrush();
+                brush.Color = colorPallete[Int32.Parse(buttonName)];
+                button.Background = brush;
             }
+            
         }
 
         private bool dragStarted = false;
 
-        private void Slider_DragCompleted(object sender, DragCompletedEventArgs e)
+        private void BrushSize_DragCompleted(object sender, DragCompletedEventArgs e)
         {
             /*DoWork(((Slider)sender).Value);
             if (!dragStarted) strokeThickness = (int)e.Value;
             this.dragStarted = false;*/
         }
 
-        private void Slider_DragStarted(object sender, DragStartedEventArgs e)
+        private void BrushSize_DragStarted(object sender, DragStartedEventArgs e)
         {
             //this.dragStarted = true;
         }
 
-        private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void BrushSize_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             strokeThickness = (int)e.NewValue;
+        }
+
+        private void Transparency_DragCompleted(object sender, DragCompletedEventArgs e)
+        {
+            /*DoWork(((Slider)sender).Value);
+            if (!dragStarted) strokeThickness = (int)e.Value;
+            this.dragStarted = false;*/
+        }
+
+        private void Transparency_DragStarted(object sender, DragStartedEventArgs e)
+        {
+            //this.dragStarted = true;
+        }
+
+        private void Transparency_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            alpha = (byte)e.NewValue;
+            for (int i = 0; i < colorPallete.Length; i++) 
+            {
+                colorPallete[i].A = alpha;
+            }
         }
     }
 }
