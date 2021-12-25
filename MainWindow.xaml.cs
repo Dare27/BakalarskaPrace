@@ -8,48 +8,116 @@ using System.Windows.Media;
 using System.Windows.Forms;
 using System.Windows.Controls.Primitives;
 using System.Text.RegularExpressions;
+using System.Windows.Controls;
+using System.Windows.Media.Imaging;
+using System.Collections.Generic;
+using BakalarskaPrace.Properties;
+using System.Drawing.Imaging;
+using System.IO;
 
 namespace BakalarskaPrace
 {
     public partial class MainWindow : Window
     {
-
-        Point currentPoint = new Point();
+        private readonly WriteableBitmap bitmap;
+        private readonly WriteableBitmap defaultBitmap = new WriteableBitmap(64, 64, 1, 1, PixelFormats.Bgra32, null);
         int colorPalleteSize = 2;
         Color[] colorPallete;
         int strokeThickness = 1;
         byte alpha = 255;
-        enum tools {brush, erasor};
+        enum tools {brush, eraser};
         tools currentTool = tools.brush;
         const double scaleRate = 1.1;
         Point gridDragStartPoint;
         Vector gridDragOffset;
+        int width;
+        int height;
+        int defaultWidth = 64;
+        int defaultHeight = 64;
 
         public MainWindow()
         {
             colorPallete = new Color[colorPalleteSize];
             colorPallete[0] = Color.FromArgb(alpha, 0, 0, 0);         //Primární barva
             colorPallete[1] = Color.FromArgb(alpha, 255, 255, 255);   //Sekundární barva
+            width = defaultWidth;
+            height = defaultHeight;
+            bitmap = defaultBitmap;
+
             InitializeComponent();
+            image.Source = bitmap;
         }
 
-        private void Canvas_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private unsafe void Image_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            if (e.ButtonState == MouseButtonState.Pressed) currentPoint = e.GetPosition(paintSurface);
-            switch (currentTool)
+            if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
             {
-                case tools.brush:
-                    {
-                        
-                        break;
-                    }
-                case tools.erasor:
-                    {
-                        
-                        break;
-                    }
-                default: break;
+                int x = (int)e.GetPosition(image).X;
+                int y = (int)e.GetPosition(image).Y;
+
+                switch (currentTool)
+                {
+                    case tools.brush:
+                        {
+                            int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
+                            
+                            try
+                            {
+                                // Reserve the back buffer for updates.
+                                bitmap.Lock();
+
+                                unsafe
+                                {
+                                    // Get a pointer to the back buffer.
+                                    IntPtr pBackBuffer = bitmap.BackBuffer;
+
+                                    // Find the address of the pixel to draw.
+                                    // Assuming that pixel is ARGB, it is 4 bytes per pixel. Since column is X coordinate, it must be multiplied by 4.
+                                    pBackBuffer += y * bitmap.BackBufferStride;
+                                    pBackBuffer += x * 4;
+
+                                    // Compute the pixel's color.
+                                    int color_data = colorPallete[colorIndex].A << 24;       // A
+                                    color_data |= colorPallete[colorIndex].R << 16;          // R
+                                    color_data |= colorPallete[colorIndex].G << 8;           // G
+                                    color_data |= colorPallete[colorIndex].B << 0;           // B
+
+                                    // Assign the color data to the pixel.
+                                    *((int*)pBackBuffer) = color_data;
+
+                                    bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
+                                }
+                            }
+                            finally
+                            {
+                                // Release the back buffer and make it available for display.
+                                bitmap.Unlock();
+                            }
+                            break;
+                        }
+                    case tools.eraser:
+                        {
+                            byte[] ColorData = {0, 0, 0, 0}; // B G R
+
+                            Int32Rect rect = new Int32Rect(x, y, 1, 1);
+
+                            bitmap.WritePixels(rect, ColorData, 4, 0);
+                            break;
+                        }
+                    default: break;
+                }
+                
             }
+        }
+
+        private void eraser_Click(object sender, RoutedEventArgs e)
+        {
+            currentTool = tools.eraser;
+        }
+
+        private void Brush_Click(object sender, RoutedEventArgs e)
+        {
+            currentTool = tools.brush;
         }
 
         private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -59,6 +127,8 @@ namespace BakalarskaPrace
             MatrixTransform transform = (MatrixTransform)element.RenderTransform;
             Matrix matrix = transform.Matrix;
             double scale;
+
+            // Pokud je e >= 0 dojde k přibližování
             if (e.Delta >= 0)
             {
                 scale = 1.1;
@@ -80,7 +150,6 @@ namespace BakalarskaPrace
                 gridDragOffset = new Vector(Grid_TranslateTransform.X, Grid_TranslateTransform.Y);
                 grid.CaptureMouse();
             }
-            
         }
 
         private void Grid_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
@@ -101,34 +170,6 @@ namespace BakalarskaPrace
                 grid.ReleaseMouseCapture();
             }
         }
-        private void Canvas_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
-            {
-                SolidColorBrush brush = new SolidColorBrush();
-                if (e.LeftButton == MouseButtonState.Pressed)
-                {
-                    brush.Color = colorPallete[0];
-                }
-                else
-                {
-                    brush.Color = colorPallete[1];
-                }
-                Line line = new Line();
-
-                line.Stroke = SystemColors.WindowFrameBrush;
-                line.X1 = currentPoint.X;
-                line.Y1 = currentPoint.Y;
-                line.X2 = e.GetPosition(paintSurface).X;
-                line.Y2 = e.GetPosition(paintSurface).Y;
-
-                line.Stroke = brush;
-                line.StrokeThickness = strokeThickness;
-                currentPoint = e.GetPosition(paintSurface);
-
-                paintSurface.Children.Add(line);
-            }
-        }
 
         private void ColorSelection_Click(object sender, RoutedEventArgs e)
         {
@@ -147,35 +188,9 @@ namespace BakalarskaPrace
             }
         }
 
-        private bool dragStarted = false;
-
-        private void BrushSize_DragCompleted(object sender, DragCompletedEventArgs e)
-        {
-            /*DoWork(((Slider)sender).Value);
-            if (!dragStarted) strokeThickness = (int)e.Value;
-            this.dragStarted = false;*/
-        }
-
-        private void BrushSize_DragStarted(object sender, DragStartedEventArgs e)
-        {
-            //this.dragStarted = true;
-        }
-
         private void BrushSize_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             strokeThickness = (int)e.NewValue;
-        }
-
-        private void Transparency_DragCompleted(object sender, DragCompletedEventArgs e)
-        {
-            /*DoWork(((Slider)sender).Value);
-            if (!dragStarted) strokeThickness = (int)e.Value;
-            this.dragStarted = false;*/
-        }
-
-        private void Transparency_DragStarted(object sender, DragStartedEventArgs e)
-        {
-            //this.dragStarted = true;
         }
 
         private void Transparency_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -187,9 +202,30 @@ namespace BakalarskaPrace
             }
         }
 
-        private void Clear_Click(object sender, RoutedEventArgs e)
+        private void Save_Click(object sender, RoutedEventArgs e)
         {
-            paintSurface.Children.Clear();
+            SaveFileDialog dialog = new SaveFileDialog();
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                try
+                {
+                    if (dialog.FileName != string.Empty)
+                    {
+                        using (FileStream fileStream = new FileStream(dialog.FileName, FileMode.Create))
+                        {
+                            PngBitmapEncoder encoder = new PngBitmapEncoder();
+                            encoder.Frames.Add(BitmapFrame.Create(bitmap.Clone()));
+                            encoder.Save(fileStream);
+                            fileStream.Close();
+                            fileStream.Dispose();
+                        }
+                    }
+                }
+                catch 
+                {
+                
+                }
+            }
         }
     }
 }
