@@ -5,36 +5,49 @@
         Title="MainWindow" Height="515" Width="943" Background="DarkGray">
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
         <Grid>
-            <Grid x:Name="grid" MouseDown="Grid_MouseDown" MouseMove="Grid_MouseMove" MouseUp="Grid_MouseUp" Margin="155,0,0,0">
-                <Grid.RenderTransform>
-                    <TranslateTransform x:Name="Grid_TranslateTransform"/>
-                </Grid.RenderTransform>
-                <Canvas Name="paintSurface" MouseWheel="Canvas_MouseWheel" SnapsToDevicePixels="False"  Width="64" Height="64" HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
-                    <Image x:Name="image" Panel.ZIndex="10" MouseMove="Image_MouseMove" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" Width="64" Height="64" />
-                    <Canvas.Background>
-                        <DrawingBrush TileMode="Tile" Viewport="0,0,8,8" ViewportUnits="Absolute">
-                            <DrawingBrush.Drawing>
-                                <GeometryDrawing Geometry="M0,0 H1 V1 H2 V2 H1 V1 H0Z" Brush="LightGray"/>
-                            </DrawingBrush.Drawing>
-                        </DrawingBrush>
-                    </Canvas.Background>
-                    <Canvas.RenderTransform>
-                        <MatrixTransform/>
-                    </Canvas.RenderTransform>
-                </Canvas>
+            <Grid Margin="155,0,0,0">
+                <Grid x:Name="grid" MouseDown="Grid_MouseDown" MouseMove="Grid_MouseMove" MouseUp="Grid_MouseUp" Margin="155,0,0,0">
+                    <Grid.RenderTransform>
+                        <TranslateTransform x:Name="Grid_TranslateTransform"/>
+                    </Grid.RenderTransform>
+                    <Canvas Name="paintSurface" MouseWheel="Canvas_MouseWheel" SnapsToDevicePixels="False"  Width="64" Height="64" HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                        <Image x:Name="image" Panel.ZIndex="10" MouseMove="Image_MouseMove" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" Width="64" Height="64" />
+                        <Canvas.Background>
+                            <DrawingBrush TileMode="Tile" Viewport="0,0,8,8" ViewportUnits="Absolute">
+                                <DrawingBrush.Drawing>
+                                    <GeometryDrawing Geometry="M0,0 H1 V1 H2 V2 H1 V1 H0Z" Brush="LightGray"/>
+                                </DrawingBrush.Drawing>
+                            </DrawingBrush>
+                        </Canvas.Background>
+                        <Canvas.RenderTransform>
+                            <MatrixTransform/>
+                        </Canvas.RenderTransform>
+
+                    </Canvas>
+
+                </Grid>
+                <Label Name="LabelScale"  Content="1" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="0,0,0,26" />
+                <Label Name="LabelPosition"  Content="[width:height] x:y"  VerticalAlignment="Bottom" HorizontalAlignment="Left" RenderTransformOrigin="0.5,1"/>
             </Grid>
+
+
             <Canvas Background="#FF545454" HorizontalAlignment="Left" Width="155">
-                <Button x:Name="ColorSelector0" Click="ColorSelection_Click" BorderBrush="Black" Background="Black" Width="32" Height="32" Margin="10,10,5,10"/>
-                <Button x:Name="ColorSelector1" Click="ColorSelection_Click" BorderBrush="Black" Background="White" Width="32" Height="32" Margin="5,10,10,10" Canvas.Left="42"/>
-                <Label Content="Transparency" Margin="0,0,0,0" Canvas.Top="47" Canvas.Left="7"/>
+                <Button Content="Save" Width="67" Click="Save_Click" Canvas.Top="10" Canvas.Left="5"/>
+                <Button Content="Load" Width="67" Click="Load_Click" Canvas.Top="10" Canvas.Left="77"/>
+                <Button x:Name="ColorSelector0" Click="ColorSelection_Click" BorderBrush="Black" Background="Black" Width="32" Height="32" Margin="10,10,5,10" Canvas.Top="30"/>
+                <Button x:Name="ColorSelector1" Click="ColorSelection_Click" BorderBrush="Black" Background="White" Width="32" Height="32" Margin="5,10,10,10" Canvas.Left="42" Canvas.Top="30"/>
+                <Label Content="Transparency" Margin="0,0,0,0" Canvas.Top="73" Canvas.Left="6"/>
                 <Slider ValueChanged="Transparency_ValueChanged" Orientation="horizontal" Minimum="0" Maximum="255" Value="255" 
-                        IsSnapToTickEnabled="True" TickFrequency="1" Width="138" Canvas.Top="73" Canvas.Left="7" />
-                <Label Content="Brush size" Margin="0,0,0,0" Canvas.Top="91" Canvas.Left="7"/>
+                        IsSnapToTickEnabled="True" TickFrequency="1" Width="138" Canvas.Top="99" Canvas.Left="6" />
+                <Label Content="Brush size" Margin="0,0,0,0" Canvas.Top="117" Canvas.Left="6"/>
                 <Slider ValueChanged="BrushSize_ValueChanged" Orientation="horizontal" Minimum="1" Maximum="4" Value="1" 
-                        IsSnapToTickEnabled="True" TickFrequency="1" Width="138" Canvas.Top="117" Canvas.Left="7" />
-                <Button Content="Erasor" Canvas.Left="78" Canvas.Top="140" Width="67" Click="Erasor_Click"/>
-                <Button Content="Brush" Canvas.Left="7" Canvas.Top="140" Width="67" Click="Brush_Click"/>
-                <Button Content="Save" Canvas.Left="7" Canvas.Top="165" Width="138" Click="Save_Click"/>
+                        IsSnapToTickEnabled="True" TickFrequency="1" Width="138" Canvas.Top="143" Canvas.Left="6" />
+                <Button Content="Eraser" Canvas.Left="78" Canvas.Top="166" Width="66" Click="Eraser_Click"/>
+                <Button Content="Brush" Canvas.Left="6" Canvas.Top="166" Width="66" Click="Brush_Click"/>
+
+                <Button Content="Symmetric Brush" Canvas.Left="6" Canvas.Top="191" Width="66" Click="SymmetricBrush_Click"/>
+
+
             </Canvas>
 
         </Grid>

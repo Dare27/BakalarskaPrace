@@ -25,7 +25,7 @@ namespace BakalarskaPrace
         Color[] colorPallete;
         int strokeThickness = 1;
         byte alpha = 255;
-        enum tools {brush, eraser};
+        enum tools {brush, eraser, symmetricBrush};
         tools currentTool = tools.brush;
         const double scaleRate = 1.1;
         Point gridDragStartPoint;
@@ -34,6 +34,7 @@ namespace BakalarskaPrace
         int height;
         int defaultWidth = 64;
         int defaultHeight = 64;
+        double currentScale = 1.0;
 
         public MainWindow()
         {
@@ -43,56 +44,99 @@ namespace BakalarskaPrace
             width = defaultWidth;
             height = defaultHeight;
             bitmap = defaultBitmap;
-
             InitializeComponent();
             image.Source = bitmap;
+            LabelPosition.Content = "[" + bitmap.PixelWidth + ":" + bitmap.PixelHeight + "] " + 0 + ":" + 0;
+            LabelScale.Content = "1.0";
         }
 
         private unsafe void Image_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
+            int x = (int)e.GetPosition(image).X;
+            int y = (int)e.GetPosition(image).Y;
+
+            LabelPosition.Content = "[" + bitmap.PixelWidth + ":" + bitmap.PixelHeight + "] " + x + ":" + y;
+
             if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
             {
-                int x = (int)e.GetPosition(image).X;
-                int y = (int)e.GetPosition(image).Y;
-
                 switch (currentTool)
                 {
                     case tools.brush:
                         {
                             int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
-                            
-                            try
+
+                            AddPixel(x, y, colorIndex);
+                            break;
+                        }
+                    case tools.symmetricBrush:
+                        {
+                            int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
+                            int mirrorPostion = 0;
+
+                            if (System.Windows.Forms.Control.ModifierKeys == Keys.Shift)
                             {
-                                // Reserve the back buffer for updates.
-                                bitmap.Lock();
+                                AddPixel(x, y, colorIndex);
 
-                                unsafe
+                                //Použít horizontální a vertikální osu 
+                                if (x > bitmap.PixelWidth / 2)
                                 {
-                                    // Get a pointer to the back buffer.
-                                    IntPtr pBackBuffer = bitmap.BackBuffer;
+                                    mirrorPostion = bitmap.PixelWidth - x - 1;
+                                    AddPixel(mirrorPostion, y, colorIndex);
+                                }
+                                else 
+                                {
 
-                                    // Find the address of the pixel to draw.
-                                    // Assuming that pixel is ARGB, it is 4 bytes per pixel. Since column is X coordinate, it must be multiplied by 4.
-                                    pBackBuffer += y * bitmap.BackBufferStride;
-                                    pBackBuffer += x * 4;
+                                    int dif = (bitmap.PixelWidth / 2) - x;
+                                    mirrorPostion = (bitmap.PixelWidth / 2) + dif - 1;
+                                    AddPixel(mirrorPostion, y, colorIndex);
+                                }
 
-                                    // Compute the pixel's color.
-                                    int color_data = colorPallete[colorIndex].A << 24;       // A
-                                    color_data |= colorPallete[colorIndex].R << 16;          // R
-                                    color_data |= colorPallete[colorIndex].G << 8;           // G
-                                    color_data |= colorPallete[colorIndex].B << 0;           // B
-
-                                    // Assign the color data to the pixel.
-                                    *((int*)pBackBuffer) = color_data;
-
-                                    bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
+                                if (y > bitmap.PixelHeight / 2)
+                                {
+                                    mirrorPostion = bitmap.PixelHeight - y - 1;
+                                    AddPixel(x, mirrorPostion, colorIndex);
+                                }
+                                else
+                                {
+                                    int dif = (bitmap.PixelHeight / 2) - y;
+                                    mirrorPostion = (bitmap.PixelHeight / 2) + dif - 1;
+                                    AddPixel(x, mirrorPostion, colorIndex);
                                 }
                             }
-                            finally
+                            else if (System.Windows.Forms.Control.ModifierKeys == Keys.Control)
                             {
-                                // Release the back buffer and make it available for display.
-                                bitmap.Unlock();
+                                AddPixel(x, y, colorIndex);
+
+                                //Použít horizontální osu 
+                                if (y > bitmap.PixelHeight / 2)
+                                {
+                                    mirrorPostion = bitmap.PixelHeight - y - 1;
+                                    AddPixel(x, mirrorPostion, colorIndex);
+                                }
+                                else
+                                {
+                                    int dif = (bitmap.PixelHeight / 2) - y;
+                                    mirrorPostion = (bitmap.PixelHeight / 2) + dif - 1;
+                                    AddPixel(x, mirrorPostion, colorIndex);
+                                }
                             }
+                            else
+                            {
+                                //Použít vertikální osu 
+                                if (x > bitmap.PixelWidth / 2)
+                                {
+                                    mirrorPostion = bitmap.PixelWidth - x - 1;
+                                    AddPixel(mirrorPostion, y, colorIndex);
+                                }
+                                else
+                                {
+                                    int dif = (bitmap.PixelWidth / 2) - x;
+                                    mirrorPostion = (bitmap.PixelWidth / 2) + dif - 1;
+                                    AddPixel(mirrorPostion, y, colorIndex);
+                                }
+                            }
+                            AddPixel(x, y, colorIndex);
+                            
                             break;
                         }
                     case tools.eraser:
@@ -110,7 +154,39 @@ namespace BakalarskaPrace
             }
         }
 
-        private void eraser_Click(object sender, RoutedEventArgs e)
+        private void AddPixel(int x, int y, int colorIndex, bool horizontal = false, bool vertical = false) 
+        {
+            try
+            {
+                // Reserve the back buffer for updates.
+                bitmap.Lock();
+
+                unsafe
+                {
+                    IntPtr pBackBuffer = bitmap.BackBuffer;
+
+                    pBackBuffer += y * bitmap.BackBufferStride;
+                    pBackBuffer += x * 4;
+
+                    int color_data = colorPallete[colorIndex].A << 24;       // A
+                    color_data |= colorPallete[colorIndex].R << 16;          // R
+                    color_data |= colorPallete[colorIndex].G << 8;           // G
+                    color_data |= colorPallete[colorIndex].B << 0;           // B
+
+                    // Assign the color data to the pixel.
+                    *((int*)pBackBuffer) = color_data;
+
+                    bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
+                }
+            }
+            finally
+            {
+                // Release the back buffer and make it available for display.
+                bitmap.Unlock();
+            }
+        }
+
+        private void Eraser_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.eraser;
         }
@@ -118,6 +194,11 @@ namespace BakalarskaPrace
         private void Brush_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.brush;
+        }
+
+        private void SymmetricBrush_Click(object sender, RoutedEventArgs e)
+        {
+            currentTool = tools.symmetricBrush;
         }
 
         private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -140,8 +221,17 @@ namespace BakalarskaPrace
 
             matrix.ScaleAtPrepend(scale, scale, position.X, position.Y);
             transform.Matrix = matrix;
-        }
 
+            currentScale *= scale;
+            if (currentScale.ToString().Length > 5)
+            {
+                LabelScale.Content = currentScale.ToString().Substring(0, 5);
+            }
+            else 
+            {
+                LabelScale.Content = currentScale.ToString();
+            }
+        }
         private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Middle) 
@@ -224,6 +314,23 @@ namespace BakalarskaPrace
                 catch 
                 {
                 
+                }
+            }
+        }
+
+        private void Load_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Filter = "png images *(.png)|*.png;";
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                try
+                {
+                    //System.Drawing.Bitmap myBitmap = new System.Drawing.Bitmap(dialog.FileName);
+                }
+                catch
+                {
+
                 }
             }
         }
