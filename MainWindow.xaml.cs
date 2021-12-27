@@ -19,7 +19,7 @@ namespace BakalarskaPrace
 {
     public partial class MainWindow : Window
     {
-        private readonly WriteableBitmap currentBitmap;
+        private WriteableBitmap currentBitmap;
         int currentBitmapIndex = 0;
         private readonly List<WriteableBitmap> bitmaps = new List<WriteableBitmap>();
         private readonly WriteableBitmap defaultBitmap;
@@ -38,7 +38,10 @@ namespace BakalarskaPrace
         int defaultHeight = 64;
         double currentScale = 1.0;
 
-
+        private static System.Windows.Threading.DispatcherTimer timer;
+        int timerInterval = 1; 
+        int currentAnimationIndex;
+        
         public MainWindow()
         {
             colorPallete = new Color[colorPalleteSize];
@@ -47,13 +50,32 @@ namespace BakalarskaPrace
             width = defaultWidth;
             height = defaultHeight;
             defaultBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
-            currentBitmap = defaultBitmap;
+            currentBitmap = defaultBitmap.Clone();
             bitmaps.Add(currentBitmap);
             InitializeComponent();
             image.Source = bitmaps[currentBitmapIndex];
             LabelPosition.Content = "[" + width + ":" + height + "] " + 0 + ":" + 0;
             LabelScale.Content = "1.0";
             LabelImages.Content = bitmaps.Count.ToString() + ":"+ (currentBitmapIndex + 1).ToString();
+
+            timer = new System.Windows.Threading.DispatcherTimer();
+            timer.Tick += new EventHandler(OnTimedEvent);
+            timer.Interval = new TimeSpan(0, 0, timerInterval);
+            timer.Start();
+        }
+
+        private void OnTimedEvent(object sender, EventArgs e)
+        {
+            if (currentAnimationIndex + 1 < bitmaps.Count)
+            {
+                currentAnimationIndex += 1;
+            }
+            else
+            {
+                currentAnimationIndex = 0;
+            }
+
+            animationPreview.Source = bitmaps[currentAnimationIndex];
         }
 
         private unsafe void Image_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
@@ -79,6 +101,7 @@ namespace BakalarskaPrace
                             int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
                             int mirrorPostion = 0;
 
+                            //Bug při horizontálním a vertikálním kreslení 
                             if (System.Windows.Forms.Control.ModifierKeys == Keys.Shift)
                             {
                                 AddPixel(x, y, colorIndex);
@@ -310,7 +333,7 @@ namespace BakalarskaPrace
                         using (FileStream fileStream = new FileStream(dialog.FileName, FileMode.Create))
                         {
                             PngBitmapEncoder encoder = new PngBitmapEncoder();
-                            encoder.Frames.Add(BitmapFrame.Create(currentBitmap.Clone()));
+                            encoder.Frames.Add(BitmapFrame.Create(bitmaps[currentBitmapIndex].Clone()));
                             encoder.Save(fileStream);
                             fileStream.Close();
                             fileStream.Dispose();
@@ -343,10 +366,41 @@ namespace BakalarskaPrace
 
         private void CreateImage_Click(object sender, RoutedEventArgs e)
         {
-            bitmaps.Add(new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null));
+            CreateNewFrame(false);
+        }
+
+        private void DuplicateImage_Click(object sender, RoutedEventArgs e)
+        {
+            CreateNewFrame(true);
+        }
+
+        private void CreateNewFrame(bool duplicate) 
+        {
+            WriteableBitmap newWriteableBitmap;
+
+            if (duplicate)
+            {
+                newWriteableBitmap = bitmaps[currentBitmapIndex].Clone();
+            }
+            else 
+            {
+                newWriteableBitmap = defaultBitmap.Clone();
+            }
+
+            if (currentBitmapIndex < bitmaps.Count - 1)
+            {
+                bitmaps.Insert(currentBitmapIndex + 1, newWriteableBitmap);
+            }
+            else
+            {
+                bitmaps.Add(newWriteableBitmap);
+            }
+
             currentBitmapIndex += 1;
-            image.Source = bitmaps[currentBitmapIndex];
+            currentBitmap = bitmaps[currentBitmapIndex];
+            image.Source = currentBitmap;
             LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
+
         }
 
         private void Previous_Click(object sender, RoutedEventArgs e)
@@ -354,7 +408,8 @@ namespace BakalarskaPrace
             if (currentBitmapIndex - 1 > -1)
             {
                 currentBitmapIndex -= 1;
-                image.Source = bitmaps[currentBitmapIndex];
+                currentBitmap = bitmaps[currentBitmapIndex];
+                image.Source = currentBitmap;
                 LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
             }
         }
@@ -364,7 +419,8 @@ namespace BakalarskaPrace
             if (currentBitmapIndex + 1 < bitmaps.Count) 
             {
                 currentBitmapIndex += 1;
-                image.Source = bitmaps[currentBitmapIndex];
+                currentBitmap = bitmaps[currentBitmapIndex];
+                image.Source = currentBitmap;
                 LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
             }
         }
