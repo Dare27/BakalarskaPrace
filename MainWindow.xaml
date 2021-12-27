@@ -5,8 +5,8 @@
         Title="MainWindow" Height="515" Width="943" Background="DarkGray">
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
         <Grid>
-            <Grid Margin="155,0,0,0">
-                <Grid x:Name="grid" MouseDown="Grid_MouseDown" MouseMove="Grid_MouseMove" MouseUp="Grid_MouseUp" Margin="155,0,0,0">
+            <Grid Margin="155,0,155,0">
+                <Grid x:Name="grid" MouseDown="Grid_MouseDown" MouseMove="Grid_MouseMove" MouseUp="Grid_MouseUp" Margin="0,0,0,0">
                     <Grid.RenderTransform>
                         <TranslateTransform x:Name="Grid_TranslateTransform"/>
                     </Grid.RenderTransform>
@@ -26,6 +26,7 @@
                     </Canvas>
 
                 </Grid>
+                <Label Name="LabelImages"  Content="1:1" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="0,0,0,52" />
                 <Label Name="LabelScale"  Content="1" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="0,0,0,26" />
                 <Label Name="LabelPosition"  Content="[width:height] x:y"  VerticalAlignment="Bottom" HorizontalAlignment="Left" RenderTransformOrigin="0.5,1"/>
             </Grid>
@@ -48,6 +49,11 @@
                 <Button Content="Symmetric Brush" Canvas.Left="6" Canvas.Top="191" Width="66" Click="SymmetricBrush_Click"/>
 
 
+            </Canvas>
+            <Canvas Background="#FF545454" HorizontalAlignment="Right" Width="155">
+                <Button Content="Previous" Width="67" Click="Previous_Click" Canvas.Top="10" Canvas.Left="5"/>
+                <Button Content="Next" Width="67" Click="Next_Click" Canvas.Top="10" Canvas.Left="78"/>
+                <Button Content="Create image" Width="140" Click="CreateImage_Click" Canvas.Top="35" Canvas.Left="5"/>
             </Canvas>
 
         </Grid>

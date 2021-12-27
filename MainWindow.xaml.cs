@@ -19,8 +19,10 @@ namespace BakalarskaPrace
 {
     public partial class MainWindow : Window
     {
-        private readonly WriteableBitmap bitmap;
-        private readonly WriteableBitmap defaultBitmap = new WriteableBitmap(64, 64, 1, 1, PixelFormats.Bgra32, null);
+        private readonly WriteableBitmap currentBitmap;
+        int currentBitmapIndex = 0;
+        private readonly List<WriteableBitmap> bitmaps = new List<WriteableBitmap>();
+        private readonly WriteableBitmap defaultBitmap;
         int colorPalleteSize = 2;
         Color[] colorPallete;
         int strokeThickness = 1;
@@ -36,6 +38,7 @@ namespace BakalarskaPrace
         int defaultHeight = 64;
         double currentScale = 1.0;
 
+
         public MainWindow()
         {
             colorPallete = new Color[colorPalleteSize];
@@ -43,11 +46,14 @@ namespace BakalarskaPrace
             colorPallete[1] = Color.FromArgb(alpha, 255, 255, 255);   //Sekundární barva
             width = defaultWidth;
             height = defaultHeight;
-            bitmap = defaultBitmap;
+            defaultBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+            currentBitmap = defaultBitmap;
+            bitmaps.Add(currentBitmap);
             InitializeComponent();
-            image.Source = bitmap;
-            LabelPosition.Content = "[" + bitmap.PixelWidth + ":" + bitmap.PixelHeight + "] " + 0 + ":" + 0;
+            image.Source = bitmaps[currentBitmapIndex];
+            LabelPosition.Content = "[" + width + ":" + height + "] " + 0 + ":" + 0;
             LabelScale.Content = "1.0";
+            LabelImages.Content = bitmaps.Count.ToString() + ":"+ (currentBitmapIndex + 1).ToString();
         }
 
         private unsafe void Image_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
@@ -55,7 +61,7 @@ namespace BakalarskaPrace
             int x = (int)e.GetPosition(image).X;
             int y = (int)e.GetPosition(image).Y;
 
-            LabelPosition.Content = "[" + bitmap.PixelWidth + ":" + bitmap.PixelHeight + "] " + x + ":" + y;
+            LabelPosition.Content = "[" + width + ":" + height + "] " + x + ":" + y;
 
             if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
             {
@@ -78,28 +84,28 @@ namespace BakalarskaPrace
                                 AddPixel(x, y, colorIndex);
 
                                 //Použít horizontální a vertikální osu 
-                                if (x > bitmap.PixelWidth / 2)
+                                if (x > currentBitmap.PixelWidth / 2)
                                 {
-                                    mirrorPostion = bitmap.PixelWidth - x - 1;
+                                    mirrorPostion = currentBitmap.PixelWidth - x - 1;
                                     AddPixel(mirrorPostion, y, colorIndex);
                                 }
                                 else 
                                 {
 
-                                    int dif = (bitmap.PixelWidth / 2) - x;
-                                    mirrorPostion = (bitmap.PixelWidth / 2) + dif - 1;
+                                    int dif = (currentBitmap.PixelWidth / 2) - x;
+                                    mirrorPostion = (currentBitmap.PixelWidth / 2) + dif - 1;
                                     AddPixel(mirrorPostion, y, colorIndex);
                                 }
 
-                                if (y > bitmap.PixelHeight / 2)
+                                if (y > currentBitmap.PixelHeight / 2)
                                 {
-                                    mirrorPostion = bitmap.PixelHeight - y - 1;
+                                    mirrorPostion = currentBitmap.PixelHeight - y - 1;
                                     AddPixel(x, mirrorPostion, colorIndex);
                                 }
                                 else
                                 {
-                                    int dif = (bitmap.PixelHeight / 2) - y;
-                                    mirrorPostion = (bitmap.PixelHeight / 2) + dif - 1;
+                                    int dif = (currentBitmap.PixelHeight / 2) - y;
+                                    mirrorPostion = (currentBitmap.PixelHeight / 2) + dif - 1;
                                     AddPixel(x, mirrorPostion, colorIndex);
                                 }
                             }
@@ -108,30 +114,30 @@ namespace BakalarskaPrace
                                 AddPixel(x, y, colorIndex);
 
                                 //Použít horizontální osu 
-                                if (y > bitmap.PixelHeight / 2)
+                                if (y > currentBitmap.PixelHeight / 2)
                                 {
-                                    mirrorPostion = bitmap.PixelHeight - y - 1;
+                                    mirrorPostion = currentBitmap.PixelHeight - y - 1;
                                     AddPixel(x, mirrorPostion, colorIndex);
                                 }
                                 else
                                 {
-                                    int dif = (bitmap.PixelHeight / 2) - y;
-                                    mirrorPostion = (bitmap.PixelHeight / 2) + dif - 1;
+                                    int dif = (currentBitmap.PixelHeight / 2) - y;
+                                    mirrorPostion = (currentBitmap.PixelHeight / 2) + dif - 1;
                                     AddPixel(x, mirrorPostion, colorIndex);
                                 }
                             }
                             else
                             {
                                 //Použít vertikální osu 
-                                if (x > bitmap.PixelWidth / 2)
+                                if (x > currentBitmap.PixelWidth / 2)
                                 {
-                                    mirrorPostion = bitmap.PixelWidth - x - 1;
+                                    mirrorPostion = currentBitmap.PixelWidth - x - 1;
                                     AddPixel(mirrorPostion, y, colorIndex);
                                 }
                                 else
                                 {
-                                    int dif = (bitmap.PixelWidth / 2) - x;
-                                    mirrorPostion = (bitmap.PixelWidth / 2) + dif - 1;
+                                    int dif = (currentBitmap.PixelWidth / 2) - x;
+                                    mirrorPostion = (currentBitmap.PixelWidth / 2) + dif - 1;
                                     AddPixel(mirrorPostion, y, colorIndex);
                                 }
                             }
@@ -145,7 +151,7 @@ namespace BakalarskaPrace
 
                             Int32Rect rect = new Int32Rect(x, y, 1, 1);
 
-                            bitmap.WritePixels(rect, ColorData, 4, 0);
+                            currentBitmap.WritePixels(rect, ColorData, 4, 0);
                             break;
                         }
                     default: break;
@@ -159,13 +165,13 @@ namespace BakalarskaPrace
             try
             {
                 // Reserve the back buffer for updates.
-                bitmap.Lock();
+                currentBitmap.Lock();
 
                 unsafe
                 {
-                    IntPtr pBackBuffer = bitmap.BackBuffer;
+                    IntPtr pBackBuffer = currentBitmap.BackBuffer;
 
-                    pBackBuffer += y * bitmap.BackBufferStride;
+                    pBackBuffer += y * currentBitmap.BackBufferStride;
                     pBackBuffer += x * 4;
 
                     int color_data = colorPallete[colorIndex].A << 24;       // A
@@ -176,13 +182,13 @@ namespace BakalarskaPrace
                     // Assign the color data to the pixel.
                     *((int*)pBackBuffer) = color_data;
 
-                    bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
+                    currentBitmap.AddDirtyRect(new Int32Rect(0, 0, currentBitmap.PixelWidth, currentBitmap.PixelHeight));
                 }
             }
             finally
             {
                 // Release the back buffer and make it available for display.
-                bitmap.Unlock();
+                currentBitmap.Unlock();
             }
         }
 
@@ -304,7 +310,7 @@ namespace BakalarskaPrace
                         using (FileStream fileStream = new FileStream(dialog.FileName, FileMode.Create))
                         {
                             PngBitmapEncoder encoder = new PngBitmapEncoder();
-                            encoder.Frames.Add(BitmapFrame.Create(bitmap.Clone()));
+                            encoder.Frames.Add(BitmapFrame.Create(currentBitmap.Clone()));
                             encoder.Save(fileStream);
                             fileStream.Close();
                             fileStream.Dispose();
@@ -332,6 +338,34 @@ namespace BakalarskaPrace
                 {
 
                 }
+            }
+        }
+
+        private void CreateImage_Click(object sender, RoutedEventArgs e)
+        {
+            bitmaps.Add(new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null));
+            currentBitmapIndex += 1;
+            image.Source = bitmaps[currentBitmapIndex];
+            LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
+        }
+
+        private void Previous_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentBitmapIndex - 1 > -1)
+            {
+                currentBitmapIndex -= 1;
+                image.Source = bitmaps[currentBitmapIndex];
+                LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
+            }
+        }
+
+        private void Next_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentBitmapIndex + 1 < bitmaps.Count) 
+            {
+                currentBitmapIndex += 1;
+                image.Source = bitmaps[currentBitmapIndex];
+                LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
             }
         }
     }
