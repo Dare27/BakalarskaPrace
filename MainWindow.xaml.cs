@@ -38,9 +38,10 @@ namespace BakalarskaPrace
         int defaultHeight = 64;
         double currentScale = 1.0;
 
-        private static System.Windows.Threading.DispatcherTimer timer;
-        int timerInterval = 1; 
+        private System.Windows.Threading.DispatcherTimer timer = new System.Windows.Threading.DispatcherTimer();
+        int timerInterval = 1000; 
         int currentAnimationIndex;
+        int currentFPSTarget = 12;
         
         public MainWindow()
         {
@@ -58,9 +59,9 @@ namespace BakalarskaPrace
             LabelScale.Content = "1.0";
             LabelImages.Content = bitmaps.Count.ToString() + ":"+ (currentBitmapIndex + 1).ToString();
 
-            timer = new System.Windows.Threading.DispatcherTimer();
             timer.Tick += new EventHandler(OnTimedEvent);
-            timer.Interval = new TimeSpan(0, 0, timerInterval);
+            timerInterval = 1000 / currentFPSTarget;
+            timer.Interval = new TimeSpan(0, 0, 0, 0, timerInterval);
             timer.Start();
         }
 
@@ -101,7 +102,7 @@ namespace BakalarskaPrace
                             int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
                             int mirrorPostion = 0;
 
-                            //Bug při horizontálním a vertikálním kreslení 
+                            //Chybí převrácení podle osy souměrnosti
                             if (System.Windows.Forms.Control.ModifierKeys == Keys.Shift)
                             {
                                 AddPixel(x, y, colorIndex);
@@ -400,7 +401,8 @@ namespace BakalarskaPrace
             currentBitmap = bitmaps[currentBitmapIndex];
             image.Source = currentBitmap;
             LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
-
+            currentAnimationIndex = currentBitmapIndex;
+            animationPreview.Source = bitmaps[currentAnimationIndex];
         }
 
         private void Previous_Click(object sender, RoutedEventArgs e)
@@ -411,6 +413,8 @@ namespace BakalarskaPrace
                 currentBitmap = bitmaps[currentBitmapIndex];
                 image.Source = currentBitmap;
                 LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
+                currentAnimationIndex = currentBitmapIndex;
+                animationPreview.Source = bitmaps[currentAnimationIndex];
             }
         }
 
@@ -422,6 +426,47 @@ namespace BakalarskaPrace
                 currentBitmap = bitmaps[currentBitmapIndex];
                 image.Source = currentBitmap;
                 LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
+                currentAnimationIndex = currentBitmapIndex;
+                animationPreview.Source = bitmaps[currentAnimationIndex];
+            }
+        }
+
+        private void DeleteImage_Click(object sender, RoutedEventArgs e)
+        {
+            bitmaps.RemoveAt(currentBitmapIndex);
+            if (bitmaps.Count == 0)
+            {
+                WriteableBitmap newWriteableBitmap = defaultBitmap.Clone();
+                bitmaps.Add(newWriteableBitmap);
+            }
+            //pokud je poslední index vrátit se na předchozí obrázek
+            int lastIndex = currentBitmapIndex != bitmaps.Count ? 0 : 1;
+            currentBitmapIndex -= lastIndex;
+            currentBitmap = bitmaps[currentBitmapIndex];
+            image.Source = currentBitmap;
+            LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
+            currentAnimationIndex = currentBitmapIndex;
+            animationPreview.Source = bitmaps[currentAnimationIndex];
+        }
+
+        private void FramesPerSecond_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            Slider slider = sender as Slider;
+            double value = slider.Value;
+            LabelFramesPerSecond.Content = value.ToString();
+            currentFPSTarget = (int)value;
+            if (currentFPSTarget != 0)
+            {
+                timerInterval = 1000 / currentFPSTarget;
+                timer.Stop();
+                timer.Interval = new TimeSpan(0, 0, 0, 0, timerInterval);
+                timer.Start();
+            }
+            else 
+            {
+                timer.Stop();
+                currentAnimationIndex = currentBitmapIndex;
+                animationPreview.Source = bitmaps[currentAnimationIndex];
             }
         }
     }

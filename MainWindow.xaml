@@ -52,10 +52,14 @@
             </Canvas>
             <Canvas Background="#FF545454" HorizontalAlignment="Right" Width="155">
                 <Image x:Name="animationPreview" Panel.ZIndex="10" MouseMove="Image_MouseMove" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" Width="137" Height="137" Canvas.Left="9" Canvas.Top="9" />
-                <Button Content="Previous" Width="66" Click="Previous_Click" Canvas.Top="153" Canvas.Left="8"/>
-                <Button Content="Next" Width="68" Click="Next_Click" Canvas.Top="153" Canvas.Left="80"/>
-                <Button Content="Create image" Width="140" Click="CreateImage_Click" Canvas.Top="178" Canvas.Left="8"/>
-                <Button Content="Duplicate image" Width="140" Click="DuplicateImage_Click" Canvas.Top="203" Canvas.Left="8"/>
+                <Label Name="LabelFramesPerSecond"  Content="12" Canvas.Left="10" Canvas.Top="153"/>
+                <Slider IsSnapToTickEnabled="True" TickFrequency="1" Width="115" Canvas.Left="35" Canvas.Top="157" Maximum="60" ValueChanged="FramesPerSecond_ValueChanged" Value="12"/>
+                <Button Content="Previous" Width="66" Click="Previous_Click" Canvas.Top="180" Canvas.Left="10"/>
+                <Button Content="Next" Width="68" Click="Next_Click" Canvas.Top="180" Canvas.Left="82"/>
+                <Button Content="Create image" Width="140" Click="CreateImage_Click" Canvas.Top="205" Canvas.Left="10"/>
+                <Button Content="Duplicate image" Width="140" Click="DuplicateImage_Click" Canvas.Top="230" Canvas.Left="10"/>
+                <Button Content="Delete image" Width="140" Click="DeleteImage_Click" Canvas.Top="255" Canvas.Left="10"/>
+
             </Canvas>
 
         </Grid>
