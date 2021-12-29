@@ -27,7 +27,7 @@ namespace BakalarskaPrace
         Color[] colorPallete;
         int strokeThickness = 1;
         byte alpha = 255;
-        enum tools {brush, eraser, symmetricBrush};
+        enum tools {brush, eraser, symmetricBrush, colorPicker};
         tools currentTool = tools.brush;
         const double scaleRate = 1.1;
         Point gridDragStartPoint;
@@ -42,12 +42,15 @@ namespace BakalarskaPrace
         int timerInterval = 1000; 
         int currentAnimationIndex;
         int currentFPSTarget = 12;
+
+        Color defaultPreviewColor;
         
         public MainWindow()
         {
             colorPallete = new Color[colorPalleteSize];
             colorPallete[0] = Color.FromArgb(alpha, 0, 0, 0);         //Primární barva
             colorPallete[1] = Color.FromArgb(alpha, 255, 255, 255);   //Sekundární barva
+            defaultPreviewColor = Color.FromArgb(128, 178, 213, 226);
             width = defaultWidth;
             height = defaultHeight;
             defaultBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
@@ -86,6 +89,8 @@ namespace BakalarskaPrace
 
             LabelPosition.Content = "[" + width + ":" + height + "] " + x + ":" + y;
 
+            //AddPixel(x, y, defaultPreviewColor);
+
             if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
             {
                 switch (currentTool)
@@ -94,7 +99,24 @@ namespace BakalarskaPrace
                         {
                             int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
 
-                            AddPixel(x, y, colorIndex);
+                            AddPixel(x, y, colorPallete[colorIndex]);
+                            /*if (System.Windows.Forms.Control.ModifierKeys != Keys.Control)
+                            {
+                                Color currentPixelColor = GetPixelColor(x, y);
+                                if (currentPixelColor.A != 0)
+                                {
+                                    Color colorMix = ColorMix(colorPallete[colorIndex], currentPixelColor);
+                                    AddPixel(x, y, colorMix);
+                                }
+                                else
+                                {
+                                    AddPixel(x, y, colorPallete[colorIndex]);
+                                }
+                            }
+                            else
+                            {
+                                AddPixel(x, y, colorPallete[colorIndex]);
+                            }*/
                             break;
                         }
                     case tools.symmetricBrush:
@@ -105,49 +127,49 @@ namespace BakalarskaPrace
                             //Chybí převrácení podle osy souměrnosti
                             if (System.Windows.Forms.Control.ModifierKeys == Keys.Shift)
                             {
-                                AddPixel(x, y, colorIndex);
+                                AddPixel(x, y, colorPallete[colorIndex]);
 
                                 //Použít horizontální a vertikální osu 
                                 if (x > currentBitmap.PixelWidth / 2)
                                 {
                                     mirrorPostion = currentBitmap.PixelWidth - x - 1;
-                                    AddPixel(mirrorPostion, y, colorIndex);
+                                    AddPixel(mirrorPostion, y, colorPallete[colorIndex]);
                                 }
                                 else 
                                 {
 
                                     int dif = (currentBitmap.PixelWidth / 2) - x;
                                     mirrorPostion = (currentBitmap.PixelWidth / 2) + dif - 1;
-                                    AddPixel(mirrorPostion, y, colorIndex);
+                                    AddPixel(mirrorPostion, y, colorPallete[colorIndex]);
                                 }
 
                                 if (y > currentBitmap.PixelHeight / 2)
                                 {
                                     mirrorPostion = currentBitmap.PixelHeight - y - 1;
-                                    AddPixel(x, mirrorPostion, colorIndex);
+                                    AddPixel(x, mirrorPostion, colorPallete[colorIndex]);
                                 }
                                 else
                                 {
                                     int dif = (currentBitmap.PixelHeight / 2) - y;
                                     mirrorPostion = (currentBitmap.PixelHeight / 2) + dif - 1;
-                                    AddPixel(x, mirrorPostion, colorIndex);
+                                    AddPixel(x, mirrorPostion, colorPallete[colorIndex]);
                                 }
                             }
                             else if (System.Windows.Forms.Control.ModifierKeys == Keys.Control)
                             {
-                                AddPixel(x, y, colorIndex);
+                                AddPixel(x, y, colorPallete[colorIndex]);
 
                                 //Použít horizontální osu 
                                 if (y > currentBitmap.PixelHeight / 2)
                                 {
                                     mirrorPostion = currentBitmap.PixelHeight - y - 1;
-                                    AddPixel(x, mirrorPostion, colorIndex);
+                                    AddPixel(x, mirrorPostion, colorPallete[colorIndex]);
                                 }
                                 else
                                 {
                                     int dif = (currentBitmap.PixelHeight / 2) - y;
                                     mirrorPostion = (currentBitmap.PixelHeight / 2) + dif - 1;
-                                    AddPixel(x, mirrorPostion, colorIndex);
+                                    AddPixel(x, mirrorPostion, colorPallete[colorIndex]);
                                 }
                             }
                             else
@@ -156,16 +178,16 @@ namespace BakalarskaPrace
                                 if (x > currentBitmap.PixelWidth / 2)
                                 {
                                     mirrorPostion = currentBitmap.PixelWidth - x - 1;
-                                    AddPixel(mirrorPostion, y, colorIndex);
+                                    AddPixel(mirrorPostion, y, colorPallete[colorIndex]);
                                 }
                                 else
                                 {
                                     int dif = (currentBitmap.PixelWidth / 2) - x;
                                     mirrorPostion = (currentBitmap.PixelWidth / 2) + dif - 1;
-                                    AddPixel(mirrorPostion, y, colorIndex);
+                                    AddPixel(mirrorPostion, y, colorPallete[colorIndex]);
                                 }
                             }
-                            AddPixel(x, y, colorIndex);
+                            AddPixel(x, y, colorPallete[colorIndex]);
                             
                             break;
                         }
@@ -178,19 +200,34 @@ namespace BakalarskaPrace
                             currentBitmap.WritePixels(rect, ColorData, 4, 0);
                             break;
                         }
+                    case tools.colorPicker:
+                        {
+                            int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
+                            colorPallete[colorIndex] = GetPixelColor(x, y);
+                            Console.WriteLine(colorPallete[colorIndex]);
+                            SolidColorBrush brush = new SolidColorBrush();
+                            brush.Color = colorPallete[colorIndex];
+                            if (colorIndex == 0)
+                            {
+                                ColorSelector0.Background = brush;
+                            }
+                            else 
+                            {
+                                ColorSelector1.Background = brush;
+                            }
+                            break;
+                        }
                     default: break;
                 }
-                
             }
         }
 
-        private void AddPixel(int x, int y, int colorIndex, bool horizontal = false, bool vertical = false) 
+        private void AddPixel(int x, int y, Color color, bool AlphaBlend = true) 
         {
             try
             {
                 // Reserve the back buffer for updates.
                 currentBitmap.Lock();
-
                 unsafe
                 {
                     IntPtr pBackBuffer = currentBitmap.BackBuffer;
@@ -198,13 +235,13 @@ namespace BakalarskaPrace
                     pBackBuffer += y * currentBitmap.BackBufferStride;
                     pBackBuffer += x * 4;
 
-                    int color_data = colorPallete[colorIndex].A << 24;       // A
-                    color_data |= colorPallete[colorIndex].R << 16;          // R
-                    color_data |= colorPallete[colorIndex].G << 8;           // G
-                    color_data |= colorPallete[colorIndex].B << 0;           // B
+                    int colorData = color.A << 24;       // A
+                    colorData |= color.R << 16;          // R
+                    colorData |= color.G << 8;           // G
+                    colorData |= color.B << 0;           // B
 
                     // Assign the color data to the pixel.
-                    *((int*)pBackBuffer) = color_data;
+                    *((int*)pBackBuffer) = colorData;
 
                     currentBitmap.AddDirtyRect(new Int32Rect(0, 0, currentBitmap.PixelWidth, currentBitmap.PixelHeight));
                 }
@@ -214,6 +251,35 @@ namespace BakalarskaPrace
                 // Release the back buffer and make it available for display.
                 currentBitmap.Unlock();
             }
+        }
+
+        unsafe Color GetPixelColor(int x, int y)
+        {
+            Color pix = new Color();
+            byte[] colorData = { 0, 0, 0, 0 }; // ARGB
+            IntPtr pBackBuffer = currentBitmap.BackBuffer;
+            byte* pBuff = (byte*)pBackBuffer.ToPointer();
+            var a = pBuff[4 * x + (y * currentBitmap.BackBufferStride) + 3];
+            var r = pBuff[4 * x + (y * currentBitmap.BackBufferStride) + 2];
+            var g = pBuff[4 * x + (y * currentBitmap.BackBufferStride) + 1];
+            var b = pBuff[4 * x + (y * currentBitmap.BackBufferStride)];
+            pix.A = a;
+            pix.R = r;
+            pix.G = g;
+            pix.B = b;
+            return pix;
+        }
+
+        public static Color ColorMix(Color firstColor, Color secondColor, float percent = .5f)
+        {
+            float amountFrom = 1.0f - percent;
+
+            byte a = (byte)(firstColor.A * amountFrom + secondColor.A * percent);
+            byte r = (byte)(firstColor.R * amountFrom + secondColor.R * percent);
+            byte g = (byte)(firstColor.G * amountFrom + secondColor.G * percent);
+            byte b = (byte)(firstColor.B * amountFrom + secondColor.B * percent);
+
+            return Color.FromArgb(a,r,g,b);
         }
 
         private void Eraser_Click(object sender, RoutedEventArgs e)
@@ -468,6 +534,11 @@ namespace BakalarskaPrace
                 currentAnimationIndex = currentBitmapIndex;
                 animationPreview.Source = bitmaps[currentAnimationIndex];
             }
+        }
+
+        private void ColorPicker_Click(object sender, RoutedEventArgs e)
+        {
+            currentTool = tools.colorPicker;
         }
     }
 }

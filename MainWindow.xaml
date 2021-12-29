@@ -47,6 +47,7 @@
                 <Button Content="Brush" Canvas.Left="6" Canvas.Top="166" Width="66" Click="Brush_Click"/>
 
                 <Button Content="Symmetric Brush" Canvas.Left="6" Canvas.Top="191" Width="66" Click="SymmetricBrush_Click"/>
+                <Button Content="Color Picker" Canvas.Left="78" Canvas.Top="191" Width="66" Click="ColorPicker_Click"/>
 
 
             </Canvas>
