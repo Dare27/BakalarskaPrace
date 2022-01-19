@@ -100,23 +100,24 @@ namespace BakalarskaPrace
                             int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
 
                             AddPixel(x, y, colorPallete[colorIndex]);
-                            /*if (System.Windows.Forms.Control.ModifierKeys != Keys.Control)
+                            if (System.Windows.Forms.Control.ModifierKeys != Keys.Control)
                             {
                                 Color currentPixelColor = GetPixelColor(x, y);
-                                if (currentPixelColor.A != 0)
+                                Color colorMix = ColorMix(colorPallete[colorIndex], currentPixelColor);
+                                AddPixel(x, y, colorMix);
+                                /*if (currentPixelColor.A != 0)
                                 {
-                                    Color colorMix = ColorMix(colorPallete[colorIndex], currentPixelColor);
-                                    AddPixel(x, y, colorMix);
+                                    
                                 }
                                 else
                                 {
                                     AddPixel(x, y, colorPallete[colorIndex]);
-                                }
+                                }*/
                             }
                             else
                             {
                                 AddPixel(x, y, colorPallete[colorIndex]);
-                            }*/
+                            }
                             break;
                         }
                     case tools.symmetricBrush:
@@ -272,12 +273,10 @@ namespace BakalarskaPrace
 
         public static Color ColorMix(Color firstColor, Color secondColor, float percent = .5f)
         {
-            float amountFrom = 1.0f - percent;
-
-            byte a = (byte)(firstColor.A * amountFrom + secondColor.A * percent);
-            byte r = (byte)(firstColor.R * amountFrom + secondColor.R * percent);
-            byte g = (byte)(firstColor.G * amountFrom + secondColor.G * percent);
-            byte b = (byte)(firstColor.B * amountFrom + secondColor.B * percent);
+            byte a = (byte)(firstColor.A + firstColor.A * (1 - firstColor.A));
+            byte r = (byte)((firstColor.R * firstColor.A + secondColor.R * secondColor.A * (1 - firstColor.A)) / a);
+            byte g = (byte)((firstColor.G * firstColor.A + secondColor.G * secondColor.A * (1 - firstColor.A)) / a);
+            byte b = (byte)((firstColor.B * firstColor.A + secondColor.B * secondColor.A * (1 - firstColor.A)) / a);
 
             return Color.FromArgb(a,r,g,b);
         }
