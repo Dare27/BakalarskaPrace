@@ -38,15 +38,16 @@ namespace BakalarskaPrace
         int defaultWidth = 64;
         int defaultHeight = 64;
         double currentScale = 1.0;
-        int mousePositionX = 0;
-        int mousePositionY = 0;
+        int mousePositionX = 0, mousePositionY = 0;
+        int currentPreviewPixelX, currentPreviewPixelY;
+        int previousPreviewPixelX, previousPreviewPixelY;
+        Color previousColor;
+        Color defaultPreviewColor;
 
         private System.Windows.Threading.DispatcherTimer timer = new System.Windows.Threading.DispatcherTimer();
         int timerInterval = 1000; 
         int currentAnimationIndex;
         int currentFPSTarget = 12;
-
-        Color defaultPreviewColor;
         
         public MainWindow()
         {
@@ -95,8 +96,6 @@ namespace BakalarskaPrace
 
             LabelPosition.Content = "[" + width + ":" + height + "] " + x + ":" + y;
 
-            //AddPixel(x, y, defaultPreviewColor);
-
             if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
             {
                 switch (currentTool)
@@ -104,16 +103,7 @@ namespace BakalarskaPrace
                     case tools.brush:
                         {
                             int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
-                            if (alphaBlending == true)
-                            {
-                                Color currentPixelColor = GetPixelColor(x, y);
-                                Color colorMix = ColorMix(colorPallete[colorIndex], currentPixelColor);
-                                AddPixel(x, y, colorMix);
-                            }
-                            else
-                            {
-                                AddPixel(x, y, colorPallete[colorIndex]);
-                            }
+                            StrokeThicknessSetter(x, y, colorPallete[colorIndex]);
                             break;
                         }
                     case tools.symmetricBrush:
@@ -124,49 +114,49 @@ namespace BakalarskaPrace
                             //Chybí převrácení podle osy souměrnosti
                             if (System.Windows.Forms.Control.ModifierKeys == Keys.Shift)
                             {
-                                AddPixel(x, y, colorPallete[colorIndex]);
+                                StrokeThicknessSetter(x, y, colorPallete[colorIndex]);
 
                                 //Použít horizontální a vertikální osu 
                                 if (x > currentBitmap.PixelWidth / 2)
                                 {
                                     mirrorPostion = currentBitmap.PixelWidth - x - 1;
-                                    AddPixel(mirrorPostion, y, colorPallete[colorIndex]);
+                                    StrokeThicknessSetter(mirrorPostion, y, colorPallete[colorIndex]);
                                 }
-                                else 
+                                else
                                 {
 
                                     int dif = (currentBitmap.PixelWidth / 2) - x;
                                     mirrorPostion = (currentBitmap.PixelWidth / 2) + dif - 1;
-                                    AddPixel(mirrorPostion, y, colorPallete[colorIndex]);
+                                    StrokeThicknessSetter(mirrorPostion, y, colorPallete[colorIndex]);
                                 }
 
                                 if (y > currentBitmap.PixelHeight / 2)
                                 {
                                     mirrorPostion = currentBitmap.PixelHeight - y - 1;
-                                    AddPixel(x, mirrorPostion, colorPallete[colorIndex]);
+                                    StrokeThicknessSetter(x, mirrorPostion, colorPallete[colorIndex]);
                                 }
                                 else
                                 {
                                     int dif = (currentBitmap.PixelHeight / 2) - y;
                                     mirrorPostion = (currentBitmap.PixelHeight / 2) + dif - 1;
-                                    AddPixel(x, mirrorPostion, colorPallete[colorIndex]);
+                                    StrokeThicknessSetter(x, mirrorPostion, colorPallete[colorIndex]);
                                 }
                             }
                             else if (System.Windows.Forms.Control.ModifierKeys == Keys.Control)
                             {
-                                AddPixel(x, y, colorPallete[colorIndex]);
+                                StrokeThicknessSetter(x, y, colorPallete[colorIndex]);
 
                                 //Použít horizontální osu 
                                 if (y > currentBitmap.PixelHeight / 2)
                                 {
                                     mirrorPostion = currentBitmap.PixelHeight - y - 1;
-                                    AddPixel(x, mirrorPostion, colorPallete[colorIndex]);
+                                    StrokeThicknessSetter(x, mirrorPostion, colorPallete[colorIndex]);
                                 }
                                 else
                                 {
                                     int dif = (currentBitmap.PixelHeight / 2) - y;
                                     mirrorPostion = (currentBitmap.PixelHeight / 2) + dif - 1;
-                                    AddPixel(x, mirrorPostion, colorPallete[colorIndex]);
+                                    StrokeThicknessSetter(x, mirrorPostion, colorPallete[colorIndex]);
                                 }
                             }
                             else
@@ -175,22 +165,22 @@ namespace BakalarskaPrace
                                 if (x > currentBitmap.PixelWidth / 2)
                                 {
                                     mirrorPostion = currentBitmap.PixelWidth - x - 1;
-                                    AddPixel(mirrorPostion, y, colorPallete[colorIndex]);
+                                    StrokeThicknessSetter(mirrorPostion, y, colorPallete[colorIndex]);
                                 }
                                 else
                                 {
                                     int dif = (currentBitmap.PixelWidth / 2) - x;
                                     mirrorPostion = (currentBitmap.PixelWidth / 2) + dif - 1;
-                                    AddPixel(mirrorPostion, y, colorPallete[colorIndex]);
+                                    StrokeThicknessSetter(mirrorPostion, y, colorPallete[colorIndex]);
                                 }
                             }
-                            AddPixel(x, y, colorPallete[colorIndex]);
-                            
+                            StrokeThicknessSetter(x, y, colorPallete[colorIndex]);
+
                             break;
                         }
                     case tools.eraser:
                         {
-                            byte[] ColorData = {0, 0, 0, 0}; // B G R
+                            byte[] ColorData = { 0, 0, 0, 0 }; // B G R
 
                             Int32Rect rect = new Int32Rect(x, y, 1, 1);
 
@@ -207,13 +197,52 @@ namespace BakalarskaPrace
                             {
                                 ColorSelector0.Background = brush;
                             }
-                            else 
+                            else
                             {
                                 ColorSelector1.Background = brush;
                             }
                             break;
                         }
                     default: break;
+                }
+            }
+        }
+
+        private void StrokeThicknessSetter(int x, int y, Color color)
+        {
+            if (strokeThickness == 1)
+            {
+                if (alphaBlending == true)
+                {
+                    Color currentPixelColor = GetPixelColor(x, y);
+                    Color colorMix = ColorMix(color, currentPixelColor);
+                    AddPixel(x, y, colorMix);
+                }
+                else
+                {
+                    AddPixel(x, y, color);
+                }
+            }
+            else
+            {
+                int size = strokeThickness - 1;
+                for (int i = -size; i < size; i++)
+                {
+                    for (int j = -size; j < size; j++)
+                    {
+                        // zkontrolovat jestli se pixel vejde do bitmapy
+                        if (x + i < width && x + i > -1 && y + j < height && y + j > -1)
+                        {
+                            Console.WriteLine(x + i);
+                            Color currentPixelColor = GetPixelColor(x + i, y + j);
+                            Color colorMix = ColorMix(color, currentPixelColor);
+                            AddPixel(x + i, y + j, colorMix);
+                        }
+                        else
+                        {
+                            AddPixel(x + i, y + j, color);
+                        }
+                    }
                 }
             }
         }
