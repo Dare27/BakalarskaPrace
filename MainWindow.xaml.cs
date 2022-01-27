@@ -27,6 +27,7 @@ namespace BakalarskaPrace
         Color[] colorPallete;
         int strokeThickness = 1;
         byte alpha = 255;
+        bool alphaBlending = true;
         enum tools {brush, eraser, symmetricBrush, colorPicker};
         tools currentTool = tools.brush;
         const double scaleRate = 1.1;
@@ -37,6 +38,8 @@ namespace BakalarskaPrace
         int defaultWidth = 64;
         int defaultHeight = 64;
         double currentScale = 1.0;
+        int mousePositionX = 0;
+        int mousePositionY = 0;
 
         private System.Windows.Threading.DispatcherTimer timer = new System.Windows.Threading.DispatcherTimer();
         int timerInterval = 1000; 
@@ -87,6 +90,9 @@ namespace BakalarskaPrace
             int x = (int)e.GetPosition(image).X;
             int y = (int)e.GetPosition(image).Y;
 
+            mousePositionX = x;
+            mousePositionY = y;
+
             LabelPosition.Content = "[" + width + ":" + height + "] " + x + ":" + y;
 
             //AddPixel(x, y, defaultPreviewColor);
@@ -98,21 +104,11 @@ namespace BakalarskaPrace
                     case tools.brush:
                         {
                             int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
-
-                            AddPixel(x, y, colorPallete[colorIndex]);
-                            if (System.Windows.Forms.Control.ModifierKeys != Keys.Control)
+                            if (alphaBlending == true)
                             {
                                 Color currentPixelColor = GetPixelColor(x, y);
                                 Color colorMix = ColorMix(colorPallete[colorIndex], currentPixelColor);
                                 AddPixel(x, y, colorMix);
-                                /*if (currentPixelColor.A != 0)
-                                {
-                                    
-                                }
-                                else
-                                {
-                                    AddPixel(x, y, colorPallete[colorIndex]);
-                                }*/
                             }
                             else
                             {
@@ -205,7 +201,6 @@ namespace BakalarskaPrace
                         {
                             int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
                             colorPallete[colorIndex] = GetPixelColor(x, y);
-                            Console.WriteLine(colorPallete[colorIndex]);
                             SolidColorBrush brush = new SolidColorBrush();
                             brush.Color = colorPallete[colorIndex];
                             if (colorIndex == 0)
@@ -271,14 +266,13 @@ namespace BakalarskaPrace
             return pix;
         }
 
-        public static Color ColorMix(Color firstColor, Color secondColor, float percent = .5f)
+        public static Color ColorMix(Color foregroundColor, Color backgroundColor, float percent = .5f)
         {
-            byte a = (byte)(firstColor.A + firstColor.A * (1 - firstColor.A));
-            byte r = (byte)((firstColor.R * firstColor.A + secondColor.R * secondColor.A * (1 - firstColor.A)) / a);
-            byte g = (byte)((firstColor.G * firstColor.A + secondColor.G * secondColor.A * (1 - firstColor.A)) / a);
-            byte b = (byte)((firstColor.B * firstColor.A + secondColor.B * secondColor.A * (1 - firstColor.A)) / a);
-
-            return Color.FromArgb(a,r,g,b);
+            byte a = (byte)(255 - ((255 - backgroundColor.A) *(255 - foregroundColor.A) / 255));
+            byte r = (byte)((backgroundColor.R * (255 - foregroundColor.A) + foregroundColor.R * foregroundColor.A) / 255);
+            byte g = (byte)((backgroundColor.G * (255 - foregroundColor.A) + foregroundColor.G * foregroundColor.A) / 255);
+            byte b = (byte)((backgroundColor.B * (255 - foregroundColor.A) + foregroundColor.B * foregroundColor.A) / 255);
+            return Color.FromArgb(a, r, g, b);
         }
 
         private void Eraser_Click(object sender, RoutedEventArgs e)
@@ -300,7 +294,7 @@ namespace BakalarskaPrace
         {
             UIElement element = (UIElement)sender;
             Point position = e.GetPosition(element);
-            MatrixTransform transform = (MatrixTransform)element.RenderTransform;
+            MatrixTransform transform = (MatrixTransform)paintSurface.RenderTransform;
             Matrix matrix = transform.Matrix;
             double scale;
 
@@ -314,7 +308,7 @@ namespace BakalarskaPrace
                 scale = 1.0 / 1.1;
             }
 
-            matrix.ScaleAtPrepend(scale, scale, position.X, position.Y);
+            matrix.ScaleAtPrepend(scale, scale, mousePositionX - paintSurface.Width / 2, mousePositionY - paintSurface.Height / 2);
             transform.Matrix = matrix;
 
             currentScale *= scale;
@@ -538,6 +532,16 @@ namespace BakalarskaPrace
         private void ColorPicker_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.colorPicker;
+        }
+
+        private void AlphaBlending_Checked(object sender, RoutedEventArgs e)
+        {
+            alphaBlending = true;
+        }
+
+        private void AlphaBlending_Unchecked(object sender, RoutedEventArgs e)
+        {
+            alphaBlending = false;
         }
     }
 }

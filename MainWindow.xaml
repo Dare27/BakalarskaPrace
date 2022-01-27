@@ -11,7 +11,7 @@
                         <TranslateTransform x:Name="Grid_TranslateTransform"/>
                     </Grid.RenderTransform>
                     <Canvas Name="paintSurface" MouseWheel="Canvas_MouseWheel" SnapsToDevicePixels="False"  Width="64" Height="64" HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
-                        <Image x:Name="image" Panel.ZIndex="10" MouseMove="Image_MouseMove" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" Width="64" Height="64" />
+                        <Image x:Name="image" Panel.ZIndex="10" MouseMove="Image_MouseMove" MouseDown="Image_MouseMove" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" Width="64" Height="64" />
                         <Canvas.Background>
                             <DrawingBrush TileMode="Tile" Viewport="0,0,8,8" ViewportUnits="Absolute">
                                 <DrawingBrush.Drawing>
@@ -48,6 +48,7 @@
 
                 <Button Content="Symmetric Brush" Canvas.Left="6" Canvas.Top="191" Width="66" Click="SymmetricBrush_Click"/>
                 <Button Content="Color Picker" Canvas.Left="78" Canvas.Top="191" Width="66" Click="ColorPicker_Click"/>
+                <CheckBox Content="AlphaBlending" Canvas.Left="6" Canvas.Top="216" Checked="AlphaBlending_Checked" Unchecked="AlphaBlending_Unchecked" IsChecked="True"/>
 
 
             </Canvas>
