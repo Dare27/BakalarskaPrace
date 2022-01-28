@@ -180,11 +180,29 @@ namespace BakalarskaPrace
                         }
                     case tools.eraser:
                         {
-                            byte[] ColorData = { 0, 0, 0, 0 }; // B G R
-
-                            Int32Rect rect = new Int32Rect(x, y, 1, 1);
-
-                            currentBitmap.WritePixels(rect, ColorData, 4, 0);
+                            if (strokeThickness == 1)
+                            {
+                                byte[] ColorData = { 0, 0, 0, 0 }; // B G R
+                                Int32Rect rect = new Int32Rect(x, y, 1, 1);
+                                currentBitmap.WritePixels(rect, ColorData, 4, 0);
+                            }
+                            else
+                            {
+                                int size = strokeThickness - 1;
+                                for (int i = -size; i < size; i++)
+                                {
+                                    for (int j = -size; j < size; j++)
+                                    {
+                                        // zkontrolovat jestli se pixel vejde do bitmapy
+                                        if (x + i < width && x + i > -1 && y + j < height && y + j > -1)
+                                        {
+                                            byte[] ColorData = { 0, 0, 0, 0 }; // B G R
+                                            Int32Rect rect = new Int32Rect(x + i, y + j, 1, 1);
+                                            currentBitmap.WritePixels(rect, ColorData, 4, 0);
+                                        }
+                                    }
+                                }
+                            }
                             break;
                         }
                     case tools.colorPicker:
@@ -233,14 +251,9 @@ namespace BakalarskaPrace
                         // zkontrolovat jestli se pixel vejde do bitmapy
                         if (x + i < width && x + i > -1 && y + j < height && y + j > -1)
                         {
-                            Console.WriteLine(x + i);
                             Color currentPixelColor = GetPixelColor(x + i, y + j);
                             Color colorMix = ColorMix(color, currentPixelColor);
                             AddPixel(x + i, y + j, colorMix);
-                        }
-                        else
-                        {
-                            AddPixel(x + i, y + j, color);
                         }
                     }
                 }
@@ -295,7 +308,7 @@ namespace BakalarskaPrace
             return pix;
         }
 
-        public static Color ColorMix(Color foregroundColor, Color backgroundColor, float percent = .5f)
+        public static Color ColorMix(Color foregroundColor, Color backgroundColor)
         {
             byte a = (byte)(255 - ((255 - backgroundColor.A) *(255 - foregroundColor.A) / 255));
             byte r = (byte)((backgroundColor.R * (255 - foregroundColor.A) + foregroundColor.R * foregroundColor.A) / 255);
