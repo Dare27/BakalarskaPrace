@@ -28,7 +28,7 @@ namespace BakalarskaPrace
         int strokeThickness = 1;
         byte alpha = 255;
         bool alphaBlending = true;
-        enum tools {brush, eraser, symmetricBrush, colorPicker, bucket};
+        enum tools {brush, eraser, symmetricBrush, colorPicker, bucket, specialBucket};
         tools currentTool = tools.brush;
         const double scaleRate = 1.1;
         Point gridDragStartPoint;
@@ -228,6 +228,32 @@ namespace BakalarskaPrace
                             FloodFill(x, y, colorPallete[colorIndex], seedColor);
                             break;
                         }
+                    case tools.specialBucket:
+                        {
+                            int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
+                            Color seedColor = GetPixelColor(x, y);
+                            Console.WriteLine("neco");
+                            for (int i = 0; i < width; i++)
+                            {
+                                for (int j = 0; j < height; j++)
+                                {
+                                    Color currentColor = GetPixelColor(i, j);
+                                    if (currentColor == seedColor)
+                                    {
+                                        if (alphaBlending == true)
+                                        {
+                                            Color colorMix = ColorMix(colorPallete[colorIndex], currentColor);
+                                            AddPixel(i, j, colorMix);
+                                        }
+                                        else
+                                        {
+                                            AddPixel(i, j, colorPallete[colorIndex]);
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+                        }
                     default: break;
                 }
             }
@@ -324,12 +350,22 @@ namespace BakalarskaPrace
             return Color.FromArgb(a, r, g, b);
         }
 
+        //V případě této aplikace musí být použit 4-straná verze tohoto algoritmu aby se zábránilo únikům v rozích
         private void FloodFill(int x, int y, Color newColor, Color seedColor)
         {
             Color currentColor = GetPixelColor(x, y);
             if (currentColor != newColor && currentColor == seedColor)
             {
-                AddPixel(x, y, newColor);
+                if (alphaBlending == true)
+                {
+                    Color colorMix = ColorMix(newColor, currentColor);
+                    AddPixel(x, y, colorMix);
+                }
+                else
+                {
+                    AddPixel(x, y, newColor);
+                }
+                
                 if (x - 1 > -1)
                 {
                     FloodFill(x - 1, y, newColor, seedColor);
@@ -346,10 +382,6 @@ namespace BakalarskaPrace
                 {
                     FloodFill(x, y + 1, newColor, seedColor);
                 }
-                /*FloodFill(x + 1, y + 1, newColor);
-                FloodFill(x - 1, y + 1, newColor);
-                FloodFill(x - 1, y - 1, newColor);
-                FloodFill(x + 1, y - 1, newColor);*/
             }
         }
 
@@ -371,6 +403,11 @@ namespace BakalarskaPrace
         private void Bucket_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.bucket;
+        }
+
+        private void SpecialBucket_Click(object sender, RoutedEventArgs e)
+        {
+            currentTool = tools.specialBucket;
         }
 
         private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)

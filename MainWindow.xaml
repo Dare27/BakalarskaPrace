@@ -22,16 +22,12 @@
                         <Canvas.RenderTransform>
                             <MatrixTransform/>
                         </Canvas.RenderTransform>
-
                     </Canvas>
-
                 </Grid>
                 <Label Name="LabelImages"  Content="1:1" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="0,0,0,52" />
                 <Label Name="LabelScale"  Content="1" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="0,0,0,26" />
                 <Label Name="LabelPosition"  Content="[width:height] x:y"  VerticalAlignment="Bottom" HorizontalAlignment="Left" RenderTransformOrigin="0.5,1"/>
             </Grid>
-
-
             <Canvas Background="#FF545454" HorizontalAlignment="Left" Width="155">
                 <Button Content="Save" Width="67" Click="Save_Click" Canvas.Top="10" Canvas.Left="5"/>
                 <Button Content="Load" Width="67" Click="Load_Click" Canvas.Top="10" Canvas.Left="77"/>
@@ -45,13 +41,11 @@
                         IsSnapToTickEnabled="True" TickFrequency="1" Width="138" Canvas.Top="167" Canvas.Left="5" />
                 <Button Content="Eraser" Canvas.Left="77" Canvas.Top="190" Width="66" Click="Eraser_Click"/>
                 <Button Content="Brush" Canvas.Left="5" Canvas.Top="190" Width="66" Click="Brush_Click"/>
-
                 <Button Content="Symmetric Brush" Canvas.Left="5" Canvas.Top="215" Width="66" Click="SymmetricBrush_Click"/>
                 <Button Content="Color Picker" Canvas.Left="77" Canvas.Top="215" Width="66" Click="ColorPicker_Click"/>
                 <CheckBox Content="AlphaBlending" Canvas.Left="5" Canvas.Top="77" Checked="AlphaBlending_Checked" Unchecked="AlphaBlending_Unchecked" IsChecked="True"/>
                 <Button Content="Bucket" Canvas.Left="5" Canvas.Top="240" Width="66" Click="Bucket_Click"/>
-
-
+                <Button Content="Special Bucket" Canvas.Left="77" Canvas.Top="240" Width="66" Click="SpecialBucket_Click"/>
             </Canvas>
             <Canvas Background="#FF545454" HorizontalAlignment="Right" Width="155">
                 <Image x:Name="animationPreview" Panel.ZIndex="10" MouseMove="Image_MouseMove" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" Width="137" Height="137" Canvas.Left="9" Canvas.Top="9" />
@@ -62,9 +56,7 @@
                 <Button Content="Create image" Width="140" Click="CreateImage_Click" Canvas.Top="205" Canvas.Left="10"/>
                 <Button Content="Duplicate image" Width="140" Click="DuplicateImage_Click" Canvas.Top="230" Canvas.Left="10"/>
                 <Button Content="Delete image" Width="140" Click="DeleteImage_Click" Canvas.Top="255" Canvas.Left="10"/>
-
             </Canvas>
-
         </Grid>
     </ScrollViewer>
 </Window>
