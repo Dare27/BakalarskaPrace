@@ -28,7 +28,7 @@ namespace BakalarskaPrace
         int strokeThickness = 1;
         byte alpha = 255;
         bool alphaBlending = true;
-        enum tools {brush, eraser, symmetricBrush, colorPicker};
+        enum tools {brush, eraser, symmetricBrush, colorPicker, bucket};
         tools currentTool = tools.brush;
         const double scaleRate = 1.1;
         Point gridDragStartPoint;
@@ -221,6 +221,13 @@ namespace BakalarskaPrace
                             }
                             break;
                         }
+                    case tools.bucket:
+                        {
+                            int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
+                            Color seedColor = GetPixelColor(x, y);
+                            FloodFill(x, y, colorPallete[colorIndex], seedColor);
+                            break;
+                        }
                     default: break;
                 }
             }
@@ -317,6 +324,35 @@ namespace BakalarskaPrace
             return Color.FromArgb(a, r, g, b);
         }
 
+        private void FloodFill(int x, int y, Color newColor, Color seedColor)
+        {
+            Color currentColor = GetPixelColor(x, y);
+            if (currentColor != newColor && currentColor == seedColor)
+            {
+                AddPixel(x, y, newColor);
+                if (x - 1 > -1)
+                {
+                    FloodFill(x - 1, y, newColor, seedColor);
+                }
+                if (x + 1 < width)
+                {
+                    FloodFill(x + 1, y, newColor, seedColor);
+                }
+                if (y - 1 > -1)
+                {
+                    FloodFill(x, y - 1, newColor, seedColor);
+                }
+                if (y + 1 < height)
+                {
+                    FloodFill(x, y + 1, newColor, seedColor);
+                }
+                /*FloodFill(x + 1, y + 1, newColor);
+                FloodFill(x - 1, y + 1, newColor);
+                FloodFill(x - 1, y - 1, newColor);
+                FloodFill(x + 1, y - 1, newColor);*/
+            }
+        }
+
         private void Eraser_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.eraser;
@@ -330,6 +366,11 @@ namespace BakalarskaPrace
         private void SymmetricBrush_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.symmetricBrush;
+        }
+
+        private void Bucket_Click(object sender, RoutedEventArgs e)
+        {
+            currentTool = tools.bucket;
         }
 
         private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)
