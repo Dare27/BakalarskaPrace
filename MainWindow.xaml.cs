@@ -28,7 +28,7 @@ namespace BakalarskaPrace
         int strokeThickness = 1;
         byte alpha = 255;
         bool alphaBlending = true;
-        enum tools {brush, eraser, symmetricBrush, colorPicker, bucket, specialBucket};
+        enum tools {brush, eraser, symmetricBrush, colorPicker, bucket, specialBucket, line};
         tools currentTool = tools.brush;
         const double scaleRate = 1.1;
         Point gridDragStartPoint;
@@ -39,9 +39,8 @@ namespace BakalarskaPrace
         int defaultHeight = 64;
         double currentScale = 1.0;
         int mousePositionX = 0, mousePositionY = 0;
-        int currentPreviewPixelX, currentPreviewPixelY;
-        int previousPreviewPixelX, previousPreviewPixelY;
-        Color previousColor;
+        int mouseDownX = 0, mouseDownY = 0;
+
         Color defaultPreviewColor;
 
         private System.Windows.Threading.DispatcherTimer timer = new System.Windows.Threading.DispatcherTimer();
@@ -86,6 +85,61 @@ namespace BakalarskaPrace
             animationPreview.Source = bitmaps[currentAnimationIndex];
         }
 
+        private unsafe void Image_MouseDown(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            int x = (int)e.GetPosition(image).X;
+            int y = (int)e.GetPosition(image).Y;
+
+            mousePositionX = x;
+            mousePositionY = y;
+
+            if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
+            {
+                int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
+                switch (currentTool)
+                {
+                    case tools.brush:
+                        {
+                            StrokeThicknessSetter(x, y, colorPallete[colorIndex]);
+                            break;
+                        }
+                    case tools.symmetricBrush:
+                        {
+                            SymmetricDrawing(x, y, colorPallete[colorIndex]);
+                            break;
+                        }
+                    case tools.eraser:
+                        {
+                            Eraser(x, y);
+                            break;
+                        }
+                    case tools.colorPicker:
+                        {
+                            ColorPicker(x, y, colorIndex);
+                            break;
+                        }
+                    case tools.bucket:
+                        {
+                            Color seedColor = GetPixelColor(x, y);
+                            FloodFill(x, y, colorPallete[colorIndex], seedColor);
+                            break;
+                        }
+                    case tools.specialBucket:
+                        {
+                            SpecialBucket(x, y, colorIndex);
+                            break;
+                        }
+                    case tools.line:
+                        {
+                            mouseDownX = x;
+                            mouseDownY = y;
+                            break;
+                        }
+                    default: break;
+                }
+            }
+        }
+
         private unsafe void Image_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
             int x = (int)e.GetPosition(image).X;
@@ -98,164 +152,83 @@ namespace BakalarskaPrace
 
             if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
             {
+                int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
                 switch (currentTool)
                 {
                     case tools.brush:
                         {
-                            int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
                             StrokeThicknessSetter(x, y, colorPallete[colorIndex]);
                             break;
                         }
                     case tools.symmetricBrush:
                         {
-                            int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
-                            int mirrorPostion = 0;
-
-                            //Chybí převrácení podle osy souměrnosti
-                            if (System.Windows.Forms.Control.ModifierKeys == Keys.Shift)
-                            {
-                                StrokeThicknessSetter(x, y, colorPallete[colorIndex]);
-
-                                //Použít horizontální a vertikální osu 
-                                if (x > currentBitmap.PixelWidth / 2)
-                                {
-                                    mirrorPostion = currentBitmap.PixelWidth - x - 1;
-                                    StrokeThicknessSetter(mirrorPostion, y, colorPallete[colorIndex]);
-                                }
-                                else
-                                {
-
-                                    int dif = (currentBitmap.PixelWidth / 2) - x;
-                                    mirrorPostion = (currentBitmap.PixelWidth / 2) + dif - 1;
-                                    StrokeThicknessSetter(mirrorPostion, y, colorPallete[colorIndex]);
-                                }
-
-                                if (y > currentBitmap.PixelHeight / 2)
-                                {
-                                    mirrorPostion = currentBitmap.PixelHeight - y - 1;
-                                    StrokeThicknessSetter(x, mirrorPostion, colorPallete[colorIndex]);
-                                }
-                                else
-                                {
-                                    int dif = (currentBitmap.PixelHeight / 2) - y;
-                                    mirrorPostion = (currentBitmap.PixelHeight / 2) + dif - 1;
-                                    StrokeThicknessSetter(x, mirrorPostion, colorPallete[colorIndex]);
-                                }
-                            }
-                            else if (System.Windows.Forms.Control.ModifierKeys == Keys.Control)
-                            {
-                                StrokeThicknessSetter(x, y, colorPallete[colorIndex]);
-
-                                //Použít horizontální osu 
-                                if (y > currentBitmap.PixelHeight / 2)
-                                {
-                                    mirrorPostion = currentBitmap.PixelHeight - y - 1;
-                                    StrokeThicknessSetter(x, mirrorPostion, colorPallete[colorIndex]);
-                                }
-                                else
-                                {
-                                    int dif = (currentBitmap.PixelHeight / 2) - y;
-                                    mirrorPostion = (currentBitmap.PixelHeight / 2) + dif - 1;
-                                    StrokeThicknessSetter(x, mirrorPostion, colorPallete[colorIndex]);
-                                }
-                            }
-                            else
-                            {
-                                //Použít vertikální osu 
-                                if (x > currentBitmap.PixelWidth / 2)
-                                {
-                                    mirrorPostion = currentBitmap.PixelWidth - x - 1;
-                                    StrokeThicknessSetter(mirrorPostion, y, colorPallete[colorIndex]);
-                                }
-                                else
-                                {
-                                    int dif = (currentBitmap.PixelWidth / 2) - x;
-                                    mirrorPostion = (currentBitmap.PixelWidth / 2) + dif - 1;
-                                    StrokeThicknessSetter(mirrorPostion, y, colorPallete[colorIndex]);
-                                }
-                            }
-                            StrokeThicknessSetter(x, y, colorPallete[colorIndex]);
-
+                            SymmetricDrawing(x, y, colorPallete[colorIndex]);
                             break;
                         }
                     case tools.eraser:
                         {
-                            if (strokeThickness == 1)
-                            {
-                                byte[] ColorData = { 0, 0, 0, 0 }; // B G R
-                                Int32Rect rect = new Int32Rect(x, y, 1, 1);
-                                currentBitmap.WritePixels(rect, ColorData, 4, 0);
-                            }
-                            else
-                            {
-                                int size = strokeThickness - 1;
-                                for (int i = -size; i < size; i++)
-                                {
-                                    for (int j = -size; j < size; j++)
-                                    {
-                                        // zkontrolovat jestli se pixel vejde do bitmapy
-                                        if (x + i < width && x + i > -1 && y + j < height && y + j > -1)
-                                        {
-                                            byte[] ColorData = { 0, 0, 0, 0 }; // B G R
-                                            Int32Rect rect = new Int32Rect(x + i, y + j, 1, 1);
-                                            currentBitmap.WritePixels(rect, ColorData, 4, 0);
-                                        }
-                                    }
-                                }
-                            }
+                            Eraser(x, y);
                             break;
                         }
                     case tools.colorPicker:
                         {
-                            int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
-                            colorPallete[colorIndex] = GetPixelColor(x, y);
-                            SolidColorBrush brush = new SolidColorBrush();
-                            brush.Color = colorPallete[colorIndex];
-                            if (colorIndex == 0)
-                            {
-                                ColorSelector0.Background = brush;
-                            }
-                            else
-                            {
-                                ColorSelector1.Background = brush;
-                            }
+                            ColorPicker(x, y, colorIndex);
                             break;
                         }
                     case tools.bucket:
                         {
-                            int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
                             Color seedColor = GetPixelColor(x, y);
                             FloodFill(x, y, colorPallete[colorIndex], seedColor);
                             break;
                         }
                     case tools.specialBucket:
                         {
-                            int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
-                            Color seedColor = GetPixelColor(x, y);
-                            Console.WriteLine("neco");
-                            for (int i = 0; i < width; i++)
-                            {
-                                for (int j = 0; j < height; j++)
-                                {
-                                    Color currentColor = GetPixelColor(i, j);
-                                    if (currentColor == seedColor)
-                                    {
-                                        if (alphaBlending == true)
-                                        {
-                                            Color colorMix = ColorMix(colorPallete[colorIndex], currentColor);
-                                            AddPixel(i, j, colorMix);
-                                        }
-                                        else
-                                        {
-                                            AddPixel(i, j, colorPallete[colorIndex]);
-                                        }
-                                    }
-                                }
-                            }
+                            SpecialBucket(x, y, colorIndex);
                             break;
                         }
                     default: break;
                 }
+            }
+        }
+
+        private unsafe void Image_MouseUp(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            int x = (int)e.GetPosition(image).X;
+            int y = (int)e.GetPosition(image).Y;
+
+            mousePositionX = x;
+            mousePositionY = y;
+
+            int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
+            switch (currentTool)
+            {
+                case tools.line:
+                    {
+                        if (Math.Abs((y - mouseDownY)) < Math.Abs((x - mouseDownX)))
+                        {
+                            if (mouseDownX > x)
+                            {
+                                drawLineBelow(x, y, mouseDownX, mouseDownY, colorPallete[0]);
+                            }
+                            else
+                            {
+                                drawLineBelow(mouseDownX, mouseDownY, x, y, colorPallete[0]);
+                            }
+                        }
+                        else
+                        {
+                            if (mouseDownY > y)
+                            {
+                                drawLineAbove(x, y, mouseDownX, mouseDownY, colorPallete[0]);
+                            }
+                            else
+                            {
+                                drawLineAbove(mouseDownX, mouseDownY, x, y, colorPallete[0]);
+                            }
+                        }
+                        break;
+                    }
+                default: break;
             }
         }
 
@@ -350,6 +323,102 @@ namespace BakalarskaPrace
             return Color.FromArgb(a, r, g, b);
         }
 
+        private void ColorPicker(int x, int y, int colorIndex) 
+        {
+            colorPallete[colorIndex] = GetPixelColor(x, y);
+            SolidColorBrush brush = new SolidColorBrush();
+            brush.Color = colorPallete[colorIndex];
+            if (colorIndex == 0)
+            {
+                ColorSelector0.Background = brush;
+            }
+            else
+            {
+                ColorSelector1.Background = brush;
+            }
+        }
+
+        //Bresenhaimův algoritmus pro kreslení přímek
+        private void drawLineBelow(int x0, int y0, int x1, int y1, Color color)
+        {
+            int dx = x1 - x0;
+            int dy = y1 - y0;
+            int yi = 1;
+
+            if (dy < 0)
+            { 
+                yi = -1;
+                dy = -dy;
+            }
+
+            int D = (2 * dy) - dx;
+            int y = y0;
+
+            for (int x = x0; x < x1; x++) 
+            {
+                Color currentColor = GetPixelColor(x, y);
+                if (alphaBlending == true)
+                {
+                    Color colorMix = ColorMix(color, currentColor);
+                    AddPixel(x, y, colorMix);
+                }
+                else
+                {
+                    AddPixel(x, y, color);
+                }
+
+                if (D > 0)
+                {
+                    y = y + yi;
+                    D = D + (2 * (dy - dx));
+                }
+                else
+                {
+                    D = D + 2 * dy;
+                }
+            }
+        }
+
+        private void drawLineAbove(int x0, int y0, int x1, int y1, Color color)
+        {
+            int dx = x1 - x0;
+            int dy = y1 - y0;
+            int xi = 1;
+
+            if (dx < 0) 
+            {
+                xi = -1;
+                dx = -dx;
+            }
+
+            int D = (2 * dx) - dy;
+            int x = x0;
+
+            for (int y = y0; y < y1; y++)
+            {
+                Color currentColor = GetPixelColor(x, y);
+                if (alphaBlending == true)
+                {
+                    Color colorMix = ColorMix(color, currentColor);
+                    AddPixel(x, y, colorMix);
+                }
+                else
+                {
+                    AddPixel(x, y, color);
+                }
+
+                if (D > 0) 
+                {
+                    x = x + xi;
+                    D = D + (2 * (dx - dy));
+                }
+                else
+                {
+                    D = D + 2 * dx;
+                }
+            }
+        }
+
         //V případě této aplikace musí být použit 4-straná verze tohoto algoritmu aby se zábránilo únikům v rozích
         private void FloodFill(int x, int y, Color newColor, Color seedColor)
         {
@@ -385,6 +454,128 @@ namespace BakalarskaPrace
             }
         }
 
+        private void SpecialBucket(int x, int y, int colorIndex) 
+        {
+            Color seedColor = GetPixelColor(x, y);
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < height; j++)
+                {
+                    Color currentColor = GetPixelColor(i, j);
+                    if (currentColor == seedColor)
+                    {
+                        if (alphaBlending == true)
+                        {
+                            Color colorMix = ColorMix(colorPallete[colorIndex], currentColor);
+                            AddPixel(i, j, colorMix);
+                        }
+                        else
+                        {
+                            AddPixel(i, j, colorPallete[colorIndex]);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void SymmetricDrawing(int x, int y, Color color) 
+        {
+            int mirrorPostion = 0;
+
+            //Chybí převrácení podle osy souměrnosti
+            if (System.Windows.Forms.Control.ModifierKeys == Keys.Shift)
+            {
+                StrokeThicknessSetter(x, y, color);
+
+                //Použít horizontální a vertikální osu 
+                if (x > currentBitmap.PixelWidth / 2)
+                {
+                    mirrorPostion = currentBitmap.PixelWidth - x - 1;
+                    StrokeThicknessSetter(mirrorPostion, y, color);
+                }
+                else
+                {
+
+                    int dif = (currentBitmap.PixelWidth / 2) - x;
+                    mirrorPostion = (currentBitmap.PixelWidth / 2) + dif - 1;
+                    StrokeThicknessSetter(mirrorPostion, y, color);
+                }
+
+                if (y > currentBitmap.PixelHeight / 2)
+                {
+                    mirrorPostion = currentBitmap.PixelHeight - y - 1;
+                    StrokeThicknessSetter(x, mirrorPostion, color);
+                }
+                else
+                {
+                    int dif = (currentBitmap.PixelHeight / 2) - y;
+                    mirrorPostion = (currentBitmap.PixelHeight / 2) + dif - 1;
+                    StrokeThicknessSetter(x, mirrorPostion, color);
+                }
+            }
+            else if (System.Windows.Forms.Control.ModifierKeys == Keys.Control)
+            {
+                StrokeThicknessSetter(x, y, color);
+
+                //Použít horizontální osu 
+                if (y > currentBitmap.PixelHeight / 2)
+                {
+                    mirrorPostion = currentBitmap.PixelHeight - y - 1;
+                    StrokeThicknessSetter(x, mirrorPostion, color);
+                }
+                else
+                {
+                    int dif = (currentBitmap.PixelHeight / 2) - y;
+                    mirrorPostion = (currentBitmap.PixelHeight / 2) + dif - 1;
+                    StrokeThicknessSetter(x, mirrorPostion, color);
+                }
+            }
+            else
+            {
+                //Použít vertikální osu 
+                if (x > currentBitmap.PixelWidth / 2)
+                {
+                    mirrorPostion = currentBitmap.PixelWidth - x - 1;
+                    StrokeThicknessSetter(mirrorPostion, y, color);
+                }
+                else
+                {
+                    int dif = (currentBitmap.PixelWidth / 2) - x;
+                    mirrorPostion = (currentBitmap.PixelWidth / 2) + dif - 1;
+                    StrokeThicknessSetter(mirrorPostion, y, color);
+                }
+            }
+            StrokeThicknessSetter(x, y, color);
+
+        }
+
+        private void Eraser(int x, int y) 
+        {
+            if (strokeThickness == 1)
+            {
+                byte[] ColorData = { 0, 0, 0, 0 }; // B G R
+                Int32Rect rect = new Int32Rect(x, y, 1, 1);
+                currentBitmap.WritePixels(rect, ColorData, 4, 0);
+            }
+            else
+            {
+                int size = strokeThickness - 1;
+                for (int i = -size; i < size; i++)
+                {
+                    for (int j = -size; j < size; j++)
+                    {
+                        // zkontrolovat jestli se pixel vejde do bitmapy
+                        if (x + i < width && x + i > -1 && y + j < height && y + j > -1)
+                        {
+                            byte[] ColorData = { 0, 0, 0, 0 }; // B G R
+                            Int32Rect rect = new Int32Rect(x + i, y + j, 1, 1);
+                            currentBitmap.WritePixels(rect, ColorData, 4, 0);
+                        }
+                    }
+                }
+            }
+        }
+
         private void Eraser_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.eraser;
@@ -408,6 +599,11 @@ namespace BakalarskaPrace
         private void SpecialBucket_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.specialBucket;
+        }
+
+        private void Line_Click(object sender, RoutedEventArgs e)
+        {
+            currentTool = tools.line;
         }
 
         private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)

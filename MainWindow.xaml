@@ -11,7 +11,7 @@
                         <TranslateTransform x:Name="Grid_TranslateTransform"/>
                     </Grid.RenderTransform>
                     <Canvas Name="paintSurface" MouseWheel="Canvas_MouseWheel" SnapsToDevicePixels="False"  Width="64" Height="64" HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
-                        <Image x:Name="image" Panel.ZIndex="10" MouseMove="Image_MouseMove" MouseDown="Image_MouseMove" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" Width="64" Height="64" />
+                        <Image x:Name="image" Panel.ZIndex="10" MouseMove="Image_MouseMove" MouseDown="Image_MouseDown" MouseUp="Image_MouseUp" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" Width="64" Height="64" />
                         <Canvas.Background>
                             <DrawingBrush TileMode="Tile" Viewport="0,0,8,8" ViewportUnits="Absolute">
                                 <DrawingBrush.Drawing>
@@ -46,6 +46,7 @@
                 <CheckBox Content="AlphaBlending" Canvas.Left="5" Canvas.Top="77" Checked="AlphaBlending_Checked" Unchecked="AlphaBlending_Unchecked" IsChecked="True"/>
                 <Button Content="Bucket" Canvas.Left="5" Canvas.Top="240" Width="66" Click="Bucket_Click"/>
                 <Button Content="Special Bucket" Canvas.Left="77" Canvas.Top="240" Width="66" Click="SpecialBucket_Click"/>
+                <Button Content="Line" Canvas.Left="5" Canvas.Top="265" Width="66" Click="Line_Click"/>
             </Canvas>
             <Canvas Background="#FF545454" HorizontalAlignment="Right" Width="155">
                 <Image x:Name="animationPreview" Panel.ZIndex="10" MouseMove="Image_MouseMove" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" Width="137" Height="137" Canvas.Left="9" Canvas.Top="9" />
