@@ -241,6 +241,7 @@ namespace BakalarskaPrace
 
         private void StrokeThicknessSetter(int x, int y, Color color)
         {
+            //Při kreslení přímek se musí již navštívené pixely přeskočit, aby nedošlo k nerovnoměrně vybarveným přímkám při velikostech > 1 a alpha < 255
             if (strokeThickness == 1)
             {
                 if (alphaBlending == true)
@@ -363,16 +364,7 @@ namespace BakalarskaPrace
 
             for (int x = x0; x < x1; x++) 
             {
-                Color currentColor = GetPixelColor(x, y);
-                if (alphaBlending == true)
-                {
-                    Color colorMix = ColorMix(color, currentColor);
-                    AddPixel(x, y, colorMix);
-                }
-                else
-                {
-                    AddPixel(x, y, color);
-                }
+                StrokeThicknessSetter(x, y, color);
 
                 if (D > 0)
                 {
@@ -403,16 +395,7 @@ namespace BakalarskaPrace
 
             for (int y = y0; y < y1; y++)
             {
-                Color currentColor = GetPixelColor(x, y);
-                if (alphaBlending == true)
-                {
-                    Color colorMix = ColorMix(color, currentColor);
-                    AddPixel(x, y, colorMix);
-                }
-                else
-                {
-                    AddPixel(x, y, color);
-                }
+                StrokeThicknessSetter(x, y, color);
 
                 if (D > 0) 
                 {
@@ -446,7 +429,7 @@ namespace BakalarskaPrace
 
             for (int i = 1; i <= maxDistance; i++)
             {
-                AddPixel(x, y, color);
+                StrokeThicknessSetter(x, y, color);
 
                 if (Math.Sqrt((Math.Pow(x0 - x, 2) + Math.Pow(y0 - y, 2))) >= maxDistance)
                 {
