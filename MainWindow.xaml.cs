@@ -204,26 +204,33 @@ namespace BakalarskaPrace
             {
                 case tools.line:
                     {
-                        if (Math.Abs((y - mouseDownY)) < Math.Abs((x - mouseDownX)))
+                        if (System.Windows.Forms.Control.ModifierKeys == Keys.Control)
                         {
-                            if (mouseDownX > x)
-                            {
-                                drawLineBelow(x, y, mouseDownX, mouseDownY, colorPallete[0]);
-                            }
-                            else
-                            {
-                                drawLineBelow(mouseDownX, mouseDownY, x, y, colorPallete[0]);
-                            }
+                            DrawStraightLine(mouseDownX, mouseDownY, x, y, colorPallete[0]);
                         }
                         else
                         {
-                            if (mouseDownY > y)
+                            if (Math.Abs((y - mouseDownY)) < Math.Abs((x - mouseDownX)))
                             {
-                                drawLineAbove(x, y, mouseDownX, mouseDownY, colorPallete[0]);
+                                if (mouseDownX > x)
+                                {
+                                    drawLineBelow(x, y, mouseDownX, mouseDownY, colorPallete[0]);
+                                }
+                                else
+                                {
+                                    drawLineBelow(mouseDownX, mouseDownY, x, y, colorPallete[0]);
+                                }
                             }
                             else
                             {
-                                drawLineAbove(mouseDownX, mouseDownY, x, y, colorPallete[0]);
+                                if (mouseDownY > y)
+                                {
+                                    drawLineAbove(x, y, mouseDownX, mouseDownY, colorPallete[0]);
+                                }
+                                else
+                                {
+                                    drawLineAbove(mouseDownX, mouseDownY, x, y, colorPallete[0]);
+                                }
                             }
                         }
                         break;
@@ -415,6 +422,70 @@ namespace BakalarskaPrace
                 else
                 {
                     D = D + 2 * dx;
+                }
+            }
+        }
+
+        private void DrawStraightLine(int x0, int y0, int x1,  int y1, Color color)
+        {
+            int dx = Math.Abs(x1 - x0) + 1;
+            int dy = Math.Abs(y1 - y0) + 1;
+            
+            //Kroky musí mít rovnoměrné rozdělení
+            double ratio = Math.Max(dx, dy) / Math.Min(dx, dy);
+            double pixelStep = Math.Round(ratio);
+
+            if (pixelStep > Math.Min(dx, dy))
+            {
+                pixelStep = Math.Max(width, height);
+            }
+
+            int maxDistance = (int)Math.Sqrt((Math.Pow(x0 - x1, 2) + Math.Pow(y0 - y1, 2)));
+            int x = x0;
+            int y = y0;
+
+            for (int i = 1; i <= maxDistance; i++)
+            {
+                AddPixel(x, y, color);
+
+                if (Math.Sqrt((Math.Pow(x0 - x, 2) + Math.Pow(y0 - y, 2))) >= maxDistance)
+                {
+                    break;
+                }
+
+                bool isAtStep;
+
+                if (i % pixelStep == 0)
+                {
+                    isAtStep = true;
+                }
+                else
+                {
+                    isAtStep = false;
+                }
+
+                if (dx >= dy || isAtStep)
+                {
+                    if (x0 < x1)
+                    {
+                        x += 1;
+                    }
+                    else
+                    {
+                        x -= 1;
+                    }
+                }
+
+                if (dy >= dx || isAtStep)
+                {
+                    if (y0 < y1)
+                    {
+                        y += 1;
+                    }
+                    else
+                    {
+                        y -= 1;
+                    }
                 }
             }
         }
