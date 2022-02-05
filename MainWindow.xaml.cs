@@ -28,7 +28,7 @@ namespace BakalarskaPrace
         int strokeThickness = 1;
         byte alpha = 255;
         bool alphaBlending = true;
-        enum tools {brush, eraser, symmetricBrush, colorPicker, bucket, specialBucket, line};
+        enum tools {brush, eraser, symmetricBrush, colorPicker, bucket, specialBucket, line, ellipsis};
         tools currentTool = tools.brush;
         const double scaleRate = 1.1;
         Point gridDragStartPoint;
@@ -135,6 +135,12 @@ namespace BakalarskaPrace
                             mouseDownY = y;
                             break;
                         }
+                    case tools.ellipsis:
+                        {
+                            mouseDownX = x;
+                            mouseDownY = y;
+                            break;
+                        }
                     default: break;
                 }
             }
@@ -235,7 +241,49 @@ namespace BakalarskaPrace
                         }
                         break;
                     }
-                default: break;
+                case tools.ellipsis:
+                    {
+                        if (System.Windows.Forms.Control.ModifierKeys == Keys.Control)
+                        {
+                            //Kreslit kruh
+                            int centerX = (mouseDownX + x) / 2;
+                            int centerY = (mouseDownY + y) / 2;
+                            int radX = centerX - Math.Min(mouseDownX, x);
+                            int radY = centerY - Math.Min(mouseDownY, y);
+
+                            int rad = Math.Min(radX, radY);
+
+                            Console.WriteLine(mouseDownX + " " + mouseDownY);
+                            Console.WriteLine(x + " " + y);
+                            Console.WriteLine(centerX + " " + centerY + " " + rad);
+                            midPointCircleDraw(centerX, centerY, rad, colorPallete[0]);
+
+                            /*if (radX < radY)
+                            {
+                                if((mouseDownX + x) / 2 % 2 == 0)
+                                {
+                                    radX -= 1;
+                                }
+                                Console.WriteLine(centerX + " " + centerY + " " + radX);
+                                midPointCircleDraw(centerX, centerY, radX, colorPallete[0]);
+                            }
+                            else
+                            {
+                                if ((mouseDownY + y) / 2 % 2 == 0)
+                                {
+                                    radY -= 1;
+                                }
+                                Console.WriteLine(centerX + " " + centerY + " " + radY);
+                                
+                            }*/
+                        }
+                        else
+                        {
+                            //Kreslit elipsu
+                        }
+                        break;
+                    }
+                    default: break;
             }
         }
 
@@ -473,6 +521,67 @@ namespace BakalarskaPrace
             }
         }
 
+        //V případě této aplikace je nutné používat Mid-Point algoritmus, protože Bresenhaimův algoritmus nedosahuje při nízkých velikostech kruhu vzhledného výsledku
+        private void midPointCircleDraw(int centerX, int centerY, int rad, Color color)
+        {
+            int x = rad, y = 0;
+
+            // When radius is zero only a single point will be printed
+            if (rad > 0)
+            {
+                AddPixel(x + centerX, y + centerY, color);
+                AddPixel(x + centerX - rad, centerY - rad, color);
+                AddPixel(y + centerX, x + centerY, color);
+                AddPixel(-rad + centerX, x + centerY - rad, color);
+
+                Console.WriteLine("1. " + (x + centerX) + ", " + (y + centerY), color);
+                Console.WriteLine("2. " + (x + centerX - rad) + ", " + (centerY - rad), color);
+                Console.WriteLine("3. " + (y + centerX) + ", " + (x + centerY), color);
+                Console.WriteLine("4. " + (-rad + centerX) + ", " + (x + centerY - rad), color);
+            }
+            else 
+            {
+                AddPixel(centerX, centerY, color);
+            }
+            
+            // Initialising the value of P
+            int P = 1 - rad;
+            while (x > y)
+            {
+                y++;
+
+                // Mid-point is inside or on the perimeter
+                if (P <= 0)
+                    P = P + 2 * y + 1;
+
+                // Mid-point is outside the perimeter
+                else
+                {
+                    x--;
+                    P = P + 2 * y - 2 * x + 1;
+                }
+
+                // All the perimeter points have already been printed
+                if (x < y)
+                    break;
+
+                // Printing the generated point and its reflection in the other octants after translation
+                AddPixel(x + centerX, y + centerY, color);
+                AddPixel(-x + centerX, y + centerY, color);
+                AddPixel(x + centerX, -y + centerY, color);
+                AddPixel(-x + centerX, -y + centerY, color);
+
+                // If the generated point is on the line x = y then the perimeter points have already been printed
+                if (x != y)
+                {
+                    AddPixel(y + centerX, x + centerY, color);
+                    AddPixel(-y + centerX, x + centerY, color);
+                    AddPixel(y + centerX, -x + centerY, color);
+                    AddPixel(-y + centerX, -x + centerY, color);
+                }
+            }
+        }
+
         //V případě této aplikace musí být použit 4-straná verze tohoto algoritmu aby se zábránilo únikům v rozích
         private void FloodFill(int x, int y, Color newColor, Color seedColor)
         {
@@ -658,6 +767,11 @@ namespace BakalarskaPrace
         private void Line_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.line;
+        }
+
+        private void Ellipses_Click(object sender, RoutedEventArgs e)
+        {
+            currentTool = tools.ellipsis;
         }
 
         private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)
