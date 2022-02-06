@@ -28,7 +28,7 @@ namespace BakalarskaPrace
         int strokeThickness = 1;
         byte alpha = 255;
         bool alphaBlending = true;
-        enum tools {brush, eraser, symmetricBrush, colorPicker, bucket, specialBucket, line, ellipsis, shading, rectangle};
+        enum tools {brush, eraser, symmetricBrush, colorPicker, bucket, specialBucket, line, ellipsis, shading, rectangle, dithering};
         tools currentTool = tools.brush;
         const double scaleRate = 1.1;
         Point gridDragStartPoint;
@@ -147,6 +147,11 @@ namespace BakalarskaPrace
                             mouseDownY = y;
                             break;
                         }
+                    case tools.dithering:
+                        {
+                            Dithering(x, y, colorPallete[0], colorPallete[1]);
+                            break;
+                        }
                     default: break;
                 }
             }
@@ -196,6 +201,11 @@ namespace BakalarskaPrace
                     case tools.specialBucket:
                         {
                             SpecialBucket(x, y, colorIndex);
+                            break;
+                        }
+                    case tools.dithering:
+                        {
+                            Dithering(x, y, colorPallete[0], colorPallete[1]);
                             break;
                         }
                     default: break;
@@ -610,6 +620,18 @@ namespace BakalarskaPrace
             StrokeThicknessSetter(x1, y1, color);
         }
 
+        private void Dithering(int x, int y, Color color01, Color color02) 
+        {
+            if ((x + y) % 2 == 0)
+            {
+                AddPixel(x, y, color01);
+            }
+            else 
+            {
+                AddPixel(x, y, color02);
+            }
+        }
+
         //V případě této aplikace musí být použit 4-straná verze tohoto algoritmu aby se zábránilo únikům v rozích
         private void FloodFill(int x, int y, Color newColor, Color seedColor)
         {
@@ -810,6 +832,11 @@ namespace BakalarskaPrace
         private void Rectangle_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.rectangle;
+        }
+
+        private void Dithering_Click(object sender, RoutedEventArgs e)
+        {
+            currentTool = tools.dithering;
         }
 
         private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)

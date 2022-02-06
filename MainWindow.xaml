@@ -50,6 +50,7 @@
                 <Button Content="Ellipses" Canvas.Left="77" Canvas.Top="292" Width="66" Click="Ellipses_Click"/>
                 <Button Content="Shading" Canvas.Left="5" Canvas.Top="215" Width="66" Click="Shading_Click"/>
                 <Button Content="Rectangle" Canvas.Left="5" Canvas.Top="292" Width="66" Click="Rectangle_Click"/>
+                <Button Content="Dithering" Canvas.Left="5" Canvas.Top="317" Width="66" Click="Dithering_Click"/>
             </Canvas>
             <Canvas Background="#FF545454" HorizontalAlignment="Right" Width="155">
                 <Image x:Name="animationPreview" Panel.ZIndex="10" MouseMove="Image_MouseMove" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" Width="137" Height="137" Canvas.Left="9" Canvas.Top="9" />
