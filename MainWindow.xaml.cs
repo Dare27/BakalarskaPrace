@@ -28,7 +28,7 @@ namespace BakalarskaPrace
         int strokeThickness = 1;
         byte alpha = 255;
         bool alphaBlending = true;
-        enum tools {brush, eraser, symmetricBrush, colorPicker, bucket, specialBucket, line, ellipsis};
+        enum tools {brush, eraser, symmetricBrush, colorPicker, bucket, specialBucket, line, ellipsis, shading, rectangle};
         tools currentTool = tools.brush;
         const double scaleRate = 1.1;
         Point gridDragStartPoint;
@@ -136,6 +136,12 @@ namespace BakalarskaPrace
                             break;
                         }
                     case tools.ellipsis:
+                        {
+                            mouseDownX = x;
+                            mouseDownY = y;
+                            break;
+                        }
+                    case tools.rectangle:
                         {
                             mouseDownX = x;
                             mouseDownY = y;
@@ -250,32 +256,8 @@ namespace BakalarskaPrace
                             int centerY = (mouseDownY + y) / 2;
                             int radX = centerX - Math.Min(mouseDownX, x);
                             int radY = centerY - Math.Min(mouseDownY, y);
-
                             int rad = Math.Min(radX, radY);
-
-                            Console.WriteLine(mouseDownX + " " + mouseDownY);
-                            Console.WriteLine(x + " " + y);
-                            Console.WriteLine(centerX + " " + centerY + " " + rad);
                             midPointCircleDraw(centerX, centerY, rad, colorPallete[0]);
-
-                            /*if (radX < radY)
-                            {
-                                if((mouseDownX + x) / 2 % 2 == 0)
-                                {
-                                    radX -= 1;
-                                }
-                                Console.WriteLine(centerX + " " + centerY + " " + radX);
-                                midPointCircleDraw(centerX, centerY, radX, colorPallete[0]);
-                            }
-                            else
-                            {
-                                if ((mouseDownY + y) / 2 % 2 == 0)
-                                {
-                                    radY -= 1;
-                                }
-                                Console.WriteLine(centerX + " " + centerY + " " + radY);
-                                
-                            }*/
                         }
                         else
                         {
@@ -283,7 +265,20 @@ namespace BakalarskaPrace
                         }
                         break;
                     }
-                    default: break;
+                case tools.rectangle:
+                    {
+                        if (System.Windows.Forms.Control.ModifierKeys == Keys.Control)
+                        {
+                            //Kreslit čtverec
+                        }
+                        else
+                        {
+                            //Kreslit obdélník
+                            DrawRectangle(mouseDownX, mouseDownY, x, y, colorPallete[0]);
+                        }
+                        break;
+                    }
+                default: break;
             }
         }
 
@@ -529,19 +524,14 @@ namespace BakalarskaPrace
             // When radius is zero only a single point will be printed
             if (rad > 0)
             {
-                AddPixel(x + centerX, y + centerY, color);
-                AddPixel(x + centerX - rad, centerY - rad, color);
-                AddPixel(y + centerX, x + centerY, color);
-                AddPixel(-rad + centerX, x + centerY - rad, color);
-
-                Console.WriteLine("1. " + (x + centerX) + ", " + (y + centerY), color);
-                Console.WriteLine("2. " + (x + centerX - rad) + ", " + (centerY - rad), color);
-                Console.WriteLine("3. " + (y + centerX) + ", " + (x + centerY), color);
-                Console.WriteLine("4. " + (-rad + centerX) + ", " + (x + centerY - rad), color);
+                StrokeThicknessSetter(x + centerX, y + centerY, color);
+                StrokeThicknessSetter(x + centerX - rad, centerY - rad, color);
+                StrokeThicknessSetter(y + centerX, x + centerY, color);
+                StrokeThicknessSetter(-rad + centerX, x + centerY - rad, color);
             }
             else 
             {
-                AddPixel(centerX, centerY, color);
+                StrokeThicknessSetter(centerX, centerY, color);
             }
             
             // Initialising the value of P
@@ -566,20 +556,58 @@ namespace BakalarskaPrace
                     break;
 
                 // Printing the generated point and its reflection in the other octants after translation
-                AddPixel(x + centerX, y + centerY, color);
-                AddPixel(-x + centerX, y + centerY, color);
-                AddPixel(x + centerX, -y + centerY, color);
-                AddPixel(-x + centerX, -y + centerY, color);
+                StrokeThicknessSetter(x + centerX, y + centerY, color);
+                StrokeThicknessSetter(-x + centerX, y + centerY, color);
+                StrokeThicknessSetter(x + centerX, -y + centerY, color);
+                StrokeThicknessSetter(-x + centerX, -y + centerY, color);
 
                 // If the generated point is on the line x = y then the perimeter points have already been printed
                 if (x != y)
                 {
-                    AddPixel(y + centerX, x + centerY, color);
-                    AddPixel(-y + centerX, x + centerY, color);
-                    AddPixel(y + centerX, -x + centerY, color);
-                    AddPixel(-y + centerX, -x + centerY, color);
+                    StrokeThicknessSetter(y + centerX, x + centerY, color);
+                    StrokeThicknessSetter(-y + centerX, x + centerY, color);
+                    StrokeThicknessSetter(y + centerX, -x + centerY, color);
+                    StrokeThicknessSetter(-y + centerX, -x + centerY, color);
                 }
             }
+        }
+
+        private void DrawRectangle(int x0, int y0, int x1, int y1, Color color) 
+        {
+            if (y0 < y1)
+            {
+                for (int y = y0; y < y1; y++)
+                {
+                    StrokeThicknessSetter(x0, y, color);
+                    StrokeThicknessSetter(x1, y, color);
+                }
+            }
+            else 
+            {
+                for (int y = y0; y > y1; y--)
+                {
+                    StrokeThicknessSetter(x0, y, color);
+                    StrokeThicknessSetter(x1, y, color);
+                }
+            }
+
+            if (x0 < x1)
+            {
+                for (int x = x0; x < x1; x++)
+                {
+                    StrokeThicknessSetter(x, y0, color);
+                    StrokeThicknessSetter(x, y1, color);
+                }
+            }
+            else 
+            {
+                for (int x = x0; x > x1; x--)
+                {
+                    StrokeThicknessSetter(x, y0, color);
+                    StrokeThicknessSetter(x, y1, color);
+                }
+            }
+            StrokeThicknessSetter(x1, y1, color);
         }
 
         //V případě této aplikace musí být použit 4-straná verze tohoto algoritmu aby se zábránilo únikům v rozích
@@ -772,6 +800,16 @@ namespace BakalarskaPrace
         private void Ellipses_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.ellipsis;
+        }
+
+        private void Shading_Click(object sender, RoutedEventArgs e)
+        {
+            currentTool = tools.shading;
+        }
+
+        private void Rectangle_Click(object sender, RoutedEventArgs e)
+        {
+            currentTool = tools.rectangle;
         }
 
         private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)
