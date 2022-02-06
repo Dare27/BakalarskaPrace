@@ -28,7 +28,7 @@ namespace BakalarskaPrace
         int strokeThickness = 1;
         byte alpha = 255;
         bool alphaBlending = true;
-        enum tools {brush, eraser, symmetricBrush, colorPicker, bucket, specialBucket, line, ellipsis, shading, rectangle, dithering};
+        enum tools {brush, eraser, symmetricBrush, colorPicker, bucket, specialBucket, line, ellipsis, shading, rectangle, dithering, move};
         tools currentTool = tools.brush;
         const double scaleRate = 1.1;
         Point gridDragStartPoint;
@@ -280,6 +280,32 @@ namespace BakalarskaPrace
                         if (System.Windows.Forms.Control.ModifierKeys == Keys.Control)
                         {
                             //Kreslit čtverec
+                            int xDistance = Math.Abs(mouseDownX - x);
+                            int yDistance = Math.Abs(mouseDownY - y);
+                            int dif = Math.Abs(yDistance - xDistance); 
+
+                            if (xDistance < yDistance)
+                            {
+                                if (mouseDownY < y)
+                                {
+                                    DrawRectangle(mouseDownX, mouseDownY, x, y - dif, colorPallete[0]);
+                                }
+                                else 
+                                {
+                                    DrawRectangle(mouseDownX, mouseDownY - dif, x, y, colorPallete[0]);
+                                }
+                            }
+                            else 
+                            {
+                                if (mouseDownX < x)
+                                {
+                                    DrawRectangle(mouseDownX, mouseDownY, x - dif, y, colorPallete[0]);
+                                }
+                                else
+                                {
+                                    DrawRectangle(mouseDownX - dif, mouseDownY, x, y, colorPallete[0]);
+                                }
+                            }
                         }
                         else
                         {
@@ -837,6 +863,11 @@ namespace BakalarskaPrace
         private void Dithering_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.dithering;
+        }
+
+        private void Move_Click(object sender, RoutedEventArgs e)
+        {
+            currentTool = tools.move;
         }
 
         private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)
