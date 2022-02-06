@@ -25,6 +25,7 @@ namespace BakalarskaPrace
         private readonly WriteableBitmap defaultBitmap;
         int colorPalleteSize = 2;
         Color[] colorPallete;
+        ColorSpaceConvertor colorSpaceConvertor = new ColorSpaceConvertor();
         int strokeThickness = 1;
         byte alpha = 255;
         bool alphaBlending = true;
@@ -40,6 +41,7 @@ namespace BakalarskaPrace
         double currentScale = 1.0;
         int mousePositionX = 0, mousePositionY = 0;
         int mouseDownX = 0, mouseDownY = 0;
+        double shadingStep = .1;
 
         Color defaultPreviewColor;
 
@@ -152,6 +154,20 @@ namespace BakalarskaPrace
                             Dithering(x, y, colorPallete[0], colorPallete[1]);
                             break;
                         }
+                    case tools.shading:
+                        {
+                            if (System.Windows.Forms.Control.ModifierKeys == Keys.Control)
+                            {
+                                //Zesvětlení
+                                Lighten(x, y);
+                            }
+                            else
+                            {
+                                //Ztmavení 
+                                Darken(x, y);
+                            }
+                            break;
+                        }
                     default: break;
                 }
             }
@@ -228,7 +244,7 @@ namespace BakalarskaPrace
                     {
                         if (System.Windows.Forms.Control.ModifierKeys == Keys.Control)
                         {
-                            DrawStraightLine(mouseDownX, mouseDownY, x, y, colorPallete[0]);
+                            DrawStraightLine(mouseDownX, mouseDownY, x, y, colorPallete[colorIndex]);
                         }
                         else
                         {
@@ -236,22 +252,22 @@ namespace BakalarskaPrace
                             {
                                 if (mouseDownX > x)
                                 {
-                                    drawLineBelow(x, y, mouseDownX, mouseDownY, colorPallete[0]);
+                                    drawLineBelow(x, y, mouseDownX, mouseDownY, colorPallete[colorIndex]);
                                 }
                                 else
                                 {
-                                    drawLineBelow(mouseDownX, mouseDownY, x, y, colorPallete[0]);
+                                    drawLineBelow(mouseDownX, mouseDownY, x, y, colorPallete[colorIndex]);
                                 }
                             }
                             else
                             {
                                 if (mouseDownY > y)
                                 {
-                                    drawLineAbove(x, y, mouseDownX, mouseDownY, colorPallete[0]);
+                                    drawLineAbove(x, y, mouseDownX, mouseDownY, colorPallete[colorIndex]);
                                 }
                                 else
                                 {
-                                    drawLineAbove(mouseDownX, mouseDownY, x, y, colorPallete[0]);
+                                    drawLineAbove(mouseDownX, mouseDownY, x, y, colorPallete[colorIndex]);
                                 }
                             }
                         }
@@ -267,7 +283,7 @@ namespace BakalarskaPrace
                             int radX = centerX - Math.Min(mouseDownX, x);
                             int radY = centerY - Math.Min(mouseDownY, y);
                             int rad = Math.Min(radX, radY);
-                            midPointCircleDraw(centerX, centerY, rad, colorPallete[0]);
+                            midPointCircleDraw(centerX, centerY, rad, colorPallete[colorIndex]);
                         }
                         else
                         {
@@ -284,33 +300,34 @@ namespace BakalarskaPrace
                             int yDistance = Math.Abs(mouseDownY - y);
                             int dif = Math.Abs(yDistance - xDistance); 
 
+                            //Delší stranu je nutné zkrátit o rozdíl, poté se dá použít stejná funkce pro kreslení obdélníků 
                             if (xDistance < yDistance)
                             {
                                 if (mouseDownY < y)
                                 {
-                                    DrawRectangle(mouseDownX, mouseDownY, x, y - dif, colorPallete[0]);
+                                    DrawRectangle(mouseDownX, mouseDownY, x, y - dif, colorPallete[colorIndex]);
                                 }
                                 else 
                                 {
-                                    DrawRectangle(mouseDownX, mouseDownY - dif, x, y, colorPallete[0]);
+                                    DrawRectangle(mouseDownX, mouseDownY - dif, x, y, colorPallete[colorIndex]);
                                 }
                             }
                             else 
                             {
                                 if (mouseDownX < x)
                                 {
-                                    DrawRectangle(mouseDownX, mouseDownY, x - dif, y, colorPallete[0]);
+                                    DrawRectangle(mouseDownX, mouseDownY, x - dif, y, colorPallete[colorIndex]);
                                 }
                                 else
                                 {
-                                    DrawRectangle(mouseDownX - dif, mouseDownY, x, y, colorPallete[0]);
+                                    DrawRectangle(mouseDownX - dif, mouseDownY, x, y, colorPallete[colorIndex]);
                                 }
                             }
                         }
                         else
                         {
                             //Kreslit obdélník
-                            DrawRectangle(mouseDownX, mouseDownY, x, y, colorPallete[0]);
+                            DrawRectangle(mouseDownX, mouseDownY, x, y, colorPallete[colorIndex]);
                         }
                         break;
                     }
@@ -644,6 +661,46 @@ namespace BakalarskaPrace
                 }
             }
             StrokeThicknessSetter(x1, y1, color);
+        }
+
+        private void Darken(int x, int y) 
+        {
+            double h;
+            double l;
+            double s;
+            int r;
+            int g;
+            int b;
+
+            Color currentPixelColor = GetPixelColor(x, y);
+            colorSpaceConvertor.RGBToHLS(currentPixelColor.R, currentPixelColor.G, currentPixelColor.B, out h, out l, out s);
+            l -= shadingStep;
+            if (l < 0)
+            {
+                l = 0;
+            }
+            colorSpaceConvertor.HLSToRGB(h, l, s, out r, out g, out b);
+            AddPixel(x, y, Color.FromArgb(currentPixelColor.A, (byte)r, (byte)g, (byte)b));
+        }
+
+        private void Lighten(int x, int y)
+        {
+            double h;
+            double l;
+            double s;
+            int r;
+            int g;
+            int b;
+            
+            Color currentPixelColor = GetPixelColor(x, y);
+            colorSpaceConvertor.RGBToHLS(currentPixelColor.R, currentPixelColor.G, currentPixelColor.B, out h, out l, out s);
+            l += shadingStep;
+            if (l > 1) 
+            {
+                l = 1;
+            }
+            colorSpaceConvertor.HLSToRGB(h, l, s, out r, out g, out b);
+            AddPixel(x, y, Color.FromArgb(currentPixelColor.A, (byte)r, (byte)g, (byte)b));
         }
 
         private void Dithering(int x, int y, Color color01, Color color02) 
