@@ -302,11 +302,16 @@ namespace BakalarskaPrace
                             int radX = centerX - Math.Min(mouseDownX, x);
                             int radY = centerY - Math.Min(mouseDownY, y);
                             int rad = Math.Min(radX, radY);
-                            midPointCircleDraw(centerX, centerY, rad, colorPallete[currentColorIndex]);
+                            DrawCircle(centerX, centerY, rad, colorPallete[currentColorIndex]);
                         }
                         else
                         {
                             //Kreslit elipsu
+                            int centerX = (mouseDownX + x) / 2;
+                            int centerY = (mouseDownY + y) / 2;
+                            int radX = centerX - Math.Min(mouseDownX, x);
+                            int radY = centerY - Math.Min(mouseDownY, y);
+                            DrawEllipse(centerX, centerY, radX, radY, colorPallete[currentColorIndex]);
                         }
                         break;
                     }
@@ -589,7 +594,7 @@ namespace BakalarskaPrace
         }
 
         //V případě této aplikace je nutné používat Mid-Point algoritmus, protože Bresenhaimův algoritmus nedosahuje při nízkých velikostech kruhu vzhledného výsledku
-        private void midPointCircleDraw(int centerX, int centerY, int rad, Color color)
+        private void DrawCircle(int centerX, int centerY, int rad, Color color)
         {
             int x = rad, y = 0;
 
@@ -628,10 +633,7 @@ namespace BakalarskaPrace
                     break;
 
                 // Printing the generated point and its reflection in the other octants after translation
-                StrokeThicknessSetter(x + centerX, y + centerY, color);
-                StrokeThicknessSetter(-x + centerX, y + centerY, color);
-                StrokeThicknessSetter(x + centerX, -y + centerY, color);
-                StrokeThicknessSetter(-x + centerX, -y + centerY, color);
+                QuadrantPlotter(centerX, centerY, x, y, color);
 
                 // If the generated point is on the line x = y then the perimeter points have already been printed
                 if (x != y)
@@ -642,6 +644,72 @@ namespace BakalarskaPrace
                     StrokeThicknessSetter(-y + centerX, -x + centerY, color);
                 }
             }
+        }
+ 
+        void DrawEllipse(int centerX, int centerY, int radX, int radY, Color color){
+            int radX2 = radX * radX;
+            int radY2 = radY * radY;
+            int twoRadX2 = 2 * radX2;
+            int twoRadY2 = 2 * radY2;
+            int p;
+            int x = 0;
+            int y = radY;
+            int px = 0;
+            int py = twoRadX2 * y;
+
+            // Plot the initial point in each quadrant
+            QuadrantPlotter(centerX, centerY, x, y, color);
+
+            // Initial decision parameter of region 1
+            p = (int)Math.Round(radY2 - (radX2* radY) + (0.25 * radX2));
+
+            // Plotting points of region 1
+            while (px<py) {
+                x++;
+                px += twoRadY2;
+                // Checking and updating value of decision parameter based on algorithm
+                if (p< 0) {
+                   p += radY2 + px;
+                }
+                else
+                {
+                    y--;
+                    py -= twoRadX2;
+                    p += radY2 + px - py;
+                }
+                QuadrantPlotter(centerX, centerY, x, y, color);
+            }
+
+            // Decision parameter of region 2
+            p = (int)Math.Round(radY2 * (x + 0.5) * (x + 0.5) + radX2 * (y - 1) * (y - 1) - radX2 * radY2);
+
+            // Plotting points of region 2
+            while (y > 0)
+            {
+                y--;
+                py -= twoRadX2;
+                // Checking and updating parameter value based on algorithm
+                if (p > 0)
+                {
+                    p += radX2 - py;
+                }
+                else
+                {
+                    x++;
+                    px += twoRadX2;
+                    p += radX2 - py + px;
+                }
+                QuadrantPlotter(centerX, centerY, x, y, color);
+            }
+        }
+
+        //Vykreslit symetrické body ve všech kvadrantech pomocí souřadnic
+        void QuadrantPlotter(int centerX, int centerY, int x, int y, Color color)
+        {
+            AddPixel(centerX + x, centerY + y, color);
+            AddPixel(centerX - x, centerY + y, color);
+            AddPixel(centerX + x, centerY - y, color);
+            AddPixel(centerX - x, centerY - y, color);
         }
 
         private void DrawRectangle(int x0, int y0, int x1, int y1, Color color)
