@@ -39,20 +39,23 @@
                 <Label Content="Brush size" Margin="0,0,0,0" Canvas.Top="141" Canvas.Left="5"/>
                 <Slider ValueChanged="BrushSize_ValueChanged" Orientation="horizontal" Minimum="1" Maximum="4" Value="1" 
                         IsSnapToTickEnabled="True" TickFrequency="1" Width="138" Canvas.Top="167" Canvas.Left="5" />
-                <Button Content="Eraser" Canvas.Left="77" Canvas.Top="190" Width="66" Click="Eraser_Click"/>
-                <Button Content="Brush" Canvas.Left="5" Canvas.Top="190" Width="66" Click="Brush_Click"/>
-                <Button Content="Symmetric Brush" Canvas.Left="5" Canvas.Top="266" Width="66" Click="SymmetricBrush_Click"/>
-                <Button Content="Color Picker" Canvas.Left="77" Canvas.Top="215" Width="66" Click="ColorPicker_Click"/>
+                <Button Content="Eraser" Canvas.Left="79" Canvas.Top="215" Width="66" Click="Eraser_Click"/>
+                <Button Content="Brush" Canvas.Left="7" Canvas.Top="215" Width="66" Click="Brush_Click"/>
+                <Button Content="Symmetric Brush" Canvas.Left="7" Canvas.Top="291" Width="66" Click="SymmetricBrush_Click"/>
+                <Button Content="Color Picker" Canvas.Left="79" Canvas.Top="240" Width="66" Click="ColorPicker_Click"/>
                 <CheckBox Content="AlphaBlending" Canvas.Left="5" Canvas.Top="77" Checked="AlphaBlending_Checked" Unchecked="AlphaBlending_Unchecked" IsChecked="True"/>
-                <Button Content="Bucket" Canvas.Left="5" Canvas.Top="240" Width="66" Click="Bucket_Click"/>
-                <Button Content="Special Bucket" Canvas.Left="77" Canvas.Top="240" Width="66" Click="SpecialBucket_Click"/>
-                <Button Content="Line" Canvas.Left="77" Canvas.Top="266" Width="66" Click="Line_Click"/>
-                <Button Content="Ellipses" Canvas.Left="77" Canvas.Top="292" Width="66" Click="Ellipses_Click"/>
-                <Button Content="Shading" Canvas.Left="5" Canvas.Top="215" Width="66" Click="Shading_Click"/>
-                <Button Content="Rectangle" Canvas.Left="5" Canvas.Top="292" Width="66" Click="Rectangle_Click"/>
-                <Button Content="Dithering" Canvas.Left="5" Canvas.Top="317" Width="66" Click="Dithering_Click"/>
-                <Button Content="Move" Canvas.Left="77" Canvas.Top="317" Width="66" Click="Move_Click"/>
-
+                <Button Content="Bucket" Canvas.Left="7" Canvas.Top="265" Width="66" Click="Bucket_Click"/>
+                <Button Content="Special Bucket" Canvas.Left="79" Canvas.Top="265" Width="66" Click="SpecialBucket_Click"/>
+                <Button Content="Line" Canvas.Left="79" Canvas.Top="291" Width="66" Click="Line_Click"/>
+                <Button Content="Ellipses" Canvas.Left="79" Canvas.Top="317" Width="66" Click="Ellipses_Click"/>
+                <Button Content="Shading" Canvas.Left="7" Canvas.Top="240" Width="66" Click="Shading_Click"/>
+                <Button Content="Rectangle" Canvas.Left="7" Canvas.Top="317" Width="66" Click="Rectangle_Click"/>
+                <Button Content="Dithering" Canvas.Left="7" Canvas.Top="342" Width="66" Click="Dithering_Click"/>
+                <Button Content="Move" Canvas.Left="79" Canvas.Top="342" Width="66" Click="Move_Click"/>
+                <Label Content="Tools" Canvas.Top="187" Canvas.Left="5"/>
+                <Label Content="Transform" Canvas.Top="367" Canvas.Left="5"/>
+                <Button Content="Flip" Canvas.Left="6" Canvas.Top="393" Width="66" Click="Flip_Click"/>
+                <Button Content="Rotate" Canvas.Left="79" Canvas.Top="393" Width="66" Click="Rotate_Click"/>
             </Canvas>
             <Canvas Background="#FF545454" HorizontalAlignment="Right" Width="155">
                 <Image x:Name="animationPreview" Panel.ZIndex="10" MouseMove="Image_MouseMove" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" Width="137" Height="137" Canvas.Left="9" Canvas.Top="9" />

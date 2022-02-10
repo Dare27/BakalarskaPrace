@@ -271,22 +271,22 @@ namespace BakalarskaPrace
                             {
                                 if (mouseDownX > x)
                                 {
-                                    drawLineBelow(x, y, mouseDownX, mouseDownY, colorPallete[currentColorIndex]);
+                                    DrawLineBelow(x, y, mouseDownX, mouseDownY, colorPallete[currentColorIndex]);
                                 }
                                 else
                                 {
-                                    drawLineBelow(mouseDownX, mouseDownY, x, y, colorPallete[currentColorIndex]);
+                                    DrawLineBelow(mouseDownX, mouseDownY, x, y, colorPallete[currentColorIndex]);
                                 }
                             }
                             else
                             {
                                 if (mouseDownY > y)
                                 {
-                                    drawLineAbove(x, y, mouseDownX, mouseDownY, colorPallete[currentColorIndex]);
+                                    DrawLineAbove(x, y, mouseDownX, mouseDownY, colorPallete[currentColorIndex]);
                                 }
                                 else
                                 {
-                                    drawLineAbove(mouseDownX, mouseDownY, x, y, colorPallete[currentColorIndex]);
+                                    DrawLineAbove(mouseDownX, mouseDownY, x, y, colorPallete[currentColorIndex]);
                                 }
                             }
                         }
@@ -294,7 +294,7 @@ namespace BakalarskaPrace
                     }
                 case tools.ellipsis:
                     {
-                        if (System.Windows.Forms.Control.ModifierKeys == Keys.Control)
+                        if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                         {
                             //Kreslit kruh
                             int centerX = (mouseDownX + x) / 2;
@@ -302,7 +302,14 @@ namespace BakalarskaPrace
                             int radX = centerX - Math.Min(mouseDownX, x);
                             int radY = centerY - Math.Min(mouseDownY, y);
                             int rad = Math.Min(radX, radY);
-                            DrawCircle(centerX, centerY, rad, colorPallete[currentColorIndex]);
+                            if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+                            {
+                                DrawCircle(centerX, centerY, rad, colorPallete[currentColorIndex], true);
+                            }
+                            else 
+                            {
+                                DrawCircle(centerX, centerY, rad, colorPallete[currentColorIndex], false);
+                            }
                         }
                         else
                         {
@@ -311,47 +318,72 @@ namespace BakalarskaPrace
                             int centerY = (mouseDownY + y) / 2;
                             int radX = centerX - Math.Min(mouseDownX, x);
                             int radY = centerY - Math.Min(mouseDownY, y);
-                            DrawEllipse(centerX, centerY, radX, radY, colorPallete[currentColorIndex]);
+                            if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+                            {
+                                DrawEllipse(centerX, centerY, radX, radY, colorPallete[currentColorIndex], true);
+                            }
+                            else
+                            {
+                                DrawEllipse(centerX, centerY, radX, radY, colorPallete[currentColorIndex], false);
+                            }
                         }
                         break;
                     }
                 case tools.rectangle:
                     {
-                        if (System.Windows.Forms.Control.ModifierKeys == Keys.Control)
+                        if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                         {
                             //Kreslit čtverec
                             int xDistance = Math.Abs(mouseDownX - x);
                             int yDistance = Math.Abs(mouseDownY - y);
                             int dif = Math.Abs(yDistance - xDistance);
+                            bool fill;
+                            if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+                            {
+                                fill = true;
+                            }
+                            else
+                            {
+                                fill = false;
+                            }
 
                             //Delší stranu je nutné zkrátit o rozdíl, poté se dá použít stejná funkce pro kreslení obdélníků 
                             if (xDistance < yDistance)
                             {
                                 if (mouseDownY < y)
                                 {
-                                    DrawRectangle(mouseDownX, mouseDownY, x, y - dif, colorPallete[currentColorIndex]);
+                                    DrawRectangle(mouseDownX, mouseDownY, x, y - dif, colorPallete[currentColorIndex], fill);
                                 }
                                 else
                                 {
-                                    DrawRectangle(mouseDownX, mouseDownY - dif, x, y, colorPallete[currentColorIndex]);
+                                    DrawRectangle(mouseDownX, mouseDownY - dif, x, y, colorPallete[currentColorIndex], fill);
                                 }
                             }
                             else
                             {
                                 if (mouseDownX < x)
                                 {
-                                    DrawRectangle(mouseDownX, mouseDownY, x - dif, y, colorPallete[currentColorIndex]);
+                                    DrawRectangle(mouseDownX, mouseDownY, x - dif, y, colorPallete[currentColorIndex], fill);
                                 }
                                 else
                                 {
-                                    DrawRectangle(mouseDownX - dif, mouseDownY, x, y, colorPallete[currentColorIndex]);
+                                    DrawRectangle(mouseDownX - dif, mouseDownY, x, y, colorPallete[currentColorIndex], fill);
                                 }
                             }
                         }
                         else
                         {
                             //Kreslit obdélník
-                            DrawRectangle(mouseDownX, mouseDownY, x, y, colorPallete[currentColorIndex]);
+                            bool fill;
+                            if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+                            {
+                                fill = true;
+                            }
+                            else
+                            {
+                                fill = false;
+                            }
+                            DrawRectangle(mouseDownX, mouseDownY, x, y, colorPallete[currentColorIndex], fill);
                         }
                         break;
                     }
@@ -368,11 +400,11 @@ namespace BakalarskaPrace
                 {
                     Color currentPixelColor = GetPixelColor(x, y);
                     Color colorMix = ColorMix(color, currentPixelColor);
-                    AddPixel(x, y, colorMix);
+                    AddPixel(x, y, colorMix, currentBitmap);
                 }
                 else
                 {
-                    AddPixel(x, y, color);
+                    AddPixel(x, y, color, currentBitmap);
                 }
             }
             else
@@ -387,24 +419,24 @@ namespace BakalarskaPrace
                         {
                             Color currentPixelColor = GetPixelColor(x + i, y + j);
                             Color colorMix = ColorMix(color, currentPixelColor);
-                            AddPixel(x + i, y + j, colorMix);
+                            AddPixel(x + i, y + j, colorMix, currentBitmap);
                         }
                     }
                 }
             }
         }
 
-        private void AddPixel(int x, int y, Color color, bool AlphaBlend = true)
+        private void AddPixel(int x, int y, Color color, WriteableBitmap bitmap)
         {
             try
             {
                 // Reserve the back buffer for updates.
-                currentBitmap.Lock();
+                bitmap.Lock();
                 unsafe
                 {
-                    IntPtr pBackBuffer = currentBitmap.BackBuffer;
+                    IntPtr pBackBuffer = bitmap.BackBuffer;
 
-                    pBackBuffer += y * currentBitmap.BackBufferStride;
+                    pBackBuffer += y * bitmap.BackBufferStride;
                     pBackBuffer += x * 4;
 
                     int colorData = color.A << 24;       // A
@@ -415,13 +447,13 @@ namespace BakalarskaPrace
                     // Assign the color data to the pixel.
                     *((int*)pBackBuffer) = colorData;
 
-                    currentBitmap.AddDirtyRect(new Int32Rect(0, 0, currentBitmap.PixelWidth, currentBitmap.PixelHeight));
+                    bitmap.AddDirtyRect(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
                 }
             }
             finally
             {
                 // Release the back buffer and make it available for display.
-                currentBitmap.Unlock();
+                bitmap.Unlock();
             }
         }
 
@@ -467,7 +499,7 @@ namespace BakalarskaPrace
         }
 
         //Bresenhaimův algoritmus pro kreslení přímek
-        private void drawLineBelow(int x0, int y0, int x1, int y1, Color color)
+        private void DrawLineBelow(int x0, int y0, int x1, int y1, Color color)
         {
             int dx = x1 - x0;
             int dy = y1 - y0;
@@ -498,7 +530,7 @@ namespace BakalarskaPrace
             }
         }
 
-        private void drawLineAbove(int x0, int y0, int x1, int y1, Color color)
+        private void DrawLineAbove(int x0, int y0, int x1, int y1, Color color)
         {
             int dx = x1 - x0;
             int dy = y1 - y0;
@@ -594,17 +626,24 @@ namespace BakalarskaPrace
         }
 
         //V případě této aplikace je nutné používat Mid-Point algoritmus, protože Bresenhaimův algoritmus nedosahuje při nízkých velikostech kruhu vzhledného výsledku
-        private void DrawCircle(int centerX, int centerY, int rad, Color color)
+        private void DrawCircle(int centerX, int centerY, int rad, Color color, bool fill)
         {
             int x = rad, y = 0;
 
             // When radius is zero only a single point will be printed
             if (rad > 0)
             {
-                StrokeThicknessSetter(x + centerX, y + centerY, color);
-                StrokeThicknessSetter(x + centerX - rad, centerY - rad, color);
-                StrokeThicknessSetter(y + centerX, x + centerY, color);
-                StrokeThicknessSetter(-rad + centerX, x + centerY - rad, color);
+                if (fill)
+                {
+                    DrawStraightLine(centerX + x, centerY + y, centerX - rad - 1, centerY + y, color);
+                }
+                else 
+                {
+                    StrokeThicknessSetter(centerX + x, centerY + y, color);
+                    StrokeThicknessSetter(x + centerX - rad, centerY - rad, color);
+                    StrokeThicknessSetter(y + centerX, x + centerY, color);
+                    StrokeThicknessSetter(-rad + centerX, x + centerY - rad, color);
+                }
             }
             else
             {
@@ -633,20 +672,28 @@ namespace BakalarskaPrace
                     break;
 
                 // Printing the generated point and its reflection in the other octants after translation
-                QuadrantPlotter(centerX, centerY, x, y, color);
+                QuadrantPlotter(centerX, centerY, x, y, color, fill);
 
                 // If the generated point is on the line x = y then the perimeter points have already been printed
                 if (x != y)
                 {
-                    StrokeThicknessSetter(y + centerX, x + centerY, color);
-                    StrokeThicknessSetter(-y + centerX, x + centerY, color);
-                    StrokeThicknessSetter(y + centerX, -x + centerY, color);
-                    StrokeThicknessSetter(-y + centerX, -x + centerY, color);
+                    if (fill)
+                    {
+                        DrawStraightLine(y + centerX, x + centerY, -y + centerX - 1, x + centerY, color);
+                        DrawStraightLine(y + centerX, -x + centerY, -y + centerX - 1, -x + centerY, color);
+                    }
+                    else
+                    {
+                        StrokeThicknessSetter(y + centerX, x + centerY, color);
+                        StrokeThicknessSetter(-y + centerX, x + centerY, color);
+                        StrokeThicknessSetter(y + centerX, -x + centerY, color);
+                        StrokeThicknessSetter(-y + centerX, -x + centerY, color);
+                    }
                 }
             }
         }
  
-        void DrawEllipse(int centerX, int centerY, int radX, int radY, Color color){
+        void DrawEllipse(int centerX, int centerY, int radX, int radY, Color color, bool fill){
             int radX2 = radX * radX;
             int radY2 = radY * radY;
             int twoRadX2 = 2 * radX2;
@@ -658,7 +705,7 @@ namespace BakalarskaPrace
             int py = twoRadX2 * y;
 
             // Plot the initial point in each quadrant
-            QuadrantPlotter(centerX, centerY, x, y, color);
+            QuadrantPlotter(centerX, centerY, x, y, color, fill);
 
             // Initial decision parameter of region 1
             p = (int)Math.Round(radY2 - (radX2* radY) + (0.25 * radX2));
@@ -677,7 +724,7 @@ namespace BakalarskaPrace
                     py -= twoRadX2;
                     p += radY2 + px - py;
                 }
-                QuadrantPlotter(centerX, centerY, x, y, color);
+                QuadrantPlotter(centerX, centerY, x, y, color, fill);
             }
 
             // Decision parameter of region 2
@@ -699,35 +746,57 @@ namespace BakalarskaPrace
                     px += twoRadX2;
                     p += radX2 - py + px;
                 }
-                QuadrantPlotter(centerX, centerY, x, y, color);
+                QuadrantPlotter(centerX, centerY, x, y, color, fill);
             }
         }
 
         //Vykreslit symetrické body ve všech kvadrantech pomocí souřadnic
-        void QuadrantPlotter(int centerX, int centerY, int x, int y, Color color)
+        void QuadrantPlotter(int centerX, int centerY, int x, int y, Color color, bool fill = true)
         {
-            AddPixel(centerX + x, centerY + y, color);
-            AddPixel(centerX - x, centerY + y, color);
-            AddPixel(centerX + x, centerY - y, color);
-            AddPixel(centerX - x, centerY - y, color);
+            if (fill)
+            {
+                DrawStraightLine(centerX - x, centerY + y, centerX + x + 1, centerY + y, color);
+                DrawStraightLine(centerX - x, centerY - y, centerX + x + 1, centerY - y, color);
+            }
+            else 
+            {
+                AddPixel(centerX + x, centerY + y, color, currentBitmap);
+                AddPixel(centerX - x, centerY + y, color, currentBitmap);
+                AddPixel(centerX + x, centerY - y, color, currentBitmap);
+                AddPixel(centerX - x, centerY - y, color, currentBitmap);
+            }
         }
 
-        private void DrawRectangle(int x0, int y0, int x1, int y1, Color color)
+        private void DrawRectangle(int x0, int y0, int x1, int y1, Color color, bool fill)
         {
             if (y0 < y1)
             {
                 for (int y = y0; y < y1; y++)
                 {
-                    StrokeThicknessSetter(x0, y, color);
-                    StrokeThicknessSetter(x1, y, color);
+                    if (fill)
+                    {
+                        DrawStraightLine(x0, y, x1 + 1, y, color);
+                    }
+                    else 
+                    {
+                        StrokeThicknessSetter(x0, y, color);
+                        StrokeThicknessSetter(x1, y, color);
+                    }
                 }
             }
             else
             {
                 for (int y = y0; y > y1; y--)
                 {
-                    StrokeThicknessSetter(x0, y, color);
-                    StrokeThicknessSetter(x1, y, color);
+                    if (fill)
+                    {
+                        DrawStraightLine(x0, y, x1 + 1, y, color);
+                    }
+                    else
+                    {
+                        StrokeThicknessSetter(x0, y, color);
+                        StrokeThicknessSetter(x1, y, color);
+                    }
                 }
             }
 
@@ -735,16 +804,30 @@ namespace BakalarskaPrace
             {
                 for (int x = x0; x < x1; x++)
                 {
-                    StrokeThicknessSetter(x, y0, color);
-                    StrokeThicknessSetter(x, y1, color);
+                    if (fill)
+                    {
+                        DrawStraightLine(x, y0, x, y1 + 1, color);
+                    }
+                    else
+                    {
+                        StrokeThicknessSetter(x, y0, color);
+                        StrokeThicknessSetter(x, y1, color);
+                    }
                 }
             }
             else
             {
                 for (int x = x0; x > x1; x--)
                 {
-                    StrokeThicknessSetter(x, y0, color);
-                    StrokeThicknessSetter(x, y1, color);
+                    if (fill)
+                    {
+                        DrawStraightLine(x, y0, x, y1 + 1, color);
+                    }
+                    else
+                    {
+                        StrokeThicknessSetter(x, y0, color);
+                        StrokeThicknessSetter(x, y1, color);
+                    }
                 }
             }
             StrokeThicknessSetter(x1, y1, color);
@@ -767,7 +850,7 @@ namespace BakalarskaPrace
                 l = 0;
             }
             colorSpaceConvertor.HLSToRGB(h, l, s, out r, out g, out b);
-            AddPixel(x, y, Color.FromArgb(currentPixelColor.A, (byte)r, (byte)g, (byte)b));
+            AddPixel(x, y, Color.FromArgb(currentPixelColor.A, (byte)r, (byte)g, (byte)b), currentBitmap);
         }
 
         private void Lighten(int x, int y)
@@ -787,18 +870,18 @@ namespace BakalarskaPrace
                 l = 1;
             }
             colorSpaceConvertor.HLSToRGB(h, l, s, out r, out g, out b);
-            AddPixel(x, y, Color.FromArgb(currentPixelColor.A, (byte)r, (byte)g, (byte)b));
+            AddPixel(x, y, Color.FromArgb(currentPixelColor.A, (byte)r, (byte)g, (byte)b), currentBitmap);
         }
 
         private void Dithering(int x, int y, Color color01, Color color02)
         {
             if ((x + y) % 2 == 0)
             {
-                AddPixel(x, y, color01);
+                AddPixel(x, y, color01, currentBitmap);
             }
             else
             {
-                AddPixel(x, y, color02);
+                AddPixel(x, y, color02, currentBitmap);
             }
         }
 
@@ -811,11 +894,11 @@ namespace BakalarskaPrace
                 if (alphaBlending == true)
                 {
                     Color colorMix = ColorMix(newColor, currentColor);
-                    AddPixel(x, y, colorMix);
+                    AddPixel(x, y, colorMix, currentBitmap);
                 }
                 else
                 {
-                    AddPixel(x, y, newColor);
+                    AddPixel(x, y, newColor, currentBitmap);
                 }
 
                 if (x - 1 > -1)
@@ -850,11 +933,11 @@ namespace BakalarskaPrace
                         if (alphaBlending == true)
                         {
                             Color colorMix = ColorMix(colorPallete[colorIndex], currentColor);
-                            AddPixel(i, j, colorMix);
+                            AddPixel(i, j, colorMix, currentBitmap);
                         }
                         else
                         {
-                            AddPixel(i, j, colorPallete[colorIndex]);
+                            AddPixel(i, j, colorPallete[colorIndex], currentBitmap);
                         }
                     }
                 }
@@ -1012,6 +1095,52 @@ namespace BakalarskaPrace
         private void Move_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.move;
+        }
+
+        private void Flip_Click(object sender, RoutedEventArgs e)
+        {
+            WriteableBitmap newBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
+            {
+                for (int x = 0; x < currentBitmap.PixelWidth; x++)
+                {
+                    for (int y = 0; y < currentBitmap.PixelHeight; y++)
+                    {
+                        int yp = currentBitmap.PixelHeight - y - 1;
+                        AddPixel(x, yp, GetPixelColor(x, y), newBitmap);
+                    }
+                }
+            }
+            else 
+            {
+                for (int x = 0; x < currentBitmap.PixelWidth; x++)
+                {
+                    for (int y = 0; y < currentBitmap.PixelHeight; y++)
+                    {
+                        int xp = currentBitmap.PixelWidth - x - 1;
+                        AddPixel(xp, y, GetPixelColor(x, y), newBitmap);
+                    }
+                }
+            }
+            currentBitmap = newBitmap;
+            bitmaps[currentBitmapIndex] = newBitmap;
+            image.Source = currentBitmap;
+        }
+
+        private void Rotate_Click(object sender, RoutedEventArgs e)
+        {
+            WriteableBitmap newBitmap = new WriteableBitmap(height, width, 1, 1, PixelFormats.Bgra32, null);
+            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
+            {
+                
+            }
+            else
+            {
+
+            }
+            currentBitmap = newBitmap;
+            bitmaps[currentBitmapIndex] = newBitmap;
+            image.Source = currentBitmap;
         }
 
         private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)
