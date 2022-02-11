@@ -1132,11 +1132,23 @@ namespace BakalarskaPrace
             WriteableBitmap newBitmap = new WriteableBitmap(height, width, 1, 1, PixelFormats.Bgra32, null);
             if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
             {
-                
+                for (int x = 0; x < currentBitmap.PixelWidth; x++)
+                {
+                    for (int y = 0; y < currentBitmap.PixelHeight; y++)
+                    {
+                        AddPixel(currentBitmap.PixelHeight - y - 1, x, GetPixelColor(x, y), newBitmap);
+                    }
+                }
             }
             else
             {
-
+                for (int x = 0; x < currentBitmap.PixelWidth; x++)
+                {
+                    for (int y = 0; y < currentBitmap.PixelHeight; y++)
+                    {
+                        AddPixel(y, currentBitmap.PixelWidth - x - 1, GetPixelColor(x, y), newBitmap);
+                    }
+                }
             }
             currentBitmap = newBitmap;
             bitmaps[currentBitmapIndex] = newBitmap;
