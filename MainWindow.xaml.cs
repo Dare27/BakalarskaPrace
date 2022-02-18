@@ -23,6 +23,7 @@ namespace BakalarskaPrace
         private WriteableBitmap currentBitmap;
         int currentBitmapIndex = 0;
         private readonly List<WriteableBitmap> bitmaps = new List<WriteableBitmap>();
+        private readonly List<System.Windows.Controls.Button> previewButtons = new List<System.Windows.Controls.Button>();
         private readonly WriteableBitmap defaultBitmap;
         int colorPalleteSize = 2;
         Color[] colorPallete;
@@ -45,6 +46,7 @@ namespace BakalarskaPrace
         int currentColorIndex = 0;
         double shadingStep = .1;
         bool onionSkinning;
+        System.Windows.Controls.Button lastToolButton;
 
         Color defaultPreviewColor;
 
@@ -69,6 +71,7 @@ namespace BakalarskaPrace
             LabelPosition.Content = "[" + width + ":" + height + "] " + 0 + ":" + 0;
             LabelScale.Content = "1.0";
             LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
+            UpdateImagePreviewButtons(); 
 
             timer.Tick += new EventHandler(OnTimedEvent);
             timerInterval = 1000 / currentFPSTarget;
@@ -125,13 +128,23 @@ namespace BakalarskaPrace
                         }
                     case tools.bucket:
                         {
-                            Color seedColor = GetPixelColor(x, y);
+                            Color seedColor = GetPixelColor(x, y, currentBitmap);
                             FloodFill(x, y, colorPallete[colorIndex], seedColor);
                             break;
                         }
                     case tools.specialBucket:
                         {
-                            SpecialBucket(x, y, colorIndex);
+                            if (System.Windows.Forms.Control.ModifierKeys == Keys.Control)
+                            {
+                                foreach (WriteableBitmap writeableBitmap in bitmaps) 
+                                {
+                                    SpecialBucket(x, y, colorIndex, writeableBitmap);
+                                }
+                            }
+                            else
+                            {
+                                SpecialBucket(x, y, colorIndex, currentBitmap);
+                            }
                             break;
                         }
                     case tools.line:
@@ -216,13 +229,23 @@ namespace BakalarskaPrace
                         }
                     case tools.bucket:
                         {
-                            Color seedColor = GetPixelColor(x, y);
+                            Color seedColor = GetPixelColor(x, y, currentBitmap);
                             FloodFill(x, y, colorPallete[colorIndex], seedColor);
                             break;
                         }
                     case tools.specialBucket:
                         {
-                            SpecialBucket(x, y, colorIndex);
+                            if (System.Windows.Forms.Control.ModifierKeys == Keys.Control)
+                            {
+                                foreach (WriteableBitmap writeableBitmap in bitmaps)
+                                {
+                                    SpecialBucket(x, y, colorIndex, writeableBitmap);
+                                }
+                            }
+                            else
+                            {
+                                SpecialBucket(x, y, colorIndex, currentBitmap);
+                            }
                             break;
                         }
                     case tools.dithering:
@@ -398,7 +421,7 @@ namespace BakalarskaPrace
             {
                 if (alphaBlending == true)
                 {
-                    Color currentPixelColor = GetPixelColor(x, y);
+                    Color currentPixelColor = GetPixelColor(x, y, currentBitmap);
                     Color colorMix = ColorMix(color, currentPixelColor);
                     AddPixel(x, y, colorMix, currentBitmap);
                 }
@@ -417,7 +440,7 @@ namespace BakalarskaPrace
                         // zkontrolovat jestli se pixel vejde do bitmapy
                         if (x + i < width && x + i > -1 && y + j < height && y + j > -1)
                         {
-                            Color currentPixelColor = GetPixelColor(x + i, y + j);
+                            Color currentPixelColor = GetPixelColor(x + i, y + j, currentBitmap);
                             Color colorMix = ColorMix(color, currentPixelColor);
                             AddPixel(x + i, y + j, colorMix, currentBitmap);
                         }
@@ -457,16 +480,16 @@ namespace BakalarskaPrace
             }
         }
 
-        unsafe Color GetPixelColor(int x, int y)
+        unsafe Color GetPixelColor(int x, int y, WriteableBitmap writeableBitmap)
         {
             Color pix = new Color();
             byte[] colorData = { 0, 0, 0, 0 }; // ARGB
-            IntPtr pBackBuffer = currentBitmap.BackBuffer;
+            IntPtr pBackBuffer = writeableBitmap.BackBuffer;
             byte* pBuff = (byte*)pBackBuffer.ToPointer();
-            var a = pBuff[4 * x + (y * currentBitmap.BackBufferStride) + 3];
-            var r = pBuff[4 * x + (y * currentBitmap.BackBufferStride) + 2];
-            var g = pBuff[4 * x + (y * currentBitmap.BackBufferStride) + 1];
-            var b = pBuff[4 * x + (y * currentBitmap.BackBufferStride)];
+            var a = pBuff[4 * x + (y * writeableBitmap.BackBufferStride) + 3];
+            var r = pBuff[4 * x + (y * writeableBitmap.BackBufferStride) + 2];
+            var g = pBuff[4 * x + (y * writeableBitmap.BackBufferStride) + 1];
+            var b = pBuff[4 * x + (y * writeableBitmap.BackBufferStride)];
             pix.A = a;
             pix.R = r;
             pix.G = g;
@@ -485,7 +508,7 @@ namespace BakalarskaPrace
 
         private void ColorPicker(int x, int y, int colorIndex)
         {
-            colorPallete[colorIndex] = GetPixelColor(x, y);
+            colorPallete[colorIndex] = GetPixelColor(x, y, currentBitmap);
             SolidColorBrush brush = new SolidColorBrush();
             brush.Color = colorPallete[colorIndex];
             if (colorIndex == 0)
@@ -842,7 +865,7 @@ namespace BakalarskaPrace
             int g;
             int b;
 
-            Color currentPixelColor = GetPixelColor(x, y);
+            Color currentPixelColor = GetPixelColor(x, y, currentBitmap);
             colorSpaceConvertor.RGBToHLS(currentPixelColor.R, currentPixelColor.G, currentPixelColor.B, out h, out l, out s);
             l -= shadingStep;
             if (l < 0)
@@ -862,7 +885,7 @@ namespace BakalarskaPrace
             int g;
             int b;
 
-            Color currentPixelColor = GetPixelColor(x, y);
+            Color currentPixelColor = GetPixelColor(x, y, currentBitmap);
             colorSpaceConvertor.RGBToHLS(currentPixelColor.R, currentPixelColor.G, currentPixelColor.B, out h, out l, out s);
             l += shadingStep;
             if (l > 1)
@@ -888,7 +911,7 @@ namespace BakalarskaPrace
         //V případě této aplikace musí být použit 4-straná verze tohoto algoritmu aby se zábránilo únikům v rozích
         private void FloodFill(int x, int y, Color newColor, Color seedColor)
         {
-            Color currentColor = GetPixelColor(x, y);
+            Color currentColor = GetPixelColor(x, y, currentBitmap);
             if (currentColor != newColor && currentColor == seedColor)
             {
                 if (alphaBlending == true)
@@ -920,24 +943,24 @@ namespace BakalarskaPrace
             }
         }
 
-        private void SpecialBucket(int x, int y, int colorIndex)
+        private void SpecialBucket(int x, int y, int colorIndex, WriteableBitmap writeableBitmap)
         {
-            Color seedColor = GetPixelColor(x, y);
+            Color seedColor = GetPixelColor(x, y, currentBitmap);
             for (int i = 0; i < width; i++)
             {
                 for (int j = 0; j < height; j++)
                 {
-                    Color currentColor = GetPixelColor(i, j);
+                    Color currentColor = GetPixelColor(i, j, writeableBitmap);
                     if (currentColor == seedColor)
                     {
                         if (alphaBlending == true)
                         {
                             Color colorMix = ColorMix(colorPallete[colorIndex], currentColor);
-                            AddPixel(i, j, colorMix, currentBitmap);
+                            AddPixel(i, j, colorMix, writeableBitmap);
                         }
                         else
                         {
-                            AddPixel(i, j, colorPallete[colorIndex], currentBitmap);
+                            AddPixel(i, j, colorPallete[colorIndex], writeableBitmap);
                         }
                     }
                 }
@@ -1045,56 +1068,133 @@ namespace BakalarskaPrace
         private void Eraser_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.eraser;
+            ToolEraser.IsEnabled = false;
+            if (lastToolButton != null)
+            {
+                lastToolButton.IsEnabled = true;
+            }
+            lastToolButton = ToolEraser;
         }
 
         private void Brush_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.brush;
+            ToolBrush.IsEnabled = false;
+            if (lastToolButton != null)
+            {
+                lastToolButton.IsEnabled = true;
+            }
+            lastToolButton = ToolBrush;
+        }
+
+        private void ColorPicker_Click(object sender, RoutedEventArgs e)
+        {
+            currentTool = tools.colorPicker;
+            ToolColorPicker.IsEnabled = false;
+            if (lastToolButton != null)
+            {
+                lastToolButton.IsEnabled = true;
+            }
+            lastToolButton = ToolColorPicker;
         }
 
         private void SymmetricBrush_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.symmetricBrush;
+            ToolSymmetricBrush.IsEnabled = false;
+            if (lastToolButton != null)
+            {
+                lastToolButton.IsEnabled = true;
+            }
+            lastToolButton = ToolSymmetricBrush;
         }
 
         private void Bucket_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.bucket;
+            ToolBucket.IsEnabled = false;
+            if (lastToolButton != null)
+            {
+                lastToolButton.IsEnabled = true;
+            }
+            lastToolButton = ToolBucket;
         }
 
         private void SpecialBucket_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.specialBucket;
+            ToolSpecialBucket.IsEnabled = false;
+            if (lastToolButton != null)
+            {
+                lastToolButton.IsEnabled = true;
+            }
+            lastToolButton = ToolSpecialBucket;
         }
 
         private void Line_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.line;
+            ToolLine.IsEnabled = false;
+            if (lastToolButton != null)
+            {
+                lastToolButton.IsEnabled = true;
+            }
+            lastToolButton = ToolLine;
         }
 
         private void Ellipses_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.ellipsis;
+            ToolEllipses.IsEnabled = false;
+            if (lastToolButton != null)
+            {
+                lastToolButton.IsEnabled = true;
+            }
+            lastToolButton = ToolEllipses;
         }
 
         private void Shading_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.shading;
+            ToolShading.IsEnabled = false;
+            if (lastToolButton != null)
+            {
+                lastToolButton.IsEnabled = true;
+            }
+            lastToolButton = ToolShading;
         }
 
         private void Rectangle_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.rectangle;
+            ToolRectangle.IsEnabled = false;
+            if (lastToolButton != null)
+            {
+                lastToolButton.IsEnabled = true;
+            }
+            lastToolButton = ToolRectangle;
         }
 
         private void Dithering_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.dithering;
+            ToolDithering.IsEnabled = false;
+            if (lastToolButton != null)
+            {
+                lastToolButton.IsEnabled = true;
+            }
+            lastToolButton = ToolDithering;
         }
 
         private void Move_Click(object sender, RoutedEventArgs e)
         {
             currentTool = tools.move;
+            ToolMove.IsEnabled = false;
+            if (lastToolButton != null)
+            {
+                lastToolButton.IsEnabled = true;
+            }
+            lastToolButton = ToolMove;
         }
 
         private void Flip_Click(object sender, RoutedEventArgs e)
@@ -1107,7 +1207,7 @@ namespace BakalarskaPrace
                     for (int y = 0; y < currentBitmap.PixelHeight; y++)
                     {
                         int yp = currentBitmap.PixelHeight - y - 1;
-                        AddPixel(x, yp, GetPixelColor(x, y), newBitmap);
+                        AddPixel(x, yp, GetPixelColor(x, y, currentBitmap), newBitmap);
                     }
                 }
             }
@@ -1118,7 +1218,7 @@ namespace BakalarskaPrace
                     for (int y = 0; y < currentBitmap.PixelHeight; y++)
                     {
                         int xp = currentBitmap.PixelWidth - x - 1;
-                        AddPixel(xp, y, GetPixelColor(x, y), newBitmap);
+                        AddPixel(xp, y, GetPixelColor(x, y, currentBitmap), newBitmap);
                     }
                 }
             }
@@ -1136,7 +1236,7 @@ namespace BakalarskaPrace
                 {
                     for (int y = 0; y < currentBitmap.PixelHeight; y++)
                     {
-                        AddPixel(currentBitmap.PixelHeight - y - 1, x, GetPixelColor(x, y), newBitmap);
+                        AddPixel(currentBitmap.PixelHeight - y - 1, x, GetPixelColor(x, y, currentBitmap), newBitmap);
                     }
                 }
             }
@@ -1146,13 +1246,26 @@ namespace BakalarskaPrace
                 {
                     for (int y = 0; y < currentBitmap.PixelHeight; y++)
                     {
-                        AddPixel(y, currentBitmap.PixelWidth - x - 1, GetPixelColor(x, y), newBitmap);
+                        AddPixel(y, currentBitmap.PixelWidth - x - 1, GetPixelColor(x, y, currentBitmap), newBitmap);
                     }
                 }
             }
             currentBitmap = newBitmap;
             bitmaps[currentBitmapIndex] = newBitmap;
             image.Source = currentBitmap;
+        }
+
+        private void Resize_Click(object sender, RoutedEventArgs e)
+        {
+            WindowResize subWindow = new WindowResize();
+            subWindow.Show();
+        }
+
+        private void Center_Click(object sender, RoutedEventArgs e)
+        {
+            Grid_TranslateTransform.X = 0;
+            Grid_TranslateTransform.Y = 0;
+            Console.WriteLine(grid.ActualWidth + " " + grid.ActualHeight);
         }
 
         private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -1162,6 +1275,8 @@ namespace BakalarskaPrace
             MatrixTransform transform = (MatrixTransform)paintSurface.RenderTransform;
             Matrix matrix = transform.Matrix;
             double scale;
+
+            
 
             // Pokud je e >= 0 dojde k přibližování
             if (e.Delta >= 0)
@@ -1327,35 +1442,8 @@ namespace BakalarskaPrace
             LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
             currentAnimationIndex = currentBitmapIndex;
             animationPreview.Source = bitmaps[currentAnimationIndex];
+            UpdateImagePreviewButtons();
             if (onionSkinning == true) UpdateOnionSkinning();
-        }
-
-        private void Previous_Click(object sender, RoutedEventArgs e)
-        {
-            if (currentBitmapIndex - 1 > -1)
-            {
-                currentBitmapIndex -= 1;
-                currentBitmap = bitmaps[currentBitmapIndex];
-                image.Source = currentBitmap;
-                LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
-                currentAnimationIndex = currentBitmapIndex;
-                animationPreview.Source = bitmaps[currentAnimationIndex];
-                if (onionSkinning == true) UpdateOnionSkinning();
-            }
-        }
-
-        private void Next_Click(object sender, RoutedEventArgs e)
-        {
-            if (currentBitmapIndex + 1 < bitmaps.Count)
-            {
-                currentBitmapIndex += 1;
-                currentBitmap = bitmaps[currentBitmapIndex];
-                image.Source = currentBitmap;
-                LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
-                currentAnimationIndex = currentBitmapIndex;
-                animationPreview.Source = bitmaps[currentAnimationIndex];
-                if (onionSkinning == true) UpdateOnionSkinning();
-            }
         }
 
         private void DeleteImage_Click(object sender, RoutedEventArgs e)
@@ -1374,6 +1462,7 @@ namespace BakalarskaPrace
             LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
             currentAnimationIndex = currentBitmapIndex;
             animationPreview.Source = bitmaps[currentAnimationIndex];
+            UpdateImagePreviewButtons();
             if (onionSkinning == true) UpdateOnionSkinning();
         }
 
@@ -1398,9 +1487,63 @@ namespace BakalarskaPrace
             }
         }
 
-        private void ColorPicker_Click(object sender, RoutedEventArgs e)
+        private void UpdateImagePreviewButtons() 
         {
-            currentTool = tools.colorPicker;
+            List<System.Windows.Controls.Button> previewButtons = ImagePreviews.Children.OfType<System.Windows.Controls.Button>().ToList();
+            foreach (System.Windows.Controls.Button btn in previewButtons)
+            {
+                ImagePreviews.Children.Remove(btn);
+            }
+
+            for (int i = 0; i < bitmaps.Count; i++)
+            {
+                System.Windows.Controls.Button newButton = new System.Windows.Controls.Button();
+                var brush = new ImageBrush();
+                brush.ImageSource = bitmaps[i];
+                newButton.Background = brush;
+                newButton.Content = "";
+                newButton.Width = 140;
+                newButton.Height = 140;
+                newButton.Name = "ImagePreview" + i.ToString();
+                newButton.AddHandler(System.Windows.Controls.Button.ClickEvent, new RoutedEventHandler(PreviewButton_Click));
+                ImagePreviews.Children.Add(newButton);
+            }
+        }
+
+        private void PreviewButton_Click(object sender, RoutedEventArgs e)
+        {
+            string buttonName = ((System.Windows.Controls.Button)sender).Name;
+            int index = int.Parse(buttonName.Replace("ImagePreview", ""));
+            currentBitmapIndex = index;
+            UpdateCurrentBitmap();
+        }
+
+        private void Previous_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentBitmapIndex - 1 > -1)
+            {
+                currentBitmapIndex -= 1;
+                UpdateCurrentBitmap();
+            }
+        }
+
+        private void Next_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentBitmapIndex + 1 < bitmaps.Count)
+            {
+                currentBitmapIndex += 1;
+                UpdateCurrentBitmap();
+            }
+        }
+
+        private void UpdateCurrentBitmap()
+        {
+            currentBitmap = bitmaps[currentBitmapIndex];
+            image.Source = currentBitmap;
+            LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
+            currentAnimationIndex = currentBitmapIndex;
+            animationPreview.Source = bitmaps[currentAnimationIndex];
+            if (onionSkinning == true) UpdateOnionSkinning();
         }
 
         private void AlphaBlending_Checked(object sender, RoutedEventArgs e)

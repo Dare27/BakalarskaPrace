@@ -1,0 +1,36 @@
+﻿<Window x:Class="BakalarskaPrace.WindowResize"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BakalarskaPrace"
+        mc:Ignorable="d"
+        Title="Resize" Height="209" Width="346"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="0,0,0,0" >
+        <UniformGrid>
+            <DockPanel HorizontalAlignment="Left" Height="104"  Width="132">
+                <Label Content="Width" DockPanel.Dock="Top" Height="26"/>
+                <Label Content="Height" DockPanel.Dock="Top" Height="26"/>
+                <Label Content="Maintain aspect ratio" DockPanel.Dock="Top" Height="26"/>
+                <Label Content="Resize content" DockPanel.Dock="Top" Height="26"/>
+            </DockPanel>
+            <DockPanel HorizontalAlignment="Right" Height="104">
+                <TextBox TextWrapping="Wrap" Text="128" Width="31" Height="26" DockPanel.Dock="Top"/>
+                <TextBox TextWrapping="Wrap" Text="128" Width="31" Height="26" DockPanel.Dock="Top"/>
+                <CheckBox Content="" DockPanel.Dock="Top" Height="26"/>
+                <CheckBox Content="" DockPanel.Dock="Top" Height="26"/>
+            </DockPanel>
+        </UniformGrid>
+
+        <UniformGrid VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="141" Height="44">
+            <Button Content="Resize" Click="Resize_Click"/>
+            <Button Content="Cancel" Click="Cancel_Click"/>
+        </UniformGrid>
+
+
+
+
+
+    </Grid>
+</Window>
