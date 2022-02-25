@@ -13,5 +13,6 @@ namespace BakalarskaPrace
     /// </summary>
     public partial class App : Application
     {
+        
     }
 }

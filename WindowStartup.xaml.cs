@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,11 +12,13 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using System.Text.RegularExpressions;
 
 namespace BakalarskaPrace
 {
-    public partial class WindowResize : Window
+    /// <summary>
+    /// Interakční logika pro WindowStartup.xaml
+    /// </summary>
+    public partial class WindowStartup : Window
     {
         public int newWidth;
         public int newHeight;
@@ -23,9 +26,21 @@ namespace BakalarskaPrace
         public bool resizeContent = false;
         private int lastSizeValue;
 
-        public WindowResize()
+        public WindowStartup()
         {
             InitializeComponent();
+        }
+
+        public void MainWindow_Activated(object sender, EventArgs e)
+        {
+            Window window = (Window)sender;
+            window.Topmost = true;
+        }
+
+        private void Window_Deactivated(object sender, EventArgs e)
+        {
+            Window window = (Window)sender;
+            window.Topmost = true;
         }
 
         private void Resize_Click(object sender, RoutedEventArgs e)
@@ -33,7 +48,6 @@ namespace BakalarskaPrace
             newWidth = int.Parse(widthTextBox.Text);
             newHeight = int.Parse(heightTextBox.Text);
             maintainAspectRatio = maintainAspectRatioCheckBox.IsChecked.GetValueOrDefault();
-            resizeContent = resizeContentCheckBox.IsChecked.GetValueOrDefault();
             this.Close();
         }
 
@@ -50,14 +64,14 @@ namespace BakalarskaPrace
 
         private void Width_TextChanged(object sender, RoutedEventArgs e)
         {
-            
+
             if (maintainAspectRatio)
             {
                 heightTextBox.Text = widthTextBox.Text;
             }
-            else 
+            else
             {
-                if (heightTextBox != null) 
+                if (heightTextBox != null)
                 {
                     lastSizeValue = int.Parse(widthTextBox.Text);
                 }
@@ -66,8 +80,8 @@ namespace BakalarskaPrace
 
         private void Height_TextChanged(object sender, RoutedEventArgs e)
         {
-            if (maintainAspectRatio) 
-            { 
+            if (maintainAspectRatio)
+            {
                 widthTextBox.Text = heightTextBox.Text;
             }
             else

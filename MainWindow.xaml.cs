@@ -61,12 +61,21 @@ namespace BakalarskaPrace
             colorPallete[0] = Color.FromArgb(alpha, 0, 0, 0);         //Primární barva
             colorPallete[1] = Color.FromArgb(alpha, 255, 255, 255);   //Sekundární barva
             defaultPreviewColor = Color.FromArgb(128, 178, 213, 226);
-            width = defaultWidth;
-            height = defaultHeight;
+            InitializeComponent();
+            this.Show();
+            WindowStartup windowStartup = new WindowStartup();
+            windowStartup.ShowDialog();
+
+            width = windowStartup.newWidth;
+            height = windowStartup.newHeight;
             defaultBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
             currentBitmap = defaultBitmap.Clone();
             bitmaps.Add(currentBitmap);
-            InitializeComponent();
+
+            paintSurface.Width = width;
+            paintSurface.Height = height;
+            image.Width = width;
+            image.Height = height;
             image.Source = bitmaps[currentBitmapIndex];
             LabelPosition.Content = "[" + width + ":" + height + "] " + 0 + ":" + 0;
             LabelScale.Content = "1.0";
@@ -1225,6 +1234,7 @@ namespace BakalarskaPrace
             currentBitmap = newBitmap;
             bitmaps[currentBitmapIndex] = newBitmap;
             image.Source = currentBitmap;
+            UpdateImagePreviewButtons();
         }
 
         private void Rotate_Click(object sender, RoutedEventArgs e)
@@ -1253,12 +1263,50 @@ namespace BakalarskaPrace
             currentBitmap = newBitmap;
             bitmaps[currentBitmapIndex] = newBitmap;
             image.Source = currentBitmap;
+            UpdateImagePreviewButtons();
         }
 
         private void Resize_Click(object sender, RoutedEventArgs e)
         {
             WindowResize subWindow = new WindowResize();
-            subWindow.Show();
+            subWindow.ShowDialog();
+
+            int croppedWidth;
+            int croppedHeight;
+
+            if (subWindow.newWidth > width) 
+            {
+                croppedWidth = width;
+            }
+            else
+            {
+                croppedWidth = subWindow.newWidth;
+            }
+
+            if (subWindow.newHeight > height)
+            {
+                croppedHeight = height;
+            }
+            else 
+            {
+                croppedHeight = subWindow.newHeight;
+            }
+
+            width = subWindow.newWidth;
+            height = subWindow.newHeight;
+            paintSurface.Width = width;
+            paintSurface.Height = height;
+            image.Width = width;
+            image.Height = height;
+
+
+            Int32Rect rect = new Int32Rect(0, 0, croppedWidth, croppedHeight);
+            CroppedBitmap croppedBitmap = new CroppedBitmap(currentBitmap, rect);
+            WriteableBitmap newBitmap = new WriteableBitmap(croppedBitmap);
+            currentBitmap = newBitmap;
+            bitmaps[currentBitmapIndex] = currentBitmap;
+            image.Source = currentBitmap;
+            UpdateImagePreviewButtons();
         }
 
         private void Center_Click(object sender, RoutedEventArgs e)
@@ -1275,8 +1323,6 @@ namespace BakalarskaPrace
             MatrixTransform transform = (MatrixTransform)paintSurface.RenderTransform;
             Matrix matrix = transform.Matrix;
             double scale;
-
-            
 
             // Pokud je e >= 0 dojde k přibližování
             if (e.Delta >= 0)
@@ -1500,8 +1546,14 @@ namespace BakalarskaPrace
                 System.Windows.Controls.Button newButton = new System.Windows.Controls.Button();
                 var brush = new ImageBrush();
                 brush.ImageSource = bitmaps[i];
-                newButton.Background = brush;
-                newButton.Content = "";
+                newButton.Content = new Image
+                {
+                    Source = bitmaps[i],
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Stretch = Stretch.Uniform,
+                    Height = 140,
+                    Width = 140
+                };
                 newButton.Width = 140;
                 newButton.Height = 140;
                 newButton.Name = "ImagePreview" + i.ToString();
@@ -1555,6 +1607,7 @@ namespace BakalarskaPrace
         {
             alphaBlending = false;
         }
+
         private void UpdateOnionSkinning()
         {
             RemoveOnionSkinning();
@@ -1589,6 +1642,17 @@ namespace BakalarskaPrace
                 if (child != image)
                 {
                     paintSurface.Children.Remove(child);
+                }
+            }
+        }
+
+        private void CropToFit_Click(object sender, RoutedEventArgs e)
+        {
+            for (int i = 0; i < width; i++) 
+            {
+                for (int j = 0; j < height; j++) 
+                { 
+                
                 }
             }
         }

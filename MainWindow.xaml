@@ -66,7 +66,7 @@
                     <Button Content="Flip" Canvas.Left="6" Canvas.Top="393" Width="66" Click="Flip_Click"/>
                     <Button Content="Rotate" Canvas.Left="79" Canvas.Top="393" Width="66" Click="Rotate_Click"/>
                     <Button Content="Resize" Canvas.Left="6" Canvas.Top="418" Width="66" Click="Resize_Click"/>
-                    <Button Content="Center" Canvas.Left="79" Canvas.Top="418" Width="66" Click="Center_Click"/>
+                    <Button Content="Crop To Fit" Canvas.Left="79" Canvas.Top="418" Width="66" Click="CropToFit_Click"/>
                 </Canvas>
             </ScrollViewer>
             <ScrollViewer Name="CustomScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Right" CanContentScroll="True" RenderTransformOrigin="0.5,0.5" >
