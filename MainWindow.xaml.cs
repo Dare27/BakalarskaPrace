@@ -63,15 +63,16 @@ namespace BakalarskaPrace
             defaultPreviewColor = Color.FromArgb(128, 178, 213, 226);
             InitializeComponent();
             this.Show();
+            paintSurface.Visibility = Visibility.Hidden;
             WindowStartup windowStartup = new WindowStartup();
             windowStartup.ShowDialog();
 
+            paintSurface.Visibility = Visibility.Visible;
             width = windowStartup.newWidth;
             height = windowStartup.newHeight;
             defaultBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
             currentBitmap = defaultBitmap.Clone();
             bitmaps.Add(currentBitmap);
-
             paintSurface.Width = width;
             paintSurface.Height = height;
             image.Width = width;
@@ -1497,7 +1498,7 @@ namespace BakalarskaPrace
             bitmaps.RemoveAt(currentBitmapIndex);
             if (bitmaps.Count == 0)
             {
-                WriteableBitmap newWriteableBitmap = defaultBitmap.Clone();
+                WriteableBitmap newWriteableBitmap  = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
                 bitmaps.Add(newWriteableBitmap);
             }
             //pokud je poslední index vrátit se na předchozí obrázek
@@ -1648,13 +1649,136 @@ namespace BakalarskaPrace
 
         private void CropToFit_Click(object sender, RoutedEventArgs e)
         {
-            for (int i = 0; i < width; i++) 
+            int leftPixelX = width;
+            int rightPixelX = 0;
+            int topPixelY = height;
+            int downPixelY = 0;
+
+            foreach (WriteableBitmap bitmap in bitmaps) 
             {
-                for (int j = 0; j < height; j++) 
-                { 
-                
+                int currentLeftPixelX = width;
+                int currentRightPixelX = 0;
+                int currentTopPixelY = height;
+                int currentDownPixelY = 0;
+
+                //Projít ze dolu a doprava 
+                for (int i = 0; i < width; i++)
+                {
+                    for (int j = 0; j < height; j++)
+                    {
+                        Color color = GetPixelColor(i, j, bitmap);
+                        if (color.A != 0)
+                        {
+                            if (currentRightPixelX < i)
+                            {
+                                currentRightPixelX = i;
+                            }
+
+                            if (currentDownPixelY < j)
+                            {
+                                currentDownPixelY = j;
+                            }
+                        }
+                    }
+                }
+
+                //Projít nahoru a doleva
+                for (int i = width - 1; i >= 0; i--)
+                {
+                    for (int j = height - 1; j >= 0; j--)
+                    {
+                        Color color = GetPixelColor(i, j, bitmap);
+                        if (color.A != 0)
+                        {
+                            if (currentLeftPixelX > i)
+                            {
+                                currentLeftPixelX = i;
+                            }
+
+                            if (currentTopPixelY > j)
+                            {
+                                currentTopPixelY = j;
+                            }
+                        }
+                    }
+                }
+
+                //Zvolit maxima
+                if (currentTopPixelY < topPixelY)
+                {
+                    topPixelY = currentTopPixelY;
+                }
+
+                if (currentLeftPixelX < leftPixelX)
+                {
+                    leftPixelX = currentLeftPixelX;
+                }
+
+                if (currentRightPixelX > rightPixelX)
+                {
+                    rightPixelX = currentRightPixelX;
+                }
+
+                if (currentDownPixelY > downPixelY)
+                {
+                    downPixelY = currentDownPixelY;
                 }
             }
+
+            int newWidth = rightPixelX - leftPixelX;
+            int newHeight =  downPixelY - topPixelY;
+            if (newWidth != 0 && newHeight != 0)
+            {
+                for (int k = 0; k < bitmaps.Count; k++)
+                {
+                    WriteableBitmap newBitmap = new WriteableBitmap(newWidth + 1, newHeight + 1, 1, 1, PixelFormats.Bgra32, null);
+
+                    //Získání pixelů z aktuální bitmapy
+                    for (int i = leftPixelX; i <= rightPixelX; i++)
+                    {
+                        for (int j = topPixelY; j <= downPixelY; j++)
+                        {
+                            Color color = GetPixelColor(i, j, bitmaps[k]);
+                            if (color.A != 0)
+                            {
+                                //Vytvoření pixelu, který je posunutý v nové bitmapě 
+                                AddPixel(i - leftPixelX, j - topPixelY, color, newBitmap);
+                            }
+                        }
+                    }
+
+                    bitmaps[k] = newBitmap;
+                    if (k == currentBitmapIndex)
+                    {
+                        currentBitmap = newBitmap;
+                        image.Source = currentBitmap;
+                    }
+                }
+
+                width = newWidth;
+                height = newHeight;
+                paintSurface.Width = width;
+                paintSurface.Height = height;
+                image.Width = width;
+                image.Height = height;
+                UpdateOnionSkinning();
+                UpdateImagePreviewButtons();
+            }
+        }
+
+        private void SwapColors_Click(object sender, RoutedEventArgs e)
+        {
+            Color tempColor = colorPallete[0];
+            colorPallete[0] = colorPallete[1];
+            colorPallete[1] = tempColor;
+
+            SolidColorBrush brush0 = new SolidColorBrush();
+            brush0.Color = colorPallete[0];
+            ColorSelector0.Background = brush0;
+
+            SolidColorBrush brush1 = new SolidColorBrush();
+            brush1.Color = colorPallete[1];
+            ColorSelector1.Background = brush1;
         }
 
         private void OnionSkinning_Checked(object sender, RoutedEventArgs e)
