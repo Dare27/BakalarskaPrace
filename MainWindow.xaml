@@ -11,14 +11,13 @@
                 <MenuItem Header="_File">
                     <MenuItem Header="_New" Click="Load_Click"/>
                     <MenuItem Header="_Load" Click="Load_Click"/>
-                    <MenuItem Header="_Export current frame as .png" Click="Save_Click"/>
-                    <MenuItem Header="_Export animation as .png" />
+                    <MenuItem Header="_Export current frame as .png" Click="ExportSingle_Click"/>
+                    <MenuItem Header="_Export animation as .png" Click="ExportFull_Click"/>
                     <MenuItem Header="_Export animation as .gif" />
                     <MenuItem Header="_Exit" />
                 </MenuItem>
             </Menu>
             <Grid>
-
                 <Grid Margin="170,0,170,0">
                     <Border>
                         <Grid x:Name="grid" MouseDown="Grid_MouseDown" MouseMove="Grid_MouseMove" MouseUp="Grid_MouseUp" Margin="0,0,0,0">
@@ -52,14 +51,14 @@
                             <Button x:Name="ColorSelector1" Click="ColorSelection_Click" BorderBrush="Black" Background="White" Width="32" Height="32" Margin="5,10,10,10" Canvas.Left="42" Canvas.Top="30"/>
                             <Button x:Name="SwapColors" Content="Swap" Click="SwapColors_Click" Height="20" Width="45"/>
                         </StackPanel>
-                        
+
                         <Label Content="Transparency" Margin="0,0,0,0" Canvas.Top="97" Canvas.Left="5"/>
                         <Slider ValueChanged="Transparency_ValueChanged" Orientation="horizontal" Minimum="0" Maximum="255" Value="255" 
                         IsSnapToTickEnabled="True" TickFrequency="1" Width="138" Canvas.Top="123" Canvas.Left="5" />
                         <Label Content="Brush size" Margin="0,0,0,0" Canvas.Top="141" Canvas.Left="5"/>
                         <Slider ValueChanged="BrushSize_ValueChanged" Orientation="horizontal" Minimum="1" Maximum="4" Value="1" 
                         IsSnapToTickEnabled="True" TickFrequency="1" Width="138" Canvas.Top="167" Canvas.Left="5" />
-                        <CheckBox Content="AlphaBlending" Canvas.Left="5" Canvas.Top="77" Checked="AlphaBlending_Checked" Unchecked="AlphaBlending_Unchecked" IsChecked="True"/>
+                        <CheckBox Content="Alpha Blending" Canvas.Left="5" Canvas.Top="52" Checked="AlphaBlending_Checked" Unchecked="AlphaBlending_Unchecked" IsChecked="True"/>
 
                         <Label Content="Tools" Canvas.Top="187" Canvas.Left="5"/>
                         <Button Name="ToolBrush" Content="Brush" Canvas.Left="7" Canvas.Top="215" Width="66" Click="Brush_Click"/>
@@ -81,6 +80,7 @@
                         <Button Content="Rotate" Canvas.Left="79" Canvas.Top="393" Width="66" Click="Rotate_Click"/>
                         <Button Content="Resize" Canvas.Left="6" Canvas.Top="418" Width="66" Click="Resize_Click"/>
                         <Button Content="Crop To Fit" Canvas.Left="79" Canvas.Top="418" Width="66" Click="CropToFit_Click"/>
+                        <CheckBox Content="Additive" Canvas.Left="5" Canvas.Top="77" Checked="Additive_Checked" Unchecked="Additive_Unchecked" IsChecked="False"/>
                     </Canvas>
                 </ScrollViewer>
                 <ScrollViewer Name="CustomScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Right" CanContentScroll="True" RenderTransformOrigin="0.5,0.5" >
@@ -107,6 +107,6 @@
                 </ScrollViewer>
             </Grid>
         </DockPanel>
-        
+
     </ScrollViewer>
 </Window>
