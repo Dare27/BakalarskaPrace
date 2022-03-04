@@ -45,7 +45,7 @@ namespace BakalarskaPrace
         Vector2 previousMousePosition = new Vector2(0, 0);
         Vector2 previewMousePosition = new Vector2(0, 0);
         Vector2 mouseDownPosition = new Vector2(0, 0);
-
+        
         int currentColorIndex = 0;
         double shadingStep = .1;
         bool onionSkinning;
@@ -53,6 +53,7 @@ namespace BakalarskaPrace
 
         Color defaultPreviewColor;
         WriteableBitmap previewBitmap;
+        Image previewImage = new Image();
 
         private System.Windows.Threading.DispatcherTimer timer = new System.Windows.Threading.DispatcherTimer();
         int timerInterval = 1000;
@@ -77,7 +78,6 @@ namespace BakalarskaPrace
             defaultBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
 
             previewBitmap = defaultBitmap.Clone();
-            Image previewImage = new Image();
             previewImage.Source = previewBitmap;
             previewImage.Opacity = 0.75f;
             previewImage.Width = windowStartup.newWidth; ;
@@ -336,9 +336,9 @@ namespace BakalarskaPrace
 
             if (x >= 0 && y >= 0 && x < width && y < height && (previewMousePosition.X != x || previewMousePosition.Y != y))
             {
-                Eraser((int)previewMousePosition.X, (int)previewMousePosition.Y, previewBitmap);
+                /*Eraser((int)previewMousePosition.X, (int)previewMousePosition.Y, previewBitmap);
                 previewMousePosition = new Vector2(x, y);
-                AddPixel(x, y, defaultPreviewColor, previewBitmap);
+                AddPixel(x, y, defaultPreviewColor, previewBitmap);*/
             }
         }
 
@@ -978,6 +978,7 @@ namespace BakalarskaPrace
         }
 
         //V případě této aplikace musí být použit 4-straná verze tohoto algoritmu aby se zábránilo únikům v rozích
+        //Může způsobit StackOverflowException při větších velikostech
         private void FloodFill(int x, int y, Color newColor, Color seedColor)
         {
             Color currentColor = GetPixelColor(x, y, currentBitmap);
@@ -1266,6 +1267,7 @@ namespace BakalarskaPrace
             lastToolButton = ToolMove;
         }
 
+        //Přidat převrácení pro všechny obrázky
         private void Flip_Click(object sender, RoutedEventArgs e)
         {
             WriteableBitmap newBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
@@ -1297,6 +1299,7 @@ namespace BakalarskaPrace
             UpdateImagePreviewButtons();
         }
 
+        //Přidat rotaci pro všechny obrázky
         private void Rotate_Click(object sender, RoutedEventArgs e)
         {
             WriteableBitmap newBitmap = new WriteableBitmap(height, width, 1, 1, PixelFormats.Bgra32, null);
@@ -1320,9 +1323,14 @@ namespace BakalarskaPrace
                     }
                 }
             }
+
             currentBitmap = newBitmap;
             bitmaps[currentBitmapIndex] = newBitmap;
+            image.Width = newBitmap.PixelWidth;
+            image.Height = newBitmap.PixelHeight;
             image.Source = currentBitmap;
+            paintSurface.Width = newBitmap.PixelWidth;
+            paintSurface.Height = newBitmap.PixelHeight;
             UpdateImagePreviewButtons();
         }
 
@@ -1369,7 +1377,7 @@ namespace BakalarskaPrace
                 paintSurface.Height = height;
                 image.Width = width;
                 image.Height = height;
-                UpdateOnionSkinning();
+                if (onionSkinning == true) UpdateOnionSkinning();
                 UpdateImagePreviewButtons();
             }
         }
@@ -1474,6 +1482,7 @@ namespace BakalarskaPrace
         private void ExportSingle_Click(object sender, RoutedEventArgs e)
         {
             SaveFileDialog dialog = new SaveFileDialog();
+            dialog.Filter = ".png|*.png|.bmp|*.bmp|.jpeg|*.jpeg";
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 try
@@ -1501,6 +1510,7 @@ namespace BakalarskaPrace
         private void ExportFull_Click(object sender, RoutedEventArgs e)
         {
             SaveFileDialog dialog = new SaveFileDialog();
+            dialog.Filter = ".png|*.png|.bmp|*.bmp|.jpeg|*.jpeg";
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 try
@@ -1547,7 +1557,33 @@ namespace BakalarskaPrace
             {
                 try
                 {
-                    //System.Drawing.Bitmap myBitmap = new System.Drawing.Bitmap(dialog.FileName);
+                    var filePath = dialog.FileName;
+                    BitmapImage thisIsABitmapImage = new BitmapImage(new Uri(filePath));
+                    WriteableBitmap newBitmap = new WriteableBitmap(thisIsABitmapImage);
+                    currentBitmap = newBitmap;
+                    image.Source = currentBitmap;
+                    bitmaps[0] = currentBitmap;
+                    //Clear nesmí být použito protože to potom vytváří chybu v OnTimedEvent
+                    for (int i = 1; i < bitmaps.Count; i++)
+                    {
+                        bitmaps.RemoveAt(i);
+                    }
+                    
+                    width = newBitmap.PixelWidth;
+                    height = newBitmap.PixelHeight;
+                    paintSurface.Width = width;
+                    paintSurface.Height = height;
+                    image.Width = width;
+                    image.Height = height;
+                    previewBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+                    previewImage.Source = previewBitmap;
+                    previewImage.Width = width;
+                    previewImage.Height = height;
+                    if (onionSkinning == true) UpdateOnionSkinning();
+                    UpdateImagePreviewButtons();
+                    currentBitmapIndex = 0;
+                    LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
+                    LabelPosition.Content = "[" + width + ":" + height + "] " + mousePosition.X + ":" + mousePosition.Y;
                 }
                 catch
                 {
@@ -1576,7 +1612,7 @@ namespace BakalarskaPrace
             }
             else
             {
-                newWriteableBitmap = defaultBitmap.Clone();
+                newWriteableBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
             }
 
             if (currentBitmapIndex < bitmaps.Count - 1)
@@ -1603,7 +1639,7 @@ namespace BakalarskaPrace
             bitmaps.RemoveAt(currentBitmapIndex);
             if (bitmaps.Count == 0)
             {
-                WriteableBitmap newWriteableBitmap  = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+                WriteableBitmap newWriteableBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
                 bitmaps.Add(newWriteableBitmap);
             }
             //pokud je poslední index vrátit se na předchozí obrázek
@@ -1868,9 +1904,18 @@ namespace BakalarskaPrace
                 paintSurface.Height = height;
                 image.Width = width;
                 image.Height = height;
-                UpdateOnionSkinning();
+                previewBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+                previewImage.Source = previewBitmap;
+                previewImage.Width = width;
+                previewImage.Height = height;
+                if (onionSkinning == true) UpdateOnionSkinning();
                 UpdateImagePreviewButtons();
             }
+        }
+
+        private void CenterAlligment_Click(object sender, RoutedEventArgs e)
+        {
+
         }
 
         private void SwapColors_Click(object sender, RoutedEventArgs e)

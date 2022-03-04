@@ -11,8 +11,8 @@
                 <MenuItem Header="_File">
                     <MenuItem Header="_New" Click="Load_Click"/>
                     <MenuItem Header="_Load" Click="Load_Click"/>
-                    <MenuItem Header="_Export current frame as .png" Click="ExportSingle_Click"/>
-                    <MenuItem Header="_Export animation as .png" Click="ExportFull_Click"/>
+                    <MenuItem Header="_Export current frame" Click="ExportSingle_Click"/>
+                    <MenuItem Header="_Export animation" Click="ExportFull_Click"/>
                     <MenuItem Header="_Export animation as .gif" />
                     <MenuItem Header="_Exit" />
                 </MenuItem>
@@ -81,6 +81,7 @@
                         <Button Content="Resize" Canvas.Left="6" Canvas.Top="418" Width="66" Click="Resize_Click"/>
                         <Button Content="Crop To Fit" Canvas.Left="79" Canvas.Top="418" Width="66" Click="CropToFit_Click"/>
                         <CheckBox Content="Additive" Canvas.Left="5" Canvas.Top="77" Checked="Additive_Checked" Unchecked="Additive_Unchecked" IsChecked="False"/>
+                        <Button Content="Center Alligment" Canvas.Left="7" Canvas.Top="443" Width="66" Click="CenterAlligment_Click"/>
                     </Canvas>
                 </ScrollViewer>
                 <ScrollViewer Name="CustomScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Right" CanContentScroll="True" RenderTransformOrigin="0.5,0.5" >
