@@ -1270,33 +1270,57 @@ namespace BakalarskaPrace
         //Přidat převrácení pro všechny obrázky
         private void Flip_Click(object sender, RoutedEventArgs e)
         {
-            WriteableBitmap newBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+            if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+            {
+                for(int i = 0; i < bitmaps.Count; i++)
+                {
+                    WriteableBitmap newBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+                    Flip(newBitmap, bitmaps[i]);
+                    bitmaps[i] = newBitmap;
+                    if (i == currentBitmapIndex) 
+                    {
+                        currentBitmap = newBitmap;
+                        bitmaps[currentBitmapIndex] = newBitmap;
+                        image.Source = currentBitmap;
+                    }
+                    UpdateImagePreviewButtons();
+                }
+            }
+            else
+            {
+                WriteableBitmap newBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+                Flip(newBitmap, currentBitmap);
+                currentBitmap = newBitmap;
+                bitmaps[currentBitmapIndex] = newBitmap;
+                image.Source = currentBitmap;
+                UpdateImagePreviewButtons();
+            }
+        }
+
+        private void Flip(WriteableBitmap newBitmap, WriteableBitmap sourceBitmap) 
+        {
             if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
             {
-                for (int x = 0; x < currentBitmap.PixelWidth; x++)
+                for (int x = 0; x < sourceBitmap.PixelWidth; x++)
                 {
-                    for (int y = 0; y < currentBitmap.PixelHeight; y++)
+                    for (int y = 0; y < sourceBitmap.PixelHeight; y++)
                     {
-                        int yp = currentBitmap.PixelHeight - y - 1;
-                        AddPixel(x, yp, GetPixelColor(x, y, currentBitmap), newBitmap);
+                        int yp = sourceBitmap.PixelHeight - y - 1;
+                        AddPixel(x, yp, GetPixelColor(x, y, sourceBitmap), newBitmap);
                     }
                 }
             }
-            else 
+            else
             {
-                for (int x = 0; x < currentBitmap.PixelWidth; x++)
+                for (int x = 0; x < sourceBitmap.PixelWidth; x++)
                 {
-                    for (int y = 0; y < currentBitmap.PixelHeight; y++)
+                    for (int y = 0; y < sourceBitmap.PixelHeight; y++)
                     {
-                        int xp = currentBitmap.PixelWidth - x - 1;
-                        AddPixel(xp, y, GetPixelColor(x, y, currentBitmap), newBitmap);
+                        int xp = sourceBitmap.PixelWidth - x - 1;
+                        AddPixel(xp, y, GetPixelColor(x, y, sourceBitmap), newBitmap);
                     }
                 }
             }
-            currentBitmap = newBitmap;
-            bitmaps[currentBitmapIndex] = newBitmap;
-            image.Source = currentBitmap;
-            UpdateImagePreviewButtons();
         }
 
         //Přidat rotaci pro všechny obrázky
