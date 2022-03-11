@@ -1267,7 +1267,6 @@ namespace BakalarskaPrace
             lastToolButton = ToolMove;
         }
 
-        //Přidat převrácení pro všechny obrázky
         private void Flip_Click(object sender, RoutedEventArgs e)
         {
             if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
@@ -1283,8 +1282,8 @@ namespace BakalarskaPrace
                         bitmaps[currentBitmapIndex] = newBitmap;
                         image.Source = currentBitmap;
                     }
-                    UpdateImagePreviewButtons();
                 }
+                UpdateImagePreviewButtons();
             }
             else
             {
@@ -1323,39 +1322,123 @@ namespace BakalarskaPrace
             }
         }
 
-        //Přidat rotaci pro všechny obrázky
         private void Rotate_Click(object sender, RoutedEventArgs e)
         {
-            WriteableBitmap newBitmap = new WriteableBitmap(height, width, 1, 1, PixelFormats.Bgra32, null);
+
+
+            if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+            {
+                int newWidth = height;
+                height = width;
+                width = newWidth;
+                for (int i = 0; i < bitmaps.Count; i++)
+                {
+                    WriteableBitmap newBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+                    RotateAll(newBitmap, bitmaps[i]);
+                    bitmaps[i] = newBitmap;
+                    if (i == currentBitmapIndex)
+                    {
+                        currentBitmap = newBitmap;
+                        bitmaps[currentBitmapIndex] = newBitmap;
+                        image.Width = newBitmap.PixelWidth;
+                        image.Height = newBitmap.PixelHeight;
+                        image.Source = currentBitmap;
+                        paintSurface.Width = newBitmap.PixelWidth;
+                        paintSurface.Height = newBitmap.PixelHeight;
+                    }
+                    UpdateImagePreviewButtons();
+                }
+            }
+            else
+            {
+                WriteableBitmap newBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+                RotateSingle(newBitmap, currentBitmap);
+                currentBitmap = newBitmap;
+                bitmaps[currentBitmapIndex] = newBitmap;
+                image.Width = newBitmap.PixelWidth;
+                image.Height = newBitmap.PixelHeight;
+                image.Source = currentBitmap;
+                paintSurface.Width = newBitmap.PixelWidth;
+                paintSurface.Height = newBitmap.PixelHeight;
+                UpdateImagePreviewButtons();
+            }
+        }
+
+        private void RotateAll(WriteableBitmap newBitmap, WriteableBitmap sourceBitmap) 
+        {
             if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
             {
-                for (int x = 0; x < currentBitmap.PixelWidth; x++)
+                for (int x = 0; x < sourceBitmap.PixelWidth; x++)
                 {
-                    for (int y = 0; y < currentBitmap.PixelHeight; y++)
+                    for (int y = 0; y < sourceBitmap.PixelHeight; y++)
                     {
-                        AddPixel(currentBitmap.PixelHeight - y - 1, x, GetPixelColor(x, y, currentBitmap), newBitmap);
+                        AddPixel(sourceBitmap.PixelHeight - y - 1, x, GetPixelColor(x, y, sourceBitmap), newBitmap);
                     }
                 }
             }
             else
             {
-                for (int x = 0; x < currentBitmap.PixelWidth; x++)
+                for (int x = 0; x < sourceBitmap.PixelWidth; x++)
                 {
-                    for (int y = 0; y < currentBitmap.PixelHeight; y++)
+                    for (int y = 0; y < sourceBitmap.PixelHeight; y++)
                     {
-                        AddPixel(y, currentBitmap.PixelWidth - x - 1, GetPixelColor(x, y, currentBitmap), newBitmap);
+                        AddPixel(y, sourceBitmap.PixelWidth - x - 1, GetPixelColor(x, y, sourceBitmap), newBitmap);
+                    }
+                }
+            }
+        }
+
+        private void RotateSingle(WriteableBitmap newBitmap, WriteableBitmap sourceBitmap)
+        {
+            int widthShift = 0;
+            int heightShift = 0;
+            CroppedBitmap croppedBitmap;
+
+            //Zvolení posunu zkrácené bitmapy 
+            if (width < height)
+            {
+                croppedBitmap = new CroppedBitmap(currentBitmap, new Int32Rect(0, height / 2 - width / 2, width, height / 2 + width / 2));
+                heightShift = (height / 2 - width / 2);
+            }
+            else if (height < width)
+            {
+                croppedBitmap = new CroppedBitmap(currentBitmap, new Int32Rect(width / 2 - height / 2, 0, width / 2 + height / 2, height));
+                widthShift = (width / 2 - height / 2);
+            }
+            else 
+            {
+                croppedBitmap = new CroppedBitmap(currentBitmap, new Int32Rect(0, 0, width, height));
+            }
+
+            WriteableBitmap temporaryBitmap = new WriteableBitmap(croppedBitmap);
+            int size = Math.Min(temporaryBitmap.PixelWidth, temporaryBitmap.PixelHeight);
+            WriteableBitmap rotatedBitmap = new WriteableBitmap(size, size, temporaryBitmap.PixelHeight), 1, 1, PixelFormats.Bgra32, null);
+
+            //Rotace dočasné bitmapy
+            for (int x = 0; x < rotatedBitmap.PixelWidth; x++)
+            {
+                for (int y = 0; y < rotatedBitmap.PixelHeight; y++)
+                {
+                    //Směr rotace
+                    if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
+                    {
+                        AddPixel(rotatedBitmap.PixelHeight - y - 1, x, GetPixelColor(x, y, temporaryBitmap), rotatedBitmap);
+                    }
+                    else
+                    {
+                        AddPixel(y, rotatedBitmap.PixelWidth - x - 1, GetPixelColor(x, y, temporaryBitmap), rotatedBitmap);
                     }
                 }
             }
 
-            currentBitmap = newBitmap;
-            bitmaps[currentBitmapIndex] = newBitmap;
-            image.Width = newBitmap.PixelWidth;
-            image.Height = newBitmap.PixelHeight;
-            image.Source = currentBitmap;
-            paintSurface.Width = newBitmap.PixelWidth;
-            paintSurface.Height = newBitmap.PixelHeight;
-            UpdateImagePreviewButtons();
+            //Zapsaní otočené bitmapy s případným posunem do nové bitmapy
+            for (int x = 0; x < rotatedBitmap.PixelWidth; x++)
+            {
+                for (int y = 0; y < rotatedBitmap.PixelHeight; y++)
+                {
+                    AddPixel(x + widthShift, y + heightShift, GetPixelColor(x, y, rotatedBitmap), newBitmap);
+                }
+            }
         }
 
         private void Resize_Click(object sender, RoutedEventArgs e)
