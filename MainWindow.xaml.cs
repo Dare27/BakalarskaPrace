@@ -45,8 +45,11 @@ namespace BakalarskaPrace
         Vector2 mousePosition = new Vector2(0, 0);
         Vector2 previousMousePosition = new Vector2(0, 0);
         Vector2 previewMousePosition = new Vector2(0, 0);
+        List<Vector2> previewMousePoints = new List<Vector2>();
+
         Vector2 mouseDownPosition = new Vector2(0, 0);
-        
+        List<Vector2> visitedPoints = new List<Vector2>();
+
         int currentColorIndex = 0;
         double shadingStep = .1;
         bool onionSkinning;
@@ -79,7 +82,9 @@ namespace BakalarskaPrace
 
             previewBitmap = defaultBitmap.Clone();
             previewImage.Source = previewBitmap;
-            
+            previewImage.Width = width;
+            previewImage.Height = height;
+
             currentBitmap = defaultBitmap.Clone();
             bitmaps.Add(currentBitmap);
             paintSurface.Width = width;
@@ -126,34 +131,12 @@ namespace BakalarskaPrace
                 {
                     case tools.brush:
                         {
-                            if (additive == true)
-                            {
-                                StrokeThicknessSetter(x, y, colorPallete[colorIndex]);
-                            }
-                            else
-                            {
-                                if (previousMousePosition.X != x || previousMousePosition.Y != y)
-                                {
-                                    previousMousePosition = new Vector2(x, y);
-                                    StrokeThicknessSetter(x, y, colorPallete[colorIndex]);
-                                }
-                            }
+                            StrokeThicknessSetter(x, y, colorPallete[colorIndex], currentBitmap);
                             break;
                         }
                     case tools.symmetricBrush:
                         {
-                            if (additive == true)
-                            {
-                                SymmetricDrawing(x, y, colorPallete[colorIndex]);
-                            }
-                            else
-                            {
-                                if (previousMousePosition.X != x || previousMousePosition.Y != y)
-                                {
-                                    previousMousePosition = new Vector2(x, y);
-                                    SymmetricDrawing(x, y, colorPallete[colorIndex]);
-                                }
-                            }
+                            SymmetricDrawing(x, y, colorPallete[colorIndex]);
                             break;
                         }
                     case tools.eraser:
@@ -245,34 +228,12 @@ namespace BakalarskaPrace
                 {
                     case tools.brush:
                         {
-                            if (additive == true)
-                            {
-                                StrokeThicknessSetter(x, y, colorPallete[colorIndex]);
-                            }
-                            else
-                            {
-                                if (previousMousePosition.X != x || previousMousePosition.Y != y)
-                                {
-                                    previousMousePosition = new Vector2(x, y);
-                                    StrokeThicknessSetter(x, y, colorPallete[colorIndex]);
-                                }
-                            }
+                            StrokeThicknessSetter(x, y, colorPallete[colorIndex], currentBitmap);
                             break;
                         }
                     case tools.symmetricBrush:
                         {
-                            if (additive == true)
-                            {
-                                SymmetricDrawing(x, y, colorPallete[colorIndex]);
-                            }
-                            else
-                            {
-                                if (previousMousePosition.X != x || previousMousePosition.Y != y)
-                                {
-                                    previousMousePosition = new Vector2(x, y);
-                                    SymmetricDrawing(x, y, colorPallete[colorIndex]);
-                                }
-                            }
+                            SymmetricDrawing(x, y, colorPallete[colorIndex]);
                             break;
                         }
                     case tools.eraser:
@@ -329,12 +290,17 @@ namespace BakalarskaPrace
                 }
             }
 
-            if (x >= 0 && y >= 0 && x < width && y < height && (previewMousePosition.X != x || previewMousePosition.Y != y))
+           /* if (x >= 0 && y >= 0 && x < width && y < height && (previewMousePosition.X != x || previewMousePosition.Y != y))
             {
-                Eraser((int)previewMousePosition.X, (int)previewMousePosition.Y, previewBitmap);
+                foreach (Vector2 point in previewMousePoints) 
+                {
+                    Eraser((int)point.X, (int)point.Y, previewBitmap);
+                }
                 previewMousePosition = new Vector2(x, y);
-                AddPixel(x, y, defaultPreviewColor, previewBitmap);
-            }
+                previewMousePoints.Add(new Vector2(x, y));
+                StrokeThicknessSetter(x, y, defaultPreviewColor, previewBitmap);
+                //AddPixel(x, y, defaultPreviewColor, previewBitmap);
+            }*/
         }
 
         private unsafe void Image_MouseUp(object sender, System.Windows.Input.MouseEventArgs e)
@@ -343,6 +309,9 @@ namespace BakalarskaPrace
             int y = (int)e.GetPosition(image).Y;
 
             mousePosition = new Vector2(x, y);
+            previousMousePosition = new Vector2(-1, -1);
+
+            visitedPoints = new List<Vector2>();
 
             switch (currentTool)
             {
@@ -478,37 +447,49 @@ namespace BakalarskaPrace
             }
         }
 
-        private void StrokeThicknessSetter(int x, int y, Color color)
+        private void StrokeThicknessSetter(int x, int y, Color color, WriteableBitmap bitmap, List<Vector2> points = null)
         {
             //Při kreslení přímek se musí již navštívené pixely přeskočit, aby nedošlo k nerovnoměrně vybarveným přímkám při velikostech > 1 a alpha < 255
-            if (strokeThickness == 1)
+            if (points == null) 
+            {
+                points = new List<Vector2>();
+            }
+
+            int size = strokeThickness / 2;
+            int isOdd = 0;
+
+            if (strokeThickness % 2 != 0)
+            {
+                isOdd = 1;
+            }
+            
+            for (int i = -size; i < size + isOdd; i++)
+            {
+                for (int j = -size; j < size + isOdd; j++)
+                {
+                    // zkontrolovat jestli se pixel vejde do bitmapy
+                    if (x + i < width && x + i > -1 && y + j < height && y + j > -1)
+                    {
+                        if (!visitedPoints.Contains(new Vector2(x + i, y + j)))
+                        {
+                            visitedPoints.Add(new Vector2(x + i, y + j));
+                            points.Add(new Vector2(x + i, y + j));
+                        }
+                    }
+                }
+            }
+
+            foreach (var point in points) 
             {
                 if (alphaBlending == true)
                 {
-                    Color currentPixelColor = GetPixelColor(x, y, currentBitmap);
+                    Color currentPixelColor = GetPixelColor((int)point.X, (int)point.Y, bitmap);
                     Color colorMix = ColorMix(color, currentPixelColor);
-                    AddPixel(x, y, colorMix, currentBitmap);
+                    AddPixel((int)point.X, (int)point.Y, colorMix, bitmap);
                 }
                 else
                 {
-                    AddPixel(x, y, color, currentBitmap);
-                }
-            }
-            else
-            {
-                int size = strokeThickness - 1;
-                for (int i = -size; i < size; i++)
-                {
-                    for (int j = -size; j < size; j++)
-                    {
-                        // zkontrolovat jestli se pixel vejde do bitmapy
-                        if (x + i < width && x + i > -1 && y + j < height && y + j > -1)
-                        {
-                            Color currentPixelColor = GetPixelColor(x + i, y + j, currentBitmap);
-                            Color colorMix = ColorMix(color, currentPixelColor);
-                            AddPixel(x + i, y + j, colorMix, currentBitmap);
-                        }
-                    }
+                    AddPixel((int)point.X, (int)point.Y, color, bitmap);
                 }
             }
         }
@@ -603,7 +584,7 @@ namespace BakalarskaPrace
 
             for (int x = x0; x < x1; x++)
             {
-                StrokeThicknessSetter(x, y, color);
+                StrokeThicknessSetter(x, y, color, currentBitmap);
 
                 if (D > 0)
                 {
@@ -634,7 +615,7 @@ namespace BakalarskaPrace
 
             for (int y = y0; y < y1; y++)
             {
-                StrokeThicknessSetter(x, y, color);
+                StrokeThicknessSetter(x, y, color, currentBitmap);
 
                 if (D > 0)
                 {
@@ -666,9 +647,15 @@ namespace BakalarskaPrace
             int x = x0;
             int y = y0;
 
-            for (int i = 1; i <= maxDistance; i++)
+            List<Vector2> points = new List<Vector2>();
+
+            for (int i = 1; i <= maxDistance + 1; i++)
             {
-                StrokeThicknessSetter(x, y, color);
+                if (!points.Contains(new Vector2(x, y))) 
+                {
+                    points.Add(new Vector2(x, y));
+                }
+                //StrokeThicknessSetter(x, y, color);
 
                 if (Math.Sqrt((Math.Pow(x0 - x, 2) + Math.Pow(y0 - y, 2))) >= maxDistance)
                 {
@@ -710,6 +697,11 @@ namespace BakalarskaPrace
                     }
                 }
             }
+
+            foreach (Vector2 point in points) 
+            {
+                StrokeThicknessSetter((int)point.X, (int)point.Y, color, currentBitmap);
+            }
         }
 
         //V případě této aplikace je nutné používat Mid-Point algoritmus, protože Bresenhaimův algoritmus nedosahuje při nízkých velikostech kruhu vzhledného výsledku
@@ -726,15 +718,15 @@ namespace BakalarskaPrace
                 }
                 else 
                 {
-                    StrokeThicknessSetter(centerX + x, centerY + y, color);
-                    StrokeThicknessSetter(x + centerX - rad, centerY - rad, color);
-                    StrokeThicknessSetter(y + centerX, x + centerY, color);
-                    StrokeThicknessSetter(-rad + centerX, x + centerY - rad, color);
+                    StrokeThicknessSetter(centerX + x, centerY + y, color, currentBitmap);
+                    StrokeThicknessSetter(x + centerX - rad, centerY - rad, color, currentBitmap);
+                    StrokeThicknessSetter(y + centerX, x + centerY, color, currentBitmap);
+                    StrokeThicknessSetter(-rad + centerX, x + centerY - rad, color, currentBitmap);
                 }
             }
             else
             {
-                StrokeThicknessSetter(centerX, centerY, color);
+                StrokeThicknessSetter(centerX, centerY, color, currentBitmap);
             }
 
             // Initialising the value of P
@@ -771,10 +763,10 @@ namespace BakalarskaPrace
                     }
                     else
                     {
-                        StrokeThicknessSetter(y + centerX, x + centerY, color);
-                        StrokeThicknessSetter(-y + centerX, x + centerY, color);
-                        StrokeThicknessSetter(y + centerX, -x + centerY, color);
-                        StrokeThicknessSetter(-y + centerX, -x + centerY, color);
+                        StrokeThicknessSetter(y + centerX, x + centerY, color, currentBitmap);
+                        StrokeThicknessSetter(-y + centerX, x + centerY, color, currentBitmap);
+                        StrokeThicknessSetter(y + centerX, -x + centerY, color, currentBitmap);
+                        StrokeThicknessSetter(-y + centerX, -x + centerY, color, currentBitmap);
                     }
                 }
             }
@@ -866,8 +858,8 @@ namespace BakalarskaPrace
                     }
                     else 
                     {
-                        StrokeThicknessSetter(x0, y, color);
-                        StrokeThicknessSetter(x1, y, color);
+                        StrokeThicknessSetter(x0, y, color, currentBitmap);
+                        StrokeThicknessSetter(x1, y, color, currentBitmap);
                     }
                 }
             }
@@ -881,8 +873,8 @@ namespace BakalarskaPrace
                     }
                     else
                     {
-                        StrokeThicknessSetter(x0, y, color);
-                        StrokeThicknessSetter(x1, y, color);
+                        StrokeThicknessSetter(x0, y, color, currentBitmap);
+                        StrokeThicknessSetter(x1, y, color, currentBitmap);
                     }
                 }
             }
@@ -897,8 +889,8 @@ namespace BakalarskaPrace
                     }
                     else
                     {
-                        StrokeThicknessSetter(x, y0, color);
-                        StrokeThicknessSetter(x, y1, color);
+                        StrokeThicknessSetter(x, y0, color, currentBitmap);
+                        StrokeThicknessSetter(x, y1, color, currentBitmap);
                     }
                 }
             }
@@ -912,12 +904,12 @@ namespace BakalarskaPrace
                     }
                     else
                     {
-                        StrokeThicknessSetter(x, y0, color);
-                        StrokeThicknessSetter(x, y1, color);
+                        StrokeThicknessSetter(x, y0, color, currentBitmap);
+                        StrokeThicknessSetter(x, y1, color, currentBitmap);
                     }
                 }
             }
-            StrokeThicknessSetter(x1, y1, color);
+            StrokeThicknessSetter(x1, y1, color, currentBitmap);
         }
 
         private void Darken(int x, int y)
@@ -1039,49 +1031,49 @@ namespace BakalarskaPrace
             //Chybí převrácení podle osy souměrnosti
             if (System.Windows.Forms.Control.ModifierKeys == Keys.Shift)
             {
-                StrokeThicknessSetter(x, y, color);
+                StrokeThicknessSetter(x, y, color, currentBitmap);
 
                 //Použít horizontální a vertikální osu 
                 if (x > currentBitmap.PixelWidth / 2)
                 {
                     mirrorPostion = currentBitmap.PixelWidth - x - 1;
-                    StrokeThicknessSetter(mirrorPostion, y, color);
+                    StrokeThicknessSetter(mirrorPostion, y, color, currentBitmap);
                 }
                 else
                 {
 
                     int dif = (currentBitmap.PixelWidth / 2) - x;
                     mirrorPostion = (currentBitmap.PixelWidth / 2) + dif - 1;
-                    StrokeThicknessSetter(mirrorPostion, y, color);
+                    StrokeThicknessSetter(mirrorPostion, y, color, currentBitmap);
                 }
 
                 if (y > currentBitmap.PixelHeight / 2)
                 {
                     mirrorPostion = currentBitmap.PixelHeight - y - 1;
-                    StrokeThicknessSetter(x, mirrorPostion, color);
+                    StrokeThicknessSetter(x, mirrorPostion, color, currentBitmap);
                 }
                 else
                 {
                     int dif = (currentBitmap.PixelHeight / 2) - y;
                     mirrorPostion = (currentBitmap.PixelHeight / 2) + dif - 1;
-                    StrokeThicknessSetter(x, mirrorPostion, color);
+                    StrokeThicknessSetter(x, mirrorPostion, color, currentBitmap);
                 }
             }
             else if (System.Windows.Forms.Control.ModifierKeys == Keys.Control)
             {
-                StrokeThicknessSetter(x, y, color);
+                StrokeThicknessSetter(x, y, color, currentBitmap);
 
                 //Použít horizontální osu 
                 if (y > currentBitmap.PixelHeight / 2)
                 {
                     mirrorPostion = currentBitmap.PixelHeight - y - 1;
-                    StrokeThicknessSetter(x, mirrorPostion, color);
+                    StrokeThicknessSetter(x, mirrorPostion, color, currentBitmap);
                 }
                 else
                 {
                     int dif = (currentBitmap.PixelHeight / 2) - y;
                     mirrorPostion = (currentBitmap.PixelHeight / 2) + dif - 1;
-                    StrokeThicknessSetter(x, mirrorPostion, color);
+                    StrokeThicknessSetter(x, mirrorPostion, color, currentBitmap);
                 }
             }
             else
@@ -1090,16 +1082,16 @@ namespace BakalarskaPrace
                 if (x > currentBitmap.PixelWidth / 2)
                 {
                     mirrorPostion = currentBitmap.PixelWidth - x - 1;
-                    StrokeThicknessSetter(mirrorPostion, y, color);
+                    StrokeThicknessSetter(mirrorPostion, y, color, currentBitmap);
                 }
                 else
                 {
                     int dif = (currentBitmap.PixelWidth / 2) - x;
                     mirrorPostion = (currentBitmap.PixelWidth / 2) + dif - 1;
-                    StrokeThicknessSetter(mirrorPostion, y, color);
+                    StrokeThicknessSetter(mirrorPostion, y, color, currentBitmap);
                 }
             }
-            StrokeThicknessSetter(x, y, color);
+            StrokeThicknessSetter(x, y, color, currentBitmap);
 
         }
 
