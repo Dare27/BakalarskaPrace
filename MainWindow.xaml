@@ -7,13 +7,13 @@
         WindowState="Maximized">
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
         <DockPanel>
-            <Menu DockPanel.Dock="Top">
+            <Menu DockPanel.Dock="Top" Panel.ZIndex="1000">
                 <MenuItem Header="_File">
                     <MenuItem Header="_New" Click="Load_Click"/>
                     <MenuItem Header="_Load" Click="Load_Click"/>
                     <MenuItem Header="_Export current frame" Click="ExportSingle_Click"/>
                     <MenuItem Header="_Export animation" Click="ExportFull_Click"/>
-                    <MenuItem Header="_Export animation as .gif" />
+                    <MenuItem Header="_Export animation as .gif" Click="ExportGif_CLick"/>
                     <MenuItem Header="_Exit" />
                 </MenuItem>
             </Menu>
@@ -25,6 +25,7 @@
                                 <TranslateTransform x:Name="Grid_TranslateTransform"/>
                             </Grid.RenderTransform>
                             <Canvas Name="paintSurface" MouseWheel="Canvas_MouseWheel" SnapsToDevicePixels="False"  Width="64" Height="64" HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                                <Image x:Name="previewImage" Panel.ZIndex="20" MouseMove="Image_MouseMove" MouseDown="Image_MouseDown" MouseUp="Image_MouseUp" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" Width="64" Height="64" Opacity="0.75"/>
                                 <Image x:Name="image" Panel.ZIndex="10" MouseMove="Image_MouseMove" MouseDown="Image_MouseDown" MouseUp="Image_MouseUp" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" Width="64" Height="64" />
                                 <Canvas.Background>
                                     <DrawingBrush TileMode="Tile" Viewport="0,0,8,8" ViewportUnits="Absolute">

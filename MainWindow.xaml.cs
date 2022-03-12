@@ -15,7 +15,8 @@ using BakalarskaPrace.Properties;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Numerics; 
+using System.Numerics;
+using ImageMagick;
 
 namespace BakalarskaPrace
 {
@@ -53,7 +54,6 @@ namespace BakalarskaPrace
 
         Color defaultPreviewColor;
         WriteableBitmap previewBitmap;
-        Image previewImage = new Image();
 
         private System.Windows.Threading.DispatcherTimer timer = new System.Windows.Threading.DispatcherTimer();
         int timerInterval = 1000;
@@ -79,11 +79,6 @@ namespace BakalarskaPrace
 
             previewBitmap = defaultBitmap.Clone();
             previewImage.Source = previewBitmap;
-            previewImage.Opacity = 0.75f;
-            previewImage.Width = windowStartup.newWidth; ;
-            previewImage.Height = windowStartup.newHeight;
-            RenderOptions.SetBitmapScalingMode(previewImage, BitmapScalingMode.NearestNeighbor);
-            paintSurface.Children.Add(previewImage);
             
             currentBitmap = defaultBitmap.Clone();
             bitmaps.Add(currentBitmap);
@@ -336,9 +331,9 @@ namespace BakalarskaPrace
 
             if (x >= 0 && y >= 0 && x < width && y < height && (previewMousePosition.X != x || previewMousePosition.Y != y))
             {
-                /*Eraser((int)previewMousePosition.X, (int)previewMousePosition.Y, previewBitmap);
+                Eraser((int)previewMousePosition.X, (int)previewMousePosition.Y, previewBitmap);
                 previewMousePosition = new Vector2(x, y);
-                AddPixel(x, y, defaultPreviewColor, previewBitmap);*/
+                AddPixel(x, y, defaultPreviewColor, previewBitmap);
             }
         }
 
@@ -1412,7 +1407,7 @@ namespace BakalarskaPrace
 
             WriteableBitmap temporaryBitmap = new WriteableBitmap(croppedBitmap);
             int size = Math.Min(temporaryBitmap.PixelWidth, temporaryBitmap.PixelHeight);
-            WriteableBitmap rotatedBitmap = new WriteableBitmap(size, size, temporaryBitmap.PixelHeight), 1, 1, PixelFormats.Bgra32, null);
+            WriteableBitmap rotatedBitmap = new WriteableBitmap(size, size, 1, 1, PixelFormats.Bgra32, null);
 
             //Rotace dočasné bitmapy
             for (int x = 0; x < rotatedBitmap.PixelWidth; x++)
@@ -1448,7 +1443,6 @@ namespace BakalarskaPrace
 
             int croppedWidth;
             int croppedHeight;
-
 
             if (subWindow.newWidth != 0 && subWindow.newHeight != 0)
             {
@@ -1653,6 +1647,60 @@ namespace BakalarskaPrace
                 {
 
                 }
+            }
+        }
+
+        private void ExportGif_CLick(object sender, RoutedEventArgs e)
+        {
+            SaveFileDialog dialog = new SaveFileDialog();
+            dialog.Filter = ".gif|*.gif";
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                try
+                {
+                    if (dialog.FileName != string.Empty)
+                    {
+                        using (MagickImageCollection collection = new MagickImageCollection())
+                        {
+                            //Výpočet rozestupu mezi snímky
+                            int delay = timerInterval / 10;
+
+                            for (int i = 0; i < bitmaps.Count; i++)
+                            {
+                                //Převedení WriteableBitmap na byte pole
+                                byte[] bitmapData = ImageToByte(bitmaps[i]);
+                                MagickImage image = new MagickImage(bitmapData);
+                                collection.Add(image);
+                                collection[i].AnimationDelay = delay;
+                            }
+
+                            //Snížení množství barev
+                            QuantizeSettings settings = new QuantizeSettings();
+                            settings.Colors = 256;
+                            collection.Quantize(settings);
+
+                            // Volitelné optimalizování obrázků, správně by obrázky měly mít stejnou velikost
+                            collection.Optimize();
+                            collection.Write(System.IO.Path.GetFullPath(dialog.FileName));
+                        }
+                    }
+                }
+                catch
+                {
+
+                }
+            }
+        }
+
+        public static byte[] ImageToByte(WriteableBitmap imageSource)
+        {
+            var encoder = new BmpBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(imageSource));
+
+            using (var ms = new MemoryStream())
+            {
+                encoder.Save(ms);
+                return ms.ToArray();
             }
         }
 
