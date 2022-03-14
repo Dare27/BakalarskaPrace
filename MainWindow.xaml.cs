@@ -47,7 +47,7 @@ namespace BakalarskaPrace
         Vector2 previewMousePosition = new Vector2(0, 0);
         List<Vector2> previewMousePoints = new List<Vector2>();
 
-        Vector2 mouseDownPosition = new Vector2(0, 0);
+        Vector2 mouseDownPosition = new Vector2(-1, -1);
         List<Vector2> visitedPoints = new List<Vector2>();
 
         int currentColorIndex = 0;
@@ -172,7 +172,7 @@ namespace BakalarskaPrace
                         {
 
                             Color seedColor = imageManipulation.GetPixelColor(x, y, currentBitmap);
-                            if (System.Windows.Forms.Control.ModifierKeys == Keys.Control)
+                            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                             {
                                 foreach (WriteableBitmap writeableBitmap in bitmaps) 
                                 {
@@ -210,7 +210,7 @@ namespace BakalarskaPrace
                         }
                     case toolSelection.shading:
                         {
-                            if (System.Windows.Forms.Control.ModifierKeys == Keys.Control)
+                            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                             {
                                 //Zesvětlení
                                 tools.Lighten(x, y, currentBitmap);
@@ -275,7 +275,7 @@ namespace BakalarskaPrace
                         {
 
                             Color seedColor = imageManipulation.GetPixelColor(x, y, currentBitmap);
-                            if (System.Windows.Forms.Control.ModifierKeys == Keys.Control)
+                            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                             {
                                 foreach (WriteableBitmap writeableBitmap in bitmaps)
                                 {
@@ -295,7 +295,7 @@ namespace BakalarskaPrace
                         }
                     case toolSelection.shading:
                         {
-                            if (System.Windows.Forms.Control.ModifierKeys == Keys.Control)
+                            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                             {
                                 //Zesvětlení
                                 tools.Lighten(x, y, currentBitmap);
@@ -311,17 +311,102 @@ namespace BakalarskaPrace
                 }
             }
 
-           /* if (x >= 0 && y >= 0 && x < width && y < height && (previewMousePosition.X != x || previewMousePosition.Y != y))
-            {
-                foreach (Vector2 point in previewMousePoints) 
+
+
+           if (x >= 0 && y >= 0 && x < width && y < height && (previewMousePosition.X != x || previewMousePosition.Y != y))
+           {
+                foreach (Vector2 point in previewMousePoints)
                 {
-                    Eraser((int)point.X, (int)point.Y, previewBitmap);
+                    imageManipulation.Eraser((int)point.X, (int)point.Y, previewBitmap, strokeThickness, width, height);
                 }
-                previewMousePosition = new Vector2(x, y);
-                previewMousePoints.Add(new Vector2(x, y));
-                StrokeThicknessSetter(x, y, defaultPreviewColor, previewBitmap);
-                //AddPixel(x, y, defaultPreviewColor, previewBitmap);
-            }*/
+
+                switch (currentTool)
+                {
+                    case toolSelection.line:
+                        {
+                            if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
+                            {
+                                if ((int)mouseDownPosition.X != -1 && (int)mouseDownPosition.Y != -1)
+                                {
+                                    List<Vector2> points = new List<Vector2>();
+                                    if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
+                                    {
+                                        points = geometry.DrawStraightLine((int)mouseDownPosition.X, (int)mouseDownPosition.Y, x, y, width, height);
+                                    }
+                                    else
+                                    {
+                                        points = geometry.DrawLine(x, y, (int)mouseDownPosition.X, (int)mouseDownPosition.Y);
+                                    }
+
+                                    foreach (Vector2 point in points)
+                                    {
+                                        previewMousePoints.Add(point);
+                                        imageManipulation.AddPixel((int)point.X, (int)point.Y, defaultPreviewColor, previewBitmap);
+                                    }
+                                }
+                            }
+                            else 
+                            {
+                                previewMousePosition = new Vector2(x, y);
+                                previewMousePoints.Add(previewMousePosition);
+                                imageManipulation.AddPixel(x, y, defaultPreviewColor, previewBitmap);
+                            }
+                            break;
+                        }
+                    case toolSelection.ellipsis:
+                        {
+                            
+                            break;
+                        }
+                    case toolSelection.rectangle:
+                        {
+                            if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
+                            {
+                                if ((int)mouseDownPosition.X != -1 && (int)mouseDownPosition.Y != -1)
+                                {
+                                    bool fill;
+                                    if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+                                    {
+                                        fill = true;
+                                    }
+                                    else
+                                    {
+                                        fill = false;
+                                    }
+
+                                    List<Vector2> points = new List<Vector2>();
+                                    if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
+                                    {
+
+                                    }
+                                    else
+                                    {
+                                        //Kreslit obdélník
+                                        points = geometry.DrawRectangle((int)mouseDownPosition.X, (int)mouseDownPosition.Y, x, y, fill);
+                                    }
+
+                                    foreach (Vector2 point in points)
+                                    {
+                                        previewMousePoints.Add(point);
+                                        imageManipulation.AddPixel((int)point.X, (int)point.Y, defaultPreviewColor, previewBitmap);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                previewMousePosition = new Vector2(x, y);
+                                previewMousePoints.Add(previewMousePosition);
+                                imageManipulation.AddPixel(x, y, defaultPreviewColor, previewBitmap);
+                            }
+                            break;
+                        }
+                    default:
+                        previewMousePosition = new Vector2(x, y);
+                        previewMousePoints.Add(previewMousePosition);
+                        imageManipulation.AddPixel(x, y, defaultPreviewColor, previewBitmap);
+                        break;
+                }
+            }
         }
 
         private unsafe void Image_MouseUp(object sender, System.Windows.Input.MouseEventArgs e)
@@ -331,6 +416,7 @@ namespace BakalarskaPrace
 
             mousePosition = new Vector2(x, y);
             previousMousePosition = new Vector2(-1, -1);
+            
 
             visitedPoints = new List<Vector2>();
 
@@ -338,7 +424,7 @@ namespace BakalarskaPrace
             {
                 case toolSelection.line:
                     {
-                        if (System.Windows.Forms.Control.ModifierKeys == Keys.Control)
+                        if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                         {
                             List<Vector2> points = geometry.DrawStraightLine((int)mouseDownPosition.X, (int)mouseDownPosition.Y, x, y, width, height);
                             foreach (Vector2 point in points)
@@ -407,21 +493,22 @@ namespace BakalarskaPrace
                     }
                 case toolSelection.rectangle:
                     {
+                        bool fill;
+                        if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+                        {
+                            fill = true;
+                        }
+                        else
+                        {
+                            fill = false;
+                        }
+
                         if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                         {
                             //Kreslit čtverec
                             int xDistance = Math.Abs((int)mouseDownPosition.X - x);
                             int yDistance = Math.Abs((int)mouseDownPosition.Y - y);
                             int dif = Math.Abs(yDistance - xDistance);
-                            bool fill;
-                            if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
-                            {
-                                fill = true;
-                            }
-                            else
-                            {
-                                fill = false;
-                            }
 
                             //Delší stranu je nutné zkrátit o rozdíl, poté se dá použít stejná funkce pro kreslení obdélníků 
                             List<Vector2> points;
@@ -455,15 +542,6 @@ namespace BakalarskaPrace
                         else
                         {
                             //Kreslit obdélník
-                            bool fill;
-                            if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
-                            {
-                                fill = true;
-                            }
-                            else
-                            {
-                                fill = false;
-                            }
                             List<Vector2> points = geometry.DrawRectangle((int)mouseDownPosition.X, (int)mouseDownPosition.Y, x, y, fill);
                             foreach (Vector2 point in points) 
                             {
@@ -474,6 +552,8 @@ namespace BakalarskaPrace
                     }
                 default: break;
             }
+
+            mouseDownPosition = new Vector2(-1, -1);
         }
 
         private void StrokeThicknessSetter(int x, int y, Color color, WriteableBitmap bitmap, List<Vector2> points = null)
@@ -731,7 +811,6 @@ namespace BakalarskaPrace
             paintSurface.Height = currentBitmap.PixelHeight;
             UpdateImagePreviewButtons();
         }
-
 
         private void CropToFit_Click(object sender, RoutedEventArgs e)
         {
