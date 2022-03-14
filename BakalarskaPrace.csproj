@@ -87,6 +87,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="FileManagement.cs" />
+    <Compile Include="Geometry.cs" />
+    <Compile Include="ImageManipulation.cs" />
+    <Compile Include="Tools.cs" />
+    <Compile Include="Transform.cs" />
     <Compile Include="WindowResize.xaml.cs">
       <DependentUpon>WindowResize.xaml</DependentUpon>
     </Compile>
