@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -98,7 +93,7 @@ namespace BakalarskaPrace
         {
 
             //Array.Clear(writeableBitmap, 0, (int)writeableBitmap.PixelWidth * (int)writeableBitmap.Height);
-            
+
 
             /*for (int i = 0; i < width; i++)
             {

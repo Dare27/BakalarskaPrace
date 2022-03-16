@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -133,10 +130,10 @@ namespace BakalarskaPrace
             imageManipulation.AddPixel(x, y, Color.FromArgb(currentPixelColor.A, (byte)r, (byte)g, (byte)b), bitmap);
         }
 
-        public List<Vector2> SymmetricDrawing(int x, int y, Color color, WriteableBitmap bitmap)
+        public List<Point> SymmetricDrawing(int x, int y, Color color, WriteableBitmap bitmap)
         {
             int mirrorPostion = 0;
-            List<Vector2> points = new List<Vector2>();
+            List<Point> points = new List<Point>();
 
             //Chybí převrácení podle osy souměrnosti
             if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
@@ -145,26 +142,26 @@ namespace BakalarskaPrace
                 if (x > bitmap.PixelWidth / 2)
                 {
                     mirrorPostion = bitmap.PixelWidth - x - 1;
-                    points.Add(new Vector2(mirrorPostion, y));
+                    points.Add(new Point(mirrorPostion, y));
                 }
                 else
                 {
 
                     int dif = (bitmap.PixelWidth / 2) - x;
                     mirrorPostion = (bitmap.PixelWidth / 2) + dif - 1;
-                    points.Add(new Vector2(mirrorPostion, y));
+                    points.Add(new Point(mirrorPostion, y));
                 }
 
                 if (y > bitmap.PixelHeight / 2)
                 {
                     mirrorPostion = bitmap.PixelHeight - y - 1;
-                    points.Add(new Vector2(x, mirrorPostion));
+                    points.Add(new Point(x, mirrorPostion));
                 }
                 else
                 {
                     int dif = (bitmap.PixelHeight / 2) - y;
                     mirrorPostion = (bitmap.PixelHeight / 2) + dif - 1;
-                    points.Add(new Vector2(x, mirrorPostion));
+                    points.Add(new Point(x, mirrorPostion));
                 }
             }
             else if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
@@ -173,13 +170,13 @@ namespace BakalarskaPrace
                 if (y > bitmap.PixelHeight / 2)
                 {
                     mirrorPostion = bitmap.PixelHeight - y - 1;
-                    points.Add(new Vector2(x, mirrorPostion));
+                    points.Add(new Point(x, mirrorPostion));
                 }
                 else
                 {
                     int dif = (bitmap.PixelHeight / 2) - y;
                     mirrorPostion = (bitmap.PixelHeight / 2) + dif - 1;
-                    points.Add(new Vector2(x, mirrorPostion));
+                    points.Add(new Point(x, mirrorPostion));
                 }
             }
             else
@@ -188,16 +185,16 @@ namespace BakalarskaPrace
                 if (x > bitmap.PixelWidth / 2)
                 {
                     mirrorPostion = bitmap.PixelWidth - x - 1;
-                    points.Add(new Vector2(mirrorPostion, y));
+                    points.Add(new Point(mirrorPostion, y));
                 }
                 else
                 {
                     int dif = (bitmap.PixelWidth / 2) - x;
                     mirrorPostion = (bitmap.PixelWidth / 2) + dif - 1;
-                    points.Add(new Vector2(mirrorPostion, y));
+                    points.Add(new Point(mirrorPostion, y));
                 }
             }
-            points.Add(new Vector2(x, y));
+            points.Add(new Point(x, y));
 
             return points;
         }

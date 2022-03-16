@@ -142,3 +142,6 @@ C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\Magick.NET-Q
 C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\Magick.NET.Core.xml
 C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\obj\Debug\BakalarskaPrace.csproj.AssemblyReference.cache
 C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\obj\Debug\BakalarskaPrace.csproj.SuggestedBindingRedirects.cache
+C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\WriteableBitmapEx.Wpf.dll
+C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\WriteableBitmapEx.Wpf.pdb
+C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\WriteableBitmapEx.Wpf.xml

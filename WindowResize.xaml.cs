@@ -1,17 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using System.Text.RegularExpressions;
 
 namespace BakalarskaPrace
 {
@@ -22,10 +13,25 @@ namespace BakalarskaPrace
         public bool maintainAspectRatio = false;
         public bool resizeContent = false;
         private int lastSizeValue;
+        public string position;
 
         public WindowResize()
         {
             InitializeComponent();
+            List<Position> list = new List<Position>();
+            list.Add(new Position { ID = 1, Name = "top left" });
+            list.Add(new Position { ID = 2, Name = "top middle" });
+            list.Add(new Position { ID = 3, Name = "top right" });
+
+            list.Add(new Position { ID = 4, Name = "middle left" });
+            list.Add(new Position { ID = 5, Name = "middle" });
+            list.Add(new Position { ID = 6, Name = "middle right" });
+
+            list.Add(new Position { ID = 7, Name = "bottom left" });
+            list.Add(new Position { ID = 8, Name = "bottom middle" });
+            list.Add(new Position { ID = 9, Name = "bottom right" });
+            PositionCombobox.ItemsSource = list;
+            PositionCombobox.SelectedIndex = 4;
         }
 
         private void Resize_Click(object sender, RoutedEventArgs e)
@@ -50,14 +56,14 @@ namespace BakalarskaPrace
 
         private void Width_TextChanged(object sender, RoutedEventArgs e)
         {
-            
+
             if (maintainAspectRatio)
             {
                 heightTextBox.Text = widthTextBox.Text;
             }
-            else 
+            else
             {
-                if (heightTextBox != null) 
+                if (heightTextBox != null)
                 {
                     lastSizeValue = int.Parse(widthTextBox.Text);
                 }
@@ -66,8 +72,8 @@ namespace BakalarskaPrace
 
         private void Height_TextChanged(object sender, RoutedEventArgs e)
         {
-            if (maintainAspectRatio) 
-            { 
+            if (maintainAspectRatio)
+            {
                 widthTextBox.Text = heightTextBox.Text;
             }
             else
@@ -89,6 +95,22 @@ namespace BakalarskaPrace
         private void MaintainAspectRatio_Unchecked(object sender, RoutedEventArgs e)
         {
             maintainAspectRatio = false;
+        }
+
+        private void PositionCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (PositionCombobox.SelectedItem != null)
+            {
+                string id = PositionCombobox.SelectedValue.ToString();
+                position = ((Position)PositionCombobox.SelectedItem).Name.ToString();
+            }
+
+        }
+
+        public class Position
+        {
+            public int ID { get; set; }
+            public string Name { get; set; }
         }
     }
 }

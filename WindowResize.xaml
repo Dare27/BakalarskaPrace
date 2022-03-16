@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BakalarskaPrace"
         mc:Ignorable="d"
-        Title="Resize" Height="194" Width="346"
+        Title="Resize" Height="214" Width="346"
         WindowStartupLocation="CenterScreen">
     <Grid Margin="0,0,0,0">
         <StackPanel HorizontalAlignment="Center" Width="326" Margin="0,10,0,10" Panel.ZIndex="10">
@@ -19,6 +19,10 @@
             </StackPanel>
             <CheckBox Name="maintainAspectRatioCheckBox" Checked="MaintainAspectRatio_Checked" Unchecked="MaintainAspectRatio_Unchecked" Content="Maintain aspect ratio" Margin="2"/>
             <CheckBox Name="resizeContentCheckBox" Content="Resize content" Margin="2"/>
+            <StackPanel Orientation="Horizontal" Margin="2">
+                <Label Content="Anchor"/>
+                <ComboBox Name="PositionCombobox" FlowDirection="LeftToRight" DisplayMemberPath="Name" SelectedValuePath="ID" SelectionChanged="PositionCombobox_SelectionChanged"></ComboBox>
+            </StackPanel>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="5">
                 <Button Content="Resize" Click="Resize_Click" Margin="2"/>
                 <Button Content="Cancel" Click="Cancel_Click" Margin="2"/>

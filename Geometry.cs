@@ -1,20 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media;
+using System.Windows;
 
 namespace BakalarskaPrace
 {
     internal class Geometry
     {
         //V případě této aplikace je nutné používat Mid-Point algoritmus, protože Bresenhaimův algoritmus nedosahuje při nízkých velikostech kruhu vzhledného výsledku
-        public List<Vector2> DrawCircle(int centerX, int centerY, int rad, bool fill)
+        public List<Point> DrawCircle(int centerX, int centerY, int rad, bool fill)
         {
             int x = rad, y = 0;
-            List<Vector2> points = new List<Vector2>();
+            List<Point> points = new List<Point>();
 
             // When radius is zero only a single point will be printed
             if (rad > 0)
@@ -25,16 +22,16 @@ namespace BakalarskaPrace
                 }
                 else
                 {
-                    points.Add(new Vector2(centerX + x, centerY + y));
-                    points.Add(new Vector2(x + centerX - rad, centerY - rad));
-                    points.Add(new Vector2(y + centerX, x + centerY));
-                    points.Add(new Vector2(-rad + centerX, x + centerY - rad));
+                    points.Add(new Point(centerX + x, centerY + y));
+                    points.Add(new Point(x + centerX - rad, centerY - rad));
+                    points.Add(new Point(y + centerX, x + centerY));
+                    points.Add(new Point(-rad + centerX, x + centerY - rad));
 
                 }
             }
             else
             {
-                points.Add(new Vector2(centerX, centerY));
+                points.Add(new Point(centerX, centerY));
             }
 
             // Initialising the value of P
@@ -71,17 +68,17 @@ namespace BakalarskaPrace
                     }
                     else
                     {
-                        points.Add(new Vector2(y + centerX, x + centerY));
-                        points.Add(new Vector2(-y + centerX, x + centerY));
-                        points.Add(new Vector2(y + centerX, -x + centerY));
-                        points.Add(new Vector2(-y + centerX, -x + centerY));
+                        points.Add(new Point(y + centerX, x + centerY));
+                        points.Add(new Point(-y + centerX, x + centerY));
+                        points.Add(new Point(y + centerX, -x + centerY));
+                        points.Add(new Point(-y + centerX, -x + centerY));
                     }
                 }
             }
             return points;
         }
 
-        public List<Vector2> DrawEllipse(int centerX, int centerY, int radX, int radY, bool fill)
+        public List<Point> DrawEllipse(int centerX, int centerY, int radX, int radY, bool fill)
         {
             int radX2 = radX * radX;
             int radY2 = radY * radY;
@@ -92,7 +89,7 @@ namespace BakalarskaPrace
             int y = radY;
             int px = 0;
             int py = twoRadX2 * y;
-            List<Vector2> points = new List<Vector2>();
+            List<Point> points = new List<Point>();
 
             // Plot the initial point in each quadrant
             points.AddRange(QuadrantPlotter(centerX, centerY, x, y, fill));
@@ -144,9 +141,9 @@ namespace BakalarskaPrace
         }
 
         //Vykreslit symetrické body ve všech kvadrantech pomocí souřadnic
-        public List<Vector2> QuadrantPlotter(int centerX, int centerY, int x, int y, bool fill)
+        public List<Point> QuadrantPlotter(int centerX, int centerY, int x, int y, bool fill)
         {
-            List<Vector2> points = new List<Vector2>(); ;
+            List<Point> points = new List<Point>(); ;
             if (fill)
             {
                 points.AddRange(DrawLine(centerX - x, centerY + y, centerX + x, centerY + y));
@@ -154,30 +151,30 @@ namespace BakalarskaPrace
             }
             else
             {
-                points.Add(new Vector2(centerX + x, centerY + y));
-                points.Add(new Vector2(centerX - x, centerY + y));
-                points.Add(new Vector2(centerX + x, centerY - y));
-                points.Add(new Vector2(centerX - x, centerY - y));
+                points.Add(new Point(centerX + x, centerY + y));
+                points.Add(new Point(centerX - x, centerY + y));
+                points.Add(new Point(centerX + x, centerY - y));
+                points.Add(new Point(centerX - x, centerY - y));
             }
             return points;
         }
 
-        public List<Vector2> DrawRectangle(int x0, int y0, int x1, int y1, bool fill)
+        public List<Point> DrawRectangle(int x0, int y0, int x1, int y1, bool fill)
         {
-            List<Vector2> points = new List<Vector2>();
+            List<Point> points = new List<Point>();
             if (y0 < y1)
             {
                 for (int y = y0; y < y1; y++)
                 {
                     if (fill)
                     {
-                        List<Vector2> fillPoints = DrawLine(x0, y, x1, y);
+                        List<Point> fillPoints = DrawLine(x0, y, x1, y);
                         points.AddRange(fillPoints);
                     }
                     else
                     {
-                        points.Add(new Vector2(x0, y));
-                        points.Add(new Vector2(x1, y));
+                        points.Add(new Point(x0, y));
+                        points.Add(new Point(x1, y));
                     }
                 }
             }
@@ -187,13 +184,13 @@ namespace BakalarskaPrace
                 {
                     if (fill)
                     {
-                        List<Vector2> fillPoints = DrawLine(x0, y, x1, y);
+                        List<Point> fillPoints = DrawLine(x0, y, x1, y);
                         points.AddRange(fillPoints);
                     }
                     else
                     {
-                        points.Add(new Vector2(x0, y));
-                        points.Add(new Vector2(x1, y));
+                        points.Add(new Point(x0, y));
+                        points.Add(new Point(x1, y));
                     }
                 }
             }
@@ -204,13 +201,13 @@ namespace BakalarskaPrace
                 {
                     if (fill)
                     {
-                        List<Vector2> fillPoints = DrawLine(x, y0, x, y1);
+                        List<Point> fillPoints = DrawLine(x, y0, x, y1);
                         points.AddRange(fillPoints);
                     }
                     else
                     {
-                        points.Add(new Vector2(x, y0));
-                        points.Add(new Vector2(x, y1));
+                        points.Add(new Point(x, y0));
+                        points.Add(new Point(x, y1));
                     }
                 }
             }
@@ -220,24 +217,24 @@ namespace BakalarskaPrace
                 {
                     if (fill)
                     {
-                        List<Vector2> fillPoints = DrawLine(x, y0, x, y1);
+                        List<Point> fillPoints = DrawLine(x, y0, x, y1);
                         points.AddRange(fillPoints);
                     }
                     else
                     {
-                        points.Add(new Vector2(x, y0));
-                        points.Add(new Vector2(x, y1));
+                        points.Add(new Point(x, y0));
+                        points.Add(new Point(x, y1));
                     }
                 }
             }
-            points.Add(new Vector2(x1, y1));
+            points.Add(new Point(x1, y1));
             return points;
         }
 
         //Bresenhaimův algoritmus pro kreslení přímek
-        public List<Vector2> DrawLine(int x, int y, int x2, int y2)
+        public List<Point> DrawLine(int x, int y, int x2, int y2)
         {
-            List<Vector2> points = new List<Vector2>();
+            List<Point> points = new List<Point>();
             int w = x2 - x;
             int h = y2 - y;
             int dx1 = 0, dy1 = 0, dx2 = 0, dy2 = 0;
@@ -260,7 +257,7 @@ namespace BakalarskaPrace
             int numerator = longest >> 1;
             for (int i = 0; i <= longest; i++)
             {
-                points.Add(new Vector2(x, y));
+                points.Add(new Point(x, y));
                 numerator += shortest;
                 if (!(numerator < longest))
                 {
@@ -277,7 +274,7 @@ namespace BakalarskaPrace
             return points;
         }
 
-        public List<Vector2> DrawStraightLine(int x0, int y0, int x1, int y1, int imageWidth, int imageHeight)
+        public List<Point> DrawStraightLine(int x0, int y0, int x1, int y1, int imageWidth, int imageHeight)
         {
             int dx = Math.Abs(x1 - x0) + 1;
             int dy = Math.Abs(y1 - y0) + 1;
@@ -295,13 +292,13 @@ namespace BakalarskaPrace
             int x = x0;
             int y = y0;
 
-            List<Vector2> points = new List<Vector2>();
+            List<Point> points = new List<Point>();
 
             for (int i = 1; i <= maxDistance + 1; i++)
             {
-                if (!points.Contains(new Vector2(x, y)))
+                if (!points.Contains(new Point(x, y)))
                 {
-                    points.Add(new Vector2(x, y));
+                    points.Add(new Point(x, y));
                 }
 
                 if (Math.Sqrt((Math.Pow(x0 - x, 2) + Math.Pow(y0 - y, 2))) >= maxDistance)
