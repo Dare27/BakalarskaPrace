@@ -125,5 +125,102 @@ namespace BakalarskaPrace
                 }
             }
         }
+
+        public void CenterAlligment(WriteableBitmap bitmap, int width, int height)
+        {
+            int leftPixelX = width;
+            int rightPixelX = 0;
+            int topPixelY = height;
+            int downPixelY = 0;
+
+            int currentLeftPixelX = width;
+            int currentRightPixelX = 0;
+            int currentTopPixelY = height;
+            int currentDownPixelY = 0;
+
+            //Projít dolu a doprava 
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < height; j++)
+                {
+                    Color color = imageManipulation.GetPixelColor(i, j, bitmap);
+                    if (color.A != 0)
+                    {
+                        if (currentRightPixelX < i)
+                        {
+                            currentRightPixelX = i;
+                        }
+
+                        if (currentDownPixelY < j)
+                        {
+                            currentDownPixelY = j;
+                        }
+                    }
+                }
+            }
+
+            //Projít nahoru a doleva
+            for (int i = width; i >= 0; i--)
+            {
+                for (int j = height; j >= 0; j--)
+                {
+                    Color color = imageManipulation.GetPixelColor(i, j, bitmap);
+                    if (color.A != 0)
+                    {
+                        if (currentLeftPixelX > i)
+                        {
+                            currentLeftPixelX = i;
+                        }
+
+                        if (currentTopPixelY > j)
+                        {
+                            currentTopPixelY = j;
+                        }
+                    }
+                }
+            }
+
+            //Zvolit maxima
+            if (currentTopPixelY < topPixelY)
+            {
+                topPixelY = currentTopPixelY;
+            }
+
+            if (currentLeftPixelX < leftPixelX)
+            {
+                leftPixelX = currentLeftPixelX;
+            }
+
+            if (currentRightPixelX > rightPixelX)
+            {
+                rightPixelX = currentRightPixelX;
+            }
+
+            if (currentDownPixelY > downPixelY)
+            {
+                downPixelY = currentDownPixelY;
+            }
+
+            int croppedWidth = rightPixelX - leftPixelX + 1;
+            int croppedHeight = downPixelY - topPixelY + 1;
+
+            int startPosX = (width / 2) - (croppedWidth / 2);
+            int startPosY = (height / 2) - (croppedHeight / 2);
+            Int32Rect rect = new Int32Rect(leftPixelX, topPixelY, croppedWidth, croppedHeight);
+
+            CroppedBitmap croppedBitmap = new CroppedBitmap(bitmap, rect);
+            WriteableBitmap newBitmap = new WriteableBitmap(croppedBitmap);
+            bitmap.Clear();
+
+            //Zapsání pixelů z staré bitmapy do nové
+            for (int i = 0; i < croppedWidth; i++)
+            {
+                for (int j = 0; j < croppedHeight; j++)
+                {
+                    Color color = imageManipulation.GetPixelColor(i, j, newBitmap);
+                    imageManipulation.AddPixel(i + startPosX, j + startPosY, color, bitmap);
+                }
+            }
+        }
     }
 }

@@ -928,11 +928,6 @@ namespace BakalarskaPrace
             }
         }
 
-        private void CenterAlligment_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void Resize_Click(object sender, RoutedEventArgs e)
         {
             WindowResize subWindow = new WindowResize();
@@ -946,7 +941,7 @@ namespace BakalarskaPrace
                 //startPos je souřadnice zajišťující posun do zkrácené bitmapy při zmenšení 
                 int startPosX = 0;
                 int startPosY = 0;
-                //endPos  je souřadnice zajišťující posun do finální bitmapy při zvětšení 
+                //endPos je souřadnice zajišťující posun do finální bitmapy při zvětšení 
                 int endPosX = 0;
                 int endPosY = 0;
 
@@ -1054,6 +1049,21 @@ namespace BakalarskaPrace
                 previewImage.Height = height;
                 if (onionSkinning == true) UpdateOnionSkinning();
                 UpdateImagePreviewButtons();
+            }
+        }
+
+        private void CenterAlligment_Click(object sender, RoutedEventArgs e)
+        {
+            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
+            {
+                for (int i = 0; i < bitmaps.Count; i++)
+                {
+                    transform.CenterAlligment(bitmaps[i], width, height);
+                }
+            }
+            else
+            {
+                transform.CenterAlligment(currentBitmap, width, height);
             }
         }
 
