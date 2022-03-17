@@ -8,8 +8,13 @@ namespace BakalarskaPrace
     internal class Geometry
     {
         //V případě této aplikace je nutné používat Mid-Point algoritmus, protože Bresenhaimův algoritmus nedosahuje při nízkých velikostech kruhu vzhledného výsledku
-        public List<Point> DrawCircle(int centerX, int centerY, int rad, bool fill)
+        public List<Point> DrawCircle(Point startPos, Point endPos, bool fill)
         {
+            int centerX = (int)(startPos.X + endPos.X) / 2;
+            int centerY = (int)(startPos.Y + endPos.Y) / 2;
+            int radX = centerX - (int)Math.Min(startPos.X, endPos.X);
+            int radY = centerY - (int)Math.Min(startPos.Y, endPos.Y);
+            int rad = Math.Min(radX, radY);
             int x = rad, y = 0;
             List<Point> points = new List<Point>();
 
@@ -78,8 +83,12 @@ namespace BakalarskaPrace
             return points;
         }
 
-        public List<Point> DrawEllipse(int centerX, int centerY, int radX, int radY, bool fill)
+        public List<Point> DrawEllipse(Point startPos, Point endPos, bool fill)
         {
+            int centerX = (int)(startPos.X + endPos.X) / 2;
+            int centerY = (int)(startPos.Y + endPos.Y) / 2;
+            int radX = centerX - (int)Math.Min(startPos.X, endPos.X);
+            int radY = centerY - (int)Math.Min(startPos.Y, endPos.Y);
             int radX2 = radX * radX;
             int radY2 = radY * radY;
             int twoRadX2 = 2 * radX2;
@@ -159,9 +168,45 @@ namespace BakalarskaPrace
             return points;
         }
 
-        public List<Point> DrawRectangle(int x0, int y0, int x1, int y1, bool fill)
+        public List<Point> DrawRectangle(Point startPos, Point endPos, bool square, bool fill)
         {
             List<Point> points = new List<Point>();
+            int x0 = (int)startPos.X;
+            int y0 = (int)startPos.Y;
+            int x1 = (int)endPos.X;
+            int y1 = (int)endPos.Y;
+
+            if (square) 
+            {
+                int xDistance = (int)Math.Abs(startPos.X - endPos.X);
+                int yDistance = (int)Math.Abs(startPos.Y - endPos.Y);
+                int dif = Math.Abs(yDistance - xDistance);
+
+                //Delší stranu je nutné zkrátit o rozdíl, poté se dá použít stejná funkce pro kreslení obdélníků 
+                if (xDistance < yDistance)
+                {
+                    if (startPos.Y < endPos.Y)
+                    {
+                        y1 = (int)endPos.Y - dif;
+                    }
+                    else
+                    {
+                        y0 = (int)startPos.Y - dif;
+                    }
+                }
+                else
+                {
+                    if (startPos.X < endPos.X)
+                    {
+                        x1 = (int)endPos.X - dif;
+                    }
+                    else
+                    {
+                        x0 = (int)endPos.X - dif;
+                    }
+                }
+            }
+
             if (y0 < y1)
             {
                 for (int y = y0; y < y1; y++)

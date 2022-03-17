@@ -345,7 +345,42 @@ namespace BakalarskaPrace
                         }
                     case toolSelection.ellipsis:
                         {
+                            if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
+                            {
+                                if ((int)mouseDownPosition.X != -1 && (int)mouseDownPosition.Y != -1)
+                                {
+                                    bool fill;
+                                    if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+                                    {
+                                        fill = true;
+                                    }
+                                    else
+                                    {
+                                        fill = false;
+                                    }
 
+                                    if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
+                                    {
+                                        previewMousePoints.AddRange(geometry.DrawCircle(mouseDownPosition, e.GetPosition(image), fill));
+                                    }
+                                    else
+                                    {
+                                        previewMousePoints.AddRange(geometry.DrawEllipse(mouseDownPosition, e.GetPosition(image), fill));
+                                    }
+
+                                    foreach (Point point in previewMousePoints)
+                                    {
+                                        imageManipulation.AddPixel((int)point.X, (int)point.Y, defaultPreviewColor, previewBitmap);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                previewMousePosition.X = x;
+                                previewMousePosition.Y = y;
+                                previewMousePoints.Add(previewMousePosition);
+                                imageManipulation.AddPixel(x, y, defaultPreviewColor, previewBitmap);
+                            }
                             break;
                         }
                     case toolSelection.rectangle:
@@ -366,13 +401,12 @@ namespace BakalarskaPrace
 
                                     if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                                     {
-
+                                        previewMousePoints.AddRange(geometry.DrawRectangle(mouseDownPosition, e.GetPosition(image), true, fill));
                                     }
                                     else
                                     {
                                         //Kreslit obdélník
-                                        previewMousePoints.AddRange(geometry.DrawRectangle((int)mouseDownPosition.X, (int)mouseDownPosition.Y, x, y, fill));
-
+                                        previewMousePoints.AddRange(geometry.DrawRectangle(mouseDownPosition, e.GetPosition(image), false, fill));
                                     }
 
                                     foreach (Point point in previewMousePoints)
@@ -440,19 +474,13 @@ namespace BakalarskaPrace
                         if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                         {
                             //Kreslit kruh
-                            int centerX = ((int)mouseDownPosition.X + x) / 2;
-                            int centerY = ((int)mouseDownPosition.Y + y) / 2;
-                            int radX = centerX - Math.Min((int)mouseDownPosition.X, x);
-                            int radY = centerY - Math.Min((int)mouseDownPosition.Y, y);
-                            int rad = Math.Min(radX, radY);
-
                             if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
                             {
-                                drawPoints = geometry.DrawCircle(centerX, centerY, rad, true);
+                                drawPoints = geometry.DrawCircle(mouseDownPosition, e.GetPosition(image), true);
                             }
                             else
                             {
-                                drawPoints = geometry.DrawCircle(centerX, centerY, rad, false);
+                                drawPoints = geometry.DrawCircle(mouseDownPosition, e.GetPosition(image), false);
                             }
 
                             foreach (Point point in drawPoints)
@@ -463,18 +491,14 @@ namespace BakalarskaPrace
                         else
                         {
                             //Kreslit elipsu
-                            int centerX = ((int)mouseDownPosition.X + x) / 2;
-                            int centerY = ((int)mouseDownPosition.Y + y) / 2;
-                            int radX = centerX - Math.Min((int)mouseDownPosition.X, x);
-                            int radY = centerY - Math.Min((int)mouseDownPosition.Y, y);
-                            
+                          
                             if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
                             {
-                                drawPoints = geometry.DrawEllipse(centerX, centerY, radX, radY, true);
+                                drawPoints = geometry.DrawEllipse(mouseDownPosition, e.GetPosition(image), true);
                             }
                             else
                             {
-                                drawPoints = geometry.DrawEllipse(centerX, centerY, radX, radY, false);
+                                drawPoints = geometry.DrawEllipse(mouseDownPosition, e.GetPosition(image), false);
                             }
                             foreach (Point point in drawPoints)
                             {
@@ -498,33 +522,7 @@ namespace BakalarskaPrace
                         if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                         {
                             //Kreslit čtverec
-                            int xDistance = Math.Abs((int)mouseDownPosition.X - x);
-                            int yDistance = Math.Abs((int)mouseDownPosition.Y - y);
-                            int dif = Math.Abs(yDistance - xDistance);
-
-                            //Delší stranu je nutné zkrátit o rozdíl, poté se dá použít stejná funkce pro kreslení obdélníků 
-                            if (xDistance < yDistance)
-                            {
-                                if (mouseDownPosition.Y < y)
-                                {
-                                    drawPoints = geometry.DrawRectangle((int)mouseDownPosition.X, (int)mouseDownPosition.Y, x, y - dif, fill);
-                                }
-                                else
-                                {
-                                    drawPoints = geometry.DrawRectangle((int)mouseDownPosition.X, (int)mouseDownPosition.Y - dif, x, y, fill);
-                                }
-                            }
-                            else
-                            {
-                                if (mouseDownPosition.X < x)
-                                {
-                                    drawPoints = geometry.DrawRectangle((int)mouseDownPosition.X, (int)mouseDownPosition.Y, x - dif, y, fill);
-                                }
-                                else
-                                {
-                                    drawPoints = geometry.DrawRectangle((int)mouseDownPosition.X - dif, (int)mouseDownPosition.Y, x, y, fill);
-                                }
-                            }
+                            drawPoints = geometry.DrawRectangle(mouseDownPosition, e.GetPosition(image), true, fill);
                             foreach (Point point in drawPoints)
                             {
                                 StrokeThicknessSetter((int)point.X, (int)point.Y, colorPallete[currentColorIndex], currentBitmap);
@@ -533,7 +531,7 @@ namespace BakalarskaPrace
                         else
                         {
                             //Kreslit obdélník
-                            drawPoints = geometry.DrawRectangle((int)mouseDownPosition.X, (int)mouseDownPosition.Y, x, y, fill);
+                            drawPoints = geometry.DrawRectangle(mouseDownPosition, e.GetPosition(image), false, fill);
                             foreach (Point point in drawPoints)
                             {
                                 StrokeThicknessSetter((int)point.X, (int)point.Y, colorPallete[currentColorIndex], currentBitmap);

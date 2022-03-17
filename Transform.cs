@@ -206,19 +206,23 @@ namespace BakalarskaPrace
 
             int startPosX = (width / 2) - (croppedWidth / 2);
             int startPosY = (height / 2) - (croppedHeight / 2);
-            Int32Rect rect = new Int32Rect(leftPixelX, topPixelY, croppedWidth, croppedHeight);
 
-            CroppedBitmap croppedBitmap = new CroppedBitmap(bitmap, rect);
-            WriteableBitmap newBitmap = new WriteableBitmap(croppedBitmap);
-            bitmap.Clear();
-
-            //Zapsání pixelů z staré bitmapy do nové
-            for (int i = 0; i < croppedWidth; i++)
+            if (croppedWidth > 0 && croppedHeight > 0) 
             {
-                for (int j = 0; j < croppedHeight; j++)
+                Int32Rect rect = new Int32Rect(leftPixelX, topPixelY, croppedWidth, croppedHeight);
+
+                CroppedBitmap croppedBitmap = new CroppedBitmap(bitmap, rect);
+                WriteableBitmap newBitmap = new WriteableBitmap(croppedBitmap);
+                bitmap.Clear();
+
+                //Zapsání pixelů z staré bitmapy do nové
+                for (int i = 0; i < croppedWidth; i++)
                 {
-                    Color color = imageManipulation.GetPixelColor(i, j, newBitmap);
-                    imageManipulation.AddPixel(i + startPosX, j + startPosY, color, bitmap);
+                    for (int j = 0; j < croppedHeight; j++)
+                    {
+                        Color color = imageManipulation.GetPixelColor(i, j, newBitmap);
+                        imageManipulation.AddPixel(i + startPosX, j + startPosY, color, bitmap);
+                    }
                 }
             }
         }
