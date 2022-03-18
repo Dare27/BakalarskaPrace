@@ -26,9 +26,8 @@ namespace BakalarskaPrace
         byte alpha = 255;
         bool alphaBlending = true;
         bool additive = false;
-        enum toolSelection { brush, eraser, symmetricBrush, colorPicker, bucket, specialBucket, line, ellipsis, shading, rectangle, dithering, move };
+        enum toolSelection { brush, eraser, symmetricBrush, colorPicker, bucket, specialBucket, line, ellipsis, shading, rectangle, dithering, move, path };
         toolSelection currentTool = toolSelection.brush;
-        const double scaleRate = 1.1;
         Point gridDragStartPoint;
         System.Windows.Vector gridDragOffset;
         int width;
@@ -160,7 +159,6 @@ namespace BakalarskaPrace
                         }
                     case toolSelection.specialBucket:
                         {
-
                             Color seedColor = imageManipulation.GetPixelColor(x, y, currentBitmap);
                             if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                             {
@@ -179,6 +177,16 @@ namespace BakalarskaPrace
                         {
                             mouseDownPosition.X = x;
                             mouseDownPosition.Y = y;
+                            currentColorIndex = colorIndex;
+                            break;
+                        }
+                    case toolSelection.path:
+                        {
+                            if (mouseDownPosition.X == -1 && mouseDownPosition.Y == -1) 
+                            {
+                                mouseDownPosition.X = x;
+                                mouseDownPosition.Y = y;
+                            }
                             currentColorIndex = colorIndex;
                             break;
                         }
@@ -267,7 +275,6 @@ namespace BakalarskaPrace
                         }
                     case toolSelection.specialBucket:
                         {
-
                             Color seedColor = imageManipulation.GetPixelColor(x, y, currentBitmap);
                             if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                             {
@@ -310,6 +317,16 @@ namespace BakalarskaPrace
                 previewBitmap.Clear();
                 previewMousePoints.Clear();
 
+                bool fill;
+                if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+                {
+                    fill = true;
+                }
+                else
+                {
+                    fill = false;
+                }
+
                 switch (currentTool)
                 {
                     case toolSelection.line:
@@ -325,12 +342,6 @@ namespace BakalarskaPrace
                                     else
                                     {
                                         previewMousePoints.AddRange(geometry.DrawLine(x, y, (int)mouseDownPosition.X, (int)mouseDownPosition.Y));
-                                    
-                                    }
-
-                                    foreach (Point point in previewMousePoints)
-                                    {
-                                        imageManipulation.AddPixel((int)point.X, (int)point.Y, defaultPreviewColor, previewBitmap);
                                     }
                                 }
                             }
@@ -339,7 +350,30 @@ namespace BakalarskaPrace
                                 previewMousePosition.X = x;
                                 previewMousePosition.Y = y;
                                 previewMousePoints.Add(previewMousePosition);
-                                imageManipulation.AddPixel(x, y, defaultPreviewColor, previewBitmap);
+                            }
+                            break;
+                        }
+                    case toolSelection.path:
+                        {
+                            if ((int)mouseDownPosition.X != -1 && (int)mouseDownPosition.Y != -1)
+                            {
+                                //Pokud uživatel drzží ctrl začne se nová cesta
+                                if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
+                                {
+                                    previewMousePosition.X = x;
+                                    previewMousePosition.Y = y;
+                                    previewMousePoints.Add(previewMousePosition);
+                                }
+                                else
+                                {
+                                    previewMousePoints.AddRange(geometry.DrawLine(x, y, (int)mouseDownPosition.X, (int)mouseDownPosition.Y));
+                                }
+                            }
+                            else 
+                            {
+                                previewMousePosition.X = x;
+                                previewMousePosition.Y = y;
+                                previewMousePoints.Add(previewMousePosition);
                             }
                             break;
                         }
@@ -349,16 +383,6 @@ namespace BakalarskaPrace
                             {
                                 if ((int)mouseDownPosition.X != -1 && (int)mouseDownPosition.Y != -1)
                                 {
-                                    bool fill;
-                                    if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
-                                    {
-                                        fill = true;
-                                    }
-                                    else
-                                    {
-                                        fill = false;
-                                    }
-
                                     if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                                     {
                                         previewMousePoints.AddRange(geometry.DrawCircle(mouseDownPosition, e.GetPosition(image), fill));
@@ -367,11 +391,6 @@ namespace BakalarskaPrace
                                     {
                                         previewMousePoints.AddRange(geometry.DrawEllipse(mouseDownPosition, e.GetPosition(image), fill));
                                     }
-
-                                    foreach (Point point in previewMousePoints)
-                                    {
-                                        imageManipulation.AddPixel((int)point.X, (int)point.Y, defaultPreviewColor, previewBitmap);
-                                    }
                                 }
                             }
                             else
@@ -379,7 +398,6 @@ namespace BakalarskaPrace
                                 previewMousePosition.X = x;
                                 previewMousePosition.Y = y;
                                 previewMousePoints.Add(previewMousePosition);
-                                imageManipulation.AddPixel(x, y, defaultPreviewColor, previewBitmap);
                             }
                             break;
                         }
@@ -389,29 +407,13 @@ namespace BakalarskaPrace
                             {
                                 if ((int)mouseDownPosition.X != -1 && (int)mouseDownPosition.Y != -1)
                                 {
-                                    bool fill;
-                                    if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
-                                    {
-                                        fill = true;
-                                    }
-                                    else
-                                    {
-                                        fill = false;
-                                    }
-
                                     if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                                     {
                                         previewMousePoints.AddRange(geometry.DrawRectangle(mouseDownPosition, e.GetPosition(image), true, fill));
                                     }
                                     else
                                     {
-                                        //Kreslit obdélník
                                         previewMousePoints.AddRange(geometry.DrawRectangle(mouseDownPosition, e.GetPosition(image), false, fill));
-                                    }
-
-                                    foreach (Point point in previewMousePoints)
-                                    {
-                                        imageManipulation.AddPixel((int)point.X, (int)point.Y, defaultPreviewColor, previewBitmap);
                                     }
                                 }
                             }
@@ -420,7 +422,6 @@ namespace BakalarskaPrace
                                 previewMousePosition.X = x;
                                 previewMousePosition.Y = y;
                                 previewMousePoints.Add(previewMousePosition);
-                                imageManipulation.AddPixel(x, y, defaultPreviewColor, previewBitmap);
                             }
                             break;
                         }
@@ -428,8 +429,12 @@ namespace BakalarskaPrace
                         previewMousePosition.X = x;
                         previewMousePosition.Y = y;
                         previewMousePoints.Add(previewMousePosition);
-                        imageManipulation.AddPixel(x, y, defaultPreviewColor, previewBitmap);
                         break;
+                }
+
+                foreach (Point point in previewMousePoints)
+                {
+                    imageManipulation.AddPixel((int)point.X, (int)point.Y, defaultPreviewColor, previewBitmap);
                 }
             }
         }
@@ -447,103 +452,29 @@ namespace BakalarskaPrace
                 visitedPoints.Clear();
             }
 
-            switch (currentTool)
+            if (currentTool == toolSelection.line || currentTool == toolSelection.path || currentTool == toolSelection.ellipsis || currentTool == toolSelection.rectangle) 
             {
-                case toolSelection.line:
-                    {
-                        if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
-                        {
-                            drawPoints = geometry.DrawStraightLine((int)mouseDownPosition.X, (int)mouseDownPosition.Y, x, y, width, height);
-                            foreach (Point point in drawPoints)
-                            {
-                                StrokeThicknessSetter((int)point.X, (int)point.Y, colorPallete[currentColorIndex], currentBitmap);
-                            }
-                        }
-                        else
-                        {
-                            drawPoints = geometry.DrawLine(x, y, (int)mouseDownPosition.X, (int)mouseDownPosition.Y);
-                            foreach (Point point in drawPoints)
-                            {
-                                StrokeThicknessSetter((int)point.X, (int)point.Y, colorPallete[currentColorIndex], currentBitmap);
-                            }
-                        }
-                        break;
-                    }
-                case toolSelection.ellipsis:
-                    {
-                        if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
-                        {
-                            //Kreslit kruh
-                            if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
-                            {
-                                drawPoints = geometry.DrawCircle(mouseDownPosition, e.GetPosition(image), true);
-                            }
-                            else
-                            {
-                                drawPoints = geometry.DrawCircle(mouseDownPosition, e.GetPosition(image), false);
-                            }
-
-                            foreach (Point point in drawPoints)
-                            {
-                                StrokeThicknessSetter((int)point.X, (int)point.Y, colorPallete[currentColorIndex], currentBitmap);
-                            }
-                        }
-                        else
-                        {
-                            //Kreslit elipsu
-                          
-                            if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
-                            {
-                                drawPoints = geometry.DrawEllipse(mouseDownPosition, e.GetPosition(image), true);
-                            }
-                            else
-                            {
-                                drawPoints = geometry.DrawEllipse(mouseDownPosition, e.GetPosition(image), false);
-                            }
-                            foreach (Point point in drawPoints)
-                            {
-                                StrokeThicknessSetter((int)point.X, (int)point.Y, colorPallete[currentColorIndex], currentBitmap);
-                            }
-                        }
-                        break;
-                    }
-                case toolSelection.rectangle:
-                    {
-                        bool fill;
-                        if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
-                        {
-                            fill = true;
-                        }
-                        else
-                        {
-                            fill = false;
-                        }
-
-                        if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
-                        {
-                            //Kreslit čtverec
-                            drawPoints = geometry.DrawRectangle(mouseDownPosition, e.GetPosition(image), true, fill);
-                            foreach (Point point in drawPoints)
-                            {
-                                StrokeThicknessSetter((int)point.X, (int)point.Y, colorPallete[currentColorIndex], currentBitmap);
-                            }
-                        }
-                        else
-                        {
-                            //Kreslit obdélník
-                            drawPoints = geometry.DrawRectangle(mouseDownPosition, e.GetPosition(image), false, fill);
-                            foreach (Point point in drawPoints)
-                            {
-                                StrokeThicknessSetter((int)point.X, (int)point.Y, colorPallete[currentColorIndex], currentBitmap);
-                            }
-                        }
-                        break;
-                    }
-                default: break;
+                foreach (Point point in previewMousePoints)
+                {
+                    StrokeThicknessSetter((int)point.X, (int)point.Y, colorPallete[currentColorIndex], currentBitmap);
+                }
             }
 
-            mouseDownPosition.X = -1;
-            mouseDownPosition.Y = -1;
+            if (currentTool != toolSelection.path)
+            {
+                mouseDownPosition.X = -1;
+                mouseDownPosition.Y = -1;
+            }
+            else 
+            {
+                mouseDownPosition.X = x;
+                mouseDownPosition.Y = y;
+            }
+
+            previewBitmap.Clear();
+            previewMousePoints.Clear();
+            previewMousePoints.Add(mousePosition);
+            imageManipulation.AddPixel((int)mousePosition.X, (int)mousePosition.Y, defaultPreviewColor, previewBitmap);
         }
 
         private void StrokeThicknessSetter(int x, int y, Color color, WriteableBitmap bitmap, List<Point> points = null)
@@ -739,6 +670,17 @@ namespace BakalarskaPrace
                 lastToolButton.IsEnabled = true;
             }
             lastToolButton = ToolMove;
+        }
+
+        private void Path_Click(object sender, RoutedEventArgs e)
+        {
+            currentTool = toolSelection.path;
+            ToolPath.IsEnabled = false;
+            if (lastToolButton != null)
+            {
+                lastToolButton.IsEnabled = true;
+            }
+            lastToolButton = ToolPath;
         }
 
         private void Flip_Click(object sender, RoutedEventArgs e)
