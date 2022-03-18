@@ -178,31 +178,35 @@ namespace BakalarskaPrace
 
             if (square) 
             {
-                int xDistance = (int)Math.Abs(startPos.X - endPos.X);
-                int yDistance = (int)Math.Abs(startPos.Y - endPos.Y);
-                int dif = Math.Abs(yDistance - xDistance);
+                int xDistance = (int)Math.Abs(x0 - x1);
+                int yDistance = (int)Math.Abs(y0 - y1);
+                int dif = Math.Abs(yDistance - xDistance);             
 
                 //Delší stranu je nutné zkrátit o rozdíl, poté se dá použít stejná funkce pro kreslení obdélníků 
                 if (xDistance < yDistance)
                 {
-                    if (startPos.Y < endPos.Y)
+                    if (y0 < y1)
                     {
-                        y1 = (int)endPos.Y - dif;
+                        y1 = y1 - dif;
                     }
                     else
                     {
-                        y0 = (int)startPos.Y - dif;
+                        int y = y1;
+                        y1 = y0;
+                        y0 = y + dif;
                     }
                 }
                 else
                 {
-                    if (startPos.X < endPos.X)
+                    if (x0 < x1)
                     {
-                        x1 = (int)endPos.X - dif;
+                        x1 = x1 - dif;
                     }
                     else
                     {
-                        x0 = (int)endPos.X - dif;
+                        int x = x1;
+                        x1 = x0;
+                        x0 = x + dif;
                     }
                 }
             }
@@ -269,6 +273,7 @@ namespace BakalarskaPrace
                     {
                         points.Add(new Point(x, y0));
                         points.Add(new Point(x, y1));
+
                     }
                 }
             }
