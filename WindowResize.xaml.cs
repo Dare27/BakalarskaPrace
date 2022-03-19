@@ -56,7 +56,6 @@ namespace BakalarskaPrace
 
         private void Width_TextChanged(object sender, RoutedEventArgs e)
         {
-
             if (maintainAspectRatio)
             {
                 heightTextBox.Text = widthTextBox.Text;

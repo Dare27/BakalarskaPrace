@@ -17,7 +17,7 @@ namespace BakalarskaPrace
         private WriteableBitmap currentBitmap;
         int currentBitmapIndex = 0;
         private readonly List<WriteableBitmap> bitmaps = new List<WriteableBitmap>();
-        private readonly List<System.Windows.Controls.Button> previewButtons = new List<System.Windows.Controls.Button>();
+        private List<System.Windows.Controls.Button> previewButtons = new List<System.Windows.Controls.Button>();
         private readonly WriteableBitmap defaultBitmap;
         int colorPalleteSize = 2;
         Color[] colorPallete;
@@ -385,11 +385,11 @@ namespace BakalarskaPrace
                                 {
                                     if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                                     {
-                                        previewMousePoints.AddRange(geometry.DrawCircle(mouseDownPosition, e.GetPosition(image), fill));
+                                        previewMousePoints.AddRange(geometry.DrawEllipse(mouseDownPosition, e.GetPosition(image), true, fill));
                                     }
                                     else
                                     {
-                                        previewMousePoints.AddRange(geometry.DrawEllipse(mouseDownPosition, e.GetPosition(image), fill));
+                                        previewMousePoints.AddRange(geometry.DrawEllipse(mouseDownPosition, e.GetPosition(image), false, fill));
                                     }
                                 }
                             }
@@ -477,7 +477,7 @@ namespace BakalarskaPrace
             imageManipulation.AddPixel((int)mousePosition.X, (int)mousePosition.Y, defaultPreviewColor, previewBitmap);
         }
 
-        private void StrokeThicknessSetter(int x, int y, Color color, WriteableBitmap bitmap, List<Point> points = null)
+        private List<Point> StrokeThicknessSetter(int x, int y, Color color, WriteableBitmap bitmap, List<Point> points = null)
         {
             //Při kreslení přímek se musí již navštívené pixely přeskočit, aby nedošlo k nerovnoměrně vybarveným přímkám při velikostech > 1 a alpha < 255
             if (points == null)
@@ -523,6 +523,7 @@ namespace BakalarskaPrace
                     imageManipulation.AddPixel((int)point.X, (int)point.Y, color, bitmap);
                 }
             }
+            return points;
         }
 
         private void ColorPicker(int x, int y, int colorIndex)
@@ -870,10 +871,10 @@ namespace BakalarskaPrace
 
         private void Resize_Click(object sender, RoutedEventArgs e)
         {
-            WindowResize subWindow = new WindowResize();
-            subWindow.ShowDialog();
+            WindowResize subwindow = new WindowResize();
+            subwindow.ShowDialog();
 
-            if (subWindow.newWidth != 0 && subWindow.newHeight != 0)
+            if (subwindow.newWidth != 0 && subwindow.newHeight != 0)
             {
                 //Získání pixelů z aktuální bitmapy
                 int croppedWidth;
@@ -885,69 +886,69 @@ namespace BakalarskaPrace
                 int endPosX = 0;
                 int endPosY = 0;
 
-                if (subWindow.newWidth < width)
+                if (subwindow.newWidth < width)
                 {
-                    croppedWidth = subWindow.newWidth;
-                    if (subWindow.position.Contains("ĺeft"))
+                    croppedWidth = subwindow.newWidth;
+                    if (subwindow.position.Contains("ĺeft"))
                     {
                         startPosX = 0;
                     }
-                    else if (subWindow.position.Contains("middle"))
+                    else if (subwindow.position.Contains("middle"))
                     {
-                        startPosX = (width / 2) - (subWindow.newWidth / 2);
+                        startPosX = (width / 2) - (subwindow.newWidth / 2);
                     }
-                    else if (subWindow.position.Contains("right"))
+                    else if (subwindow.position.Contains("right"))
                     {
-                        startPosX = width - subWindow.newWidth;
+                        startPosX = width - subwindow.newWidth;
                     }
                 }
                 else
                 {
                     croppedWidth = width;
-                    if (subWindow.position.Contains("ĺeft"))
+                    if (subwindow.position.Contains("ĺeft"))
                     {
                         endPosX = 0;
                     }
-                    else if (subWindow.position.Contains("middle"))
+                    else if (subwindow.position.Contains("middle"))
                     {
-                        endPosX = (subWindow.newWidth - width) / 2;
+                        endPosX = (subwindow.newWidth - width) / 2;
                     }
-                    else if (subWindow.position.Contains("right"))
+                    else if (subwindow.position.Contains("right"))
                     {
-                        endPosX = subWindow.newWidth - width;
+                        endPosX = subwindow.newWidth - width;
                     }
                 }
 
-                if (subWindow.newHeight < height)
+                if (subwindow.newHeight < height)
                 {
-                    croppedHeight = subWindow.newHeight;
-                    if (subWindow.position.Contains("top"))
+                    croppedHeight = subwindow.newHeight;
+                    if (subwindow.position.Contains("top"))
                     {
                         startPosY = 0;
                     }
-                    else if (subWindow.position.Contains("middle")) 
+                    else if (subwindow.position.Contains("middle")) 
                     {
-                        startPosY = (height / 2) - (subWindow.newHeight / 2);
+                        startPosY = (height / 2) - (subwindow.newHeight / 2);
                     }
-                    else if (subWindow.position.Contains("bottom"))
+                    else if (subwindow.position.Contains("bottom"))
                     {
-                        startPosY = height - subWindow.newHeight;
+                        startPosY = height - subwindow.newHeight;
                     }
                 }
                 else
                 {
                     croppedHeight = height;
-                    if (subWindow.position.Contains("top"))
+                    if (subwindow.position.Contains("top"))
                     {
                         endPosY = 0;
                     }
-                    else if (subWindow.position.Contains("middle"))
+                    else if (subwindow.position.Contains("middle"))
                     {
-                        endPosY = (subWindow.newHeight - height) / 2;
+                        endPosY = (subwindow.newHeight - height) / 2;
                     }
-                    else if (subWindow.position.Contains("bottom"))
+                    else if (subwindow.position.Contains("bottom"))
                     {
-                        endPosY = subWindow.newHeight - height;
+                        endPosY = subwindow.newHeight - height;
                     }
                 }
 
@@ -957,7 +958,7 @@ namespace BakalarskaPrace
                 {
                     CroppedBitmap croppedBitmap = new CroppedBitmap(bitmaps[k], rect);
                     WriteableBitmap newBitmap = new WriteableBitmap(croppedBitmap);
-                    WriteableBitmap finalBitmap = new WriteableBitmap(subWindow.newWidth, subWindow.newHeight, 1, 1, PixelFormats.Bgra32, null);
+                    WriteableBitmap finalBitmap = new WriteableBitmap(subwindow.newWidth, subwindow.newHeight, 1, 1, PixelFormats.Bgra32, null);
 
                     //Zapsání pixelů z staré bitmapy do nové
                     for (int i = 0; i < croppedWidth; i++)
@@ -977,8 +978,8 @@ namespace BakalarskaPrace
                     }
                 }
 
-                width = subWindow.newWidth;
-                height = subWindow.newHeight;
+                width = subwindow.newWidth;
+                height = subwindow.newHeight;
                 paintSurface.Width = width;
                 paintSurface.Height = height;
                 image.Width = width;
@@ -1148,36 +1149,77 @@ namespace BakalarskaPrace
                     var filePath = dialog.FileName;
                     BitmapImage bitmapImage = new BitmapImage(new Uri(filePath));
                     WriteableBitmap newBitmap = new WriteableBitmap(bitmapImage);
-                    currentBitmap = newBitmap;
-                    image.Source = currentBitmap;
-                    bitmaps[0] = currentBitmap;
-                    //Clear nesmí být použito protože to potom vytváří chybu v OnTimedEvent
-                    for (int i = 1; i < bitmaps.Count; i++)
+                    WindowLoadImage subwindow = new WindowLoadImage();
+                    subwindow.ShowDialog();
+
+                    if (subwindow.importImage || subwindow.importSpritesheet)
                     {
-                        bitmaps.RemoveAt(i);
+                        if (subwindow.importImage == true)
+                        {
+                            currentBitmap = newBitmap;
+                            bitmaps[0] = currentBitmap;
+                            //Clear nesmí být použito protože to potom vytváří chybu v OnTimedEvent
+                            for (int i = 1; i < bitmaps.Count; i++)
+                            {
+                                bitmaps.RemoveAt(i);
+                            }
+
+                        }
+                        else
+                        {
+                            //Vydělení strany animace velikostí snímku
+                            int rows = newBitmap.PixelWidth / subwindow.imageWidth;
+                            int columns = newBitmap.PixelHeight / subwindow.imageHeight;
+                            int offsetWidth = subwindow.offsetWidth;
+                            int offsetHeight = subwindow.offsetWidth;
+
+                            bitmaps.Clear();
+
+                            //Získání jednotlivých snímků 
+                            for (int j = 0; j < rows; j++)
+                            {
+                                for (int i = 0; i < columns; i++)
+                                {
+                                    Int32Rect rect = new Int32Rect(i * subwindow.imageWidth, j * subwindow.imageHeight, subwindow.imageWidth, subwindow.imageHeight);
+                                    CroppedBitmap croppedBitmap = new CroppedBitmap(newBitmap, rect);
+                                    WriteableBitmap writeableBitmap = new WriteableBitmap(croppedBitmap);
+                                    bitmaps.Add(writeableBitmap);
+                                }
+                            }
+                            currentBitmap = bitmaps[0];
+                        }
+
+                        image.Source = currentBitmap;
+                        width = currentBitmap.PixelWidth;
+                        height = currentBitmap.PixelHeight;
+                        paintSurface.Width = width;
+                        paintSurface.Height = height;
+                        image.Width = width;
+                        image.Height = height;
+                        previewBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+                        previewImage.Source = previewBitmap;
+                        previewImage.Width = width;
+                        previewImage.Height = height;
+                        if (onionSkinning == true) UpdateOnionSkinning();
+                        UpdateImagePreviewButtons();
+                        currentBitmapIndex = 0;
+                        LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
+                        LabelPosition.Content = "[" + width + ":" + height + "] " + mousePosition.X + ":" + mousePosition.Y;
+                        UpdateCurrentBitmap();
                     }
 
-                    width = newBitmap.PixelWidth;
-                    height = newBitmap.PixelHeight;
-                    paintSurface.Width = width;
-                    paintSurface.Height = height;
-                    image.Width = width;
-                    image.Height = height;
-                    previewBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
-                    previewImage.Source = previewBitmap;
-                    previewImage.Width = width;
-                    previewImage.Height = height;
-                    if (onionSkinning == true) UpdateOnionSkinning();
-                    UpdateImagePreviewButtons();
-                    currentBitmapIndex = 0;
-                    LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
-                    LabelPosition.Content = "[" + width + ":" + height + "] " + mousePosition.X + ":" + mousePosition.Y;
                 }
                 catch
                 {
 
                 }
             }
+        }
+
+        private void ExitApp_CLick(object sender, RoutedEventArgs e) 
+        {
+            //Přidat "are you sure?"
+            System.Windows.Application.Current.Shutdown();
         }
 
         private void CreateImage_Click(object sender, RoutedEventArgs e)
@@ -1265,7 +1307,7 @@ namespace BakalarskaPrace
 
         private void UpdateImagePreviewButtons()
         {
-            List<System.Windows.Controls.Button> previewButtons = ImagePreviews.Children.OfType<System.Windows.Controls.Button>().ToList();
+            previewButtons = ImagePreviews.Children.OfType<System.Windows.Controls.Button>().ToList();
             foreach (System.Windows.Controls.Button btn in previewButtons)
             {
                 ImagePreviews.Children.Remove(btn);
@@ -1284,6 +1326,16 @@ namespace BakalarskaPrace
                     Height = 140,
                     Width = 140
                 };
+
+                if (currentBitmapIndex == i)
+                {
+                    newButton.IsEnabled = false;
+                }
+                else
+                {
+                    newButton.IsEnabled = true;
+                }
+
                 newButton.Width = 140;
                 newButton.Height = 140;
                 newButton.Name = "ImagePreview" + i.ToString();
@@ -1326,6 +1378,18 @@ namespace BakalarskaPrace
             currentAnimationIndex = currentBitmapIndex;
             animationPreview.Source = bitmaps[currentAnimationIndex];
             if (onionSkinning == true) UpdateOnionSkinning();
+            previewButtons = ImagePreviews.Children.OfType<System.Windows.Controls.Button>().ToList();
+            for (int i = 0; i < previewButtons.Count; i++)
+            {
+                if (currentBitmapIndex == i)
+                {
+                    previewButtons[i].IsEnabled = false;
+                }
+                else
+                {
+                    previewButtons[i].IsEnabled = true;
+                }
+            }
         }
 
         private void AlphaBlending_Checked(object sender, RoutedEventArgs e)

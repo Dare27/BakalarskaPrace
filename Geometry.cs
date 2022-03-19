@@ -8,110 +8,77 @@ namespace BakalarskaPrace
     internal class Geometry
     {
         //V případě této aplikace je nutné používat Mid-Point algoritmus, protože Bresenhaimův algoritmus nedosahuje při nízkých velikostech kruhu vzhledného výsledku
-        public List<Point> DrawCircle(Point startPos, Point endPos, bool fill)
+        public List<Point> DrawEllipse(Point startPos, Point endPos, bool fill, bool circle)
         {
-            int centerX = (int)(startPos.X + endPos.X) / 2;
-            int centerY = (int)(startPos.Y + endPos.Y) / 2;
-            int radX = centerX - (int)Math.Min(startPos.X, endPos.X);
-            int radY = centerY - (int)Math.Min(startPos.Y, endPos.Y);
-            int rad = Math.Min(radX, radY);
-            int x = rad, y = 0;
-            List<Point> points = new List<Point>();
+            int x0 = (int)startPos.X;
+            int y0 = (int)startPos.Y;
+            int x1 = (int)endPos.X;
+            int y1 = (int)endPos.Y;
 
-            // When radius is zero only a single point will be printed
-            if (rad > 0)
+            if (circle)
             {
-                if (fill)
+                int xDistance = (int)Math.Abs(x0 - x1);
+                int yDistance = (int)Math.Abs(y0 - y1);
+                int dif = Math.Abs(yDistance - xDistance);
+
+                //Delší stranu je nutné zkrátit o rozdíl, poté se dá použít stejná funkce pro kreslení obdélníků 
+                if (xDistance < yDistance)
                 {
-                    points.AddRange(DrawLine(centerX + x, centerY + y, centerX - rad, centerY + y));
-                }
-                else
-                {
-                    points.Add(new Point(centerX + x, centerY + y));
-                    points.Add(new Point(x + centerX - rad, centerY - rad));
-                    points.Add(new Point(y + centerX, x + centerY));
-                    points.Add(new Point(-rad + centerX, x + centerY - rad));
-
-                }
-            }
-            else
-            {
-                points.Add(new Point(centerX, centerY));
-            }
-
-            // Initialising the value of P
-            int P = 1 - rad;
-            while (x > y)
-            {
-                y++;
-
-                // Mid-point is inside or on the perimeter
-                if (P <= 0)
-                    P = P + 2 * y + 1;
-
-                // Mid-point is outside the perimeter
-                else
-                {
-                    x--;
-                    P = P + 2 * y - 2 * x + 1;
-                }
-
-                // All the perimeter points have already been printed
-                if (x < y)
-                    break;
-
-                // Printing the generated point and its reflection in the other octants after translation
-                points.AddRange(QuadrantPlotter(centerX, centerY, x, y, fill));
-
-                // If the generated point is on the line x = y then the perimeter points have already been printed
-                if (x != y)
-                {
-                    if (fill)
+                    if (y0 < y1)
                     {
-                        points.AddRange(DrawLine(y + centerX, x + centerY, -y + centerX, x + centerY));
-                        points.AddRange(DrawLine(y + centerX, -x + centerY, -y + centerX, -x + centerY));
+                        y1 = y1 - dif;
                     }
                     else
                     {
-                        points.Add(new Point(y + centerX, x + centerY));
-                        points.Add(new Point(-y + centerX, x + centerY));
-                        points.Add(new Point(y + centerX, -x + centerY));
-                        points.Add(new Point(-y + centerX, -x + centerY));
+                        //Prohození souřadnic a přičtení rozdílu velikosti stran
+                        int tempY = y1;
+                        y1 = y0;
+                        y0 = tempY + dif;
+                    }
+                }
+                else
+                {
+                    if (x0 < x1)
+                    {
+                        x1 = x1 - dif;
+                    }
+                    else
+                    {
+                        //Prohození souřadnic a přičtení rozdílu velikosti stran
+                        int tempX = x1;
+                        x1 = x0;
+                        x0 = tempX + dif;
                     }
                 }
             }
-            return points;
-        }
 
-        public List<Point> DrawEllipse(Point startPos, Point endPos, bool fill)
-        {
-            int centerX = (int)(startPos.X + endPos.X) / 2;
-            int centerY = (int)(startPos.Y + endPos.Y) / 2;
-            int radX = centerX - (int)Math.Min(startPos.X, endPos.X);
-            int radY = centerY - (int)Math.Min(startPos.Y, endPos.Y);
-            int radX2 = radX * radX;
-            int radY2 = radY * radY;
-            int twoRadX2 = 2 * radX2;
-            int twoRadY2 = 2 * radY2;
-            int p;
-            int x = 0;
-            int y = radY;
-            int px = 0;
-            int py = twoRadX2 * y;
+            double centerX = (x0 + x1) / 2;
+            double centerY = (y0 + y1) / 2;
+            double radX = centerX - Math.Min(x0, x1);
+            double radY = centerY - Math.Min(y0, y1);
+            double radX2 = radX * radX;
+            double radY2 = radY * radY;
+            double twoRadX2 = 2 * radX2;
+            double twoRadY2 = 2 * radY2;
+            double p;
+            double x = 0;
+            double y = radY;
+            double px = 0;
+            double py = twoRadX2 * y;
             List<Point> points = new List<Point>();
 
-            // Plot the initial point in each quadrant
-            points.AddRange(QuadrantPlotter(centerX, centerY, x, y, fill));
+            //Vykreslení počátečního bodu do každého kvadrantu
+            points.AddRange(QuadrantPlotter((int)centerX, (int)centerY, (int)x, (int)y, fill));
 
-            // Initial decision parameter of region 1
+            //Počáteční rozhodovací parametr regionu 1
             p = (int)Math.Round(radY2 - (radX2 * radY) + (0.25 * radX2));
 
-            // Plotting points of region 1
+            //Vykreslení 1. regionu 
             while (px < py)
             {
                 x++;
                 px += twoRadY2;
-                // Checking and updating value of decision parameter based on algorithm
+                //Kontrola a aktualizace hodnoty rozhodovacího parametru na základě algoritmu
                 if (p < 0)
                 {
                     p += radY2 + px;
@@ -122,18 +89,18 @@ namespace BakalarskaPrace
                     py -= twoRadX2;
                     p += radY2 + px - py;
                 }
-                points.AddRange(QuadrantPlotter(centerX, centerY, x, y, fill));
+                points.AddRange(QuadrantPlotter((int)centerX, (int)centerY, (int)x, (int)y, fill));
             }
 
-            // Decision parameter of region 2
+            //Počáteční rozhodovací parametr regionu 
             p = (int)Math.Round(radY2 * (x + 0.5) * (x + 0.5) + radX2 * (y - 1) * (y - 1) - radX2 * radY2);
 
-            // Plotting points of region 2
+            //Vykreslení 2. regionu 
             while (y > 0)
             {
                 y--;
                 py -= twoRadX2;
-                // Checking and updating parameter value based on algorithm
+                //Kontrola a aktualizace hodnoty rozhodovacího parametru na základě algoritmu
                 if (p > 0)
                 {
                     p += radX2 - py;
@@ -144,7 +111,7 @@ namespace BakalarskaPrace
                     px += twoRadX2;
                     p += radX2 - py + px;
                 }
-                points.AddRange(QuadrantPlotter(centerX, centerY, x, y, fill));
+                points.AddRange(QuadrantPlotter((int)centerX, (int)centerY, (int)x, (int)y, fill));
             }
             return points;
         }
@@ -191,6 +158,7 @@ namespace BakalarskaPrace
                     }
                     else
                     {
+                        //Prohození souřadnic a přičtení rozdílu velikosti stran
                         int y = y1;
                         y1 = y0;
                         y0 = y + dif;
@@ -204,6 +172,7 @@ namespace BakalarskaPrace
                     }
                     else
                     {
+                        //Prohození souřadnic a přičtení rozdílu velikosti stran
                         int x = x1;
                         x1 = x0;
                         x0 = x + dif;

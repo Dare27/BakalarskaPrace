@@ -9,12 +9,12 @@
         <DockPanel>
             <Menu DockPanel.Dock="Top" Panel.ZIndex="1000">
                 <MenuItem Header="_File">
-                    <MenuItem Header="_New" Click="Load_Click"/>
-                    <MenuItem Header="_Load" Click="Load_Click"/>
+                    <MenuItem Header="_Create new animation" Click="Load_Click"/>
+                    <MenuItem Header="_Import .png" Click="Load_Click"/>
                     <MenuItem Header="_Export current frame" Click="ExportSingle_Click"/>
                     <MenuItem Header="_Export animation" Click="ExportFull_Click"/>
                     <MenuItem Header="_Export animation as .gif" Click="ExportGif_CLick"/>
-                    <MenuItem Header="_Exit" />
+                    <MenuItem Header="_Exit" Click="ExitApp_CLick"/>
                 </MenuItem>
             </Menu>
             <Grid>
@@ -57,7 +57,7 @@
                         <Slider ValueChanged="Transparency_ValueChanged" Orientation="horizontal" Minimum="0" Maximum="255" Value="255" 
                         IsSnapToTickEnabled="True" TickFrequency="1" Width="138" Canvas.Top="123" Canvas.Left="5" />
                         <Label Content="Brush size" Margin="0,0,0,0" Canvas.Top="141" Canvas.Left="5"/>
-                        <Slider ValueChanged="BrushSize_ValueChanged" Orientation="horizontal" Minimum="1" Maximum="4" Value="1" 
+                        <Slider ValueChanged="BrushSize_ValueChanged" Orientation="horizontal" Minimum="1" Maximum="8" Value="1" 
                         IsSnapToTickEnabled="True" TickFrequency="1" Width="138" Canvas.Top="167" Canvas.Left="5" />
                         <CheckBox Content="Alpha Blending" Canvas.Left="5" Canvas.Top="52" Checked="AlphaBlending_Checked" Unchecked="AlphaBlending_Unchecked" IsChecked="True"/>
 

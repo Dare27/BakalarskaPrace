@@ -10,11 +10,11 @@ none
 false
 DEBUG;TRACE
 C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\App.xaml
-32044861602
+4-1094200391
 2286353590
-14-1781549409
+15-1123076240
 131-776536740
-MainWindow.xaml;WindowResize.xaml;WindowStartup.xaml;
+MainWindow.xaml;WindowLoadImage.xaml;WindowResize.xaml;WindowStartup.xaml;
 
-True
+False
 
