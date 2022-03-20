@@ -46,7 +46,7 @@ namespace BakalarskaPrace
         Color defaultPreviewColor;
         WriteableBitmap previewBitmap;
 
-        private System.Windows.Threading.DispatcherTimer timer = new System.Windows.Threading.DispatcherTimer();
+        private Timer timer = new Timer();
         int timerInterval = 1000;
         int currentAnimationIndex;
         int currentFPSTarget = 12;
@@ -94,10 +94,10 @@ namespace BakalarskaPrace
             LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
             UpdateImagePreviewButtons();
 
-            timer.Tick += new EventHandler(OnTimedEvent);
             timerInterval = 1000 / currentFPSTarget;
-            timer.Interval = new TimeSpan(0, 0, 0, 0, timerInterval);
-            timer.Start();
+            timer.Interval = timerInterval;
+            timer.Enabled = true;
+            timer.Tick += new System.EventHandler(OnTimedEvent);
         }
 
         private void OnTimedEvent(object sender, EventArgs e)
@@ -1294,7 +1294,7 @@ namespace BakalarskaPrace
             {
                 timerInterval = 1000 / currentFPSTarget;
                 timer.Stop();
-                timer.Interval = new TimeSpan(0, 0, 0, 0, timerInterval);
+                timer.Interval = timerInterval;
                 timer.Start();
             }
             else

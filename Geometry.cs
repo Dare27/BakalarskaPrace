@@ -122,8 +122,8 @@ namespace BakalarskaPrace
             List<Point> points = new List<Point>(); ;
             if (fill)
             {
-                points.AddRange(DrawLine(centerX - x, centerY + y, centerX + x, centerY + y));
-                points.AddRange(DrawLine(centerX - x, centerY - y, centerX + x, centerY - y));
+                points.AddRange(DrawHorizontalLine(centerX - x, centerX + x, centerY + y));
+                points.AddRange(DrawHorizontalLine(centerX - x, centerX + x, centerY - y));
             }
             else
             {
@@ -182,11 +182,11 @@ namespace BakalarskaPrace
 
             if (y0 < y1)
             {
-                for (int y = y0; y < y1; y++)
+                for (int y = y0; y <= y1; y++)
                 {
                     if (fill)
                     {
-                        List<Point> fillPoints = DrawLine(x0, y, x1, y);
+                        List<Point> fillPoints = DrawHorizontalLine(x1, x0, y);
                         points.AddRange(fillPoints);
                     }
                     else
@@ -198,11 +198,11 @@ namespace BakalarskaPrace
             }
             else
             {
-                for (int y = y0; y > y1; y--)
+                for (int y = y0; y >= y1; y--)
                 {
                     if (fill)
                     {
-                        List<Point> fillPoints = DrawLine(x0, y, x1, y);
+                        List<Point> fillPoints = DrawHorizontalLine(x0, x1, y);
                         points.AddRange(fillPoints);
                     }
                     else
@@ -215,11 +215,11 @@ namespace BakalarskaPrace
 
             if (x0 < x1)
             {
-                for (int x = x0; x < x1; x++)
+                for (int x = x0; x <= x1; x++)
                 {
                     if (fill)
                     {
-                        List<Point> fillPoints = DrawLine(x, y0, x, y1);
+                        List<Point> fillPoints = DrawVerticalLine(y0, y1, x);
                         points.AddRange(fillPoints);
                     }
                     else
@@ -231,11 +231,11 @@ namespace BakalarskaPrace
             }
             else
             {
-                for (int x = x0; x > x1; x--)
+                for (int x = x0; x >= x1; x--)
                 {
                     if (fill)
                     {
-                        List<Point> fillPoints = DrawLine(x, y0, x, y1);
+                        List<Point> fillPoints = DrawVerticalLine(y1, y0, x);
                         points.AddRange(fillPoints);
                     }
                     else
@@ -247,6 +247,26 @@ namespace BakalarskaPrace
                 }
             }
             points.Add(new Point(x1, y1));
+            return points;
+        }
+
+        public List<Point> DrawHorizontalLine(int x0, int x1, int y) 
+        {
+            List<Point> points = new List<Point>();
+            for (int x = x0; x <= x1; x++)
+            {
+                points.Add(new Point(x, y));
+            }
+            return points;
+        }
+
+        public List<Point> DrawVerticalLine(int y0, int y1, int x)
+        {
+            List<Point> points = new List<Point>();
+            for (int y = y0; y <= y1; y++)
+            {
+                points.Add(new Point(x, y));
+            }
             return points;
         }
 
