@@ -1,0 +1,19 @@
+dithering: mine
+eraser: https://uxwing.com/eraser-icon/
+pen: https://uxwing.com/edit-pen-icon/
+bucket: https://www.flaticon.com/free-icon/bucket_3597168?term=bucket&page=1&position=23&page=1&position=23&related_id=3597168&origin=search
+color-picker: https://www.flaticon.com/free-icon/color-picker_6343874?term=color%20picker&page=1&position=17&page=1&position=17&related_id=6343874&origin=search
+color-wheel[modifed for shading]: https://www.flaticon.com/premium-icon/color-wheel_575116?term=shading&page=1&position=41&page=1&position=41&related_id=575116&origin=search
+color-replace: https://www.flaticon.com/premium-icon/colour_2349995?term=color%20replace&page=1&position=3&page=1&position=3&related_id=2349995&origin=search
+line: https://www.flaticon.com/free-icon/minus-horizontal-straight-line_59549?related_id=59549&origin=search
+ellipse: https://www.flaticon.com/free-icon/ellipse_1014918?term=ellipse&page=1&position=1&page=1&position=1&related_id=1014918&origin=search
+rectangle: https://www.flaticon.com/premium-icon/rectangle_3305372?term=rectangle&page=1&position=2&page=1&position=2&related_id=3305372&origin=search
+path: https://www.flaticon.com/free-icon/route_106153?term=path&page=1&position=9&page=1&position=9&related_id=106153&origin=search
+flip: https://www.flaticon.com/premium-icon/flip_4852769?term=flip&page=1&position=63&page=1&position=63&related_id=4852769&origin=search
+rotate: bol_32418?term=rotate&page=1&position=30&page=1&position=30&related_id=32418&origin=search
+
+
+download:
+resize: https://www.flaticon.com/premium-icon/resize_3682475?term=resize&page=1&position=7&page=1&position=7&related_id=3682475&origin=search
+crop-to-fit: https://www.flaticon.com/free-icon/crop_2089083?term=crop&page=1&position=15&page=1&position=15&related_id=2089083&origin=search
+center-alignment: https://www.flaticon.com/free-icon/frame_4610257?related_id=4610257

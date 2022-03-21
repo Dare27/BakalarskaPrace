@@ -147,3 +147,7 @@ C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\WriteableBit
 C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\WriteableBitmapEx.Wpf.xml
 C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\obj\Debug\WindowLoadImage.g.cs
 C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\obj\Debug\WindowLoadImage.baml
+C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\ColorPicker.dll
+C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\Microsoft.Xaml.Behaviors.dll
+C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\Microsoft.Xaml.Behaviors.pdb
+C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\Microsoft.Xaml.Behaviors.xml

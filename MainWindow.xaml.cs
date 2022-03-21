@@ -57,9 +57,6 @@ namespace BakalarskaPrace
 
         public MainWindow()
         {
-            colorPallete = new Color[colorPalleteSize];
-            colorPallete[0] = Color.FromArgb(alpha, 0, 0, 0);         //Primární barva
-            colorPallete[1] = Color.FromArgb(alpha, 255, 255, 255);   //Sekundární barva
             defaultPreviewColor = Color.FromArgb(255, 178, 213, 226);
             imageManipulation = new ImageManipulation();
             geometry = new Geometry();
@@ -71,6 +68,10 @@ namespace BakalarskaPrace
             paintSurface.Visibility = Visibility.Hidden;
             WindowStartup windowStartup = new WindowStartup();
             windowStartup.ShowDialog();
+
+            colorPallete = new Color[colorPalleteSize];
+            colorPallete[0] = colorSelector.SelectedColor;
+            colorPallete[1] = colorSelector.SecondaryColor;
 
             paintSurface.Visibility = Visibility.Visible;
             width = windowStartup.newWidth;
@@ -116,6 +117,9 @@ namespace BakalarskaPrace
 
         private unsafe void Image_MouseDown(object sender, System.Windows.Input.MouseEventArgs e)
         {
+            colorPallete[1] = colorSelector.SecondaryColor;
+            colorPallete[0] = colorSelector.SelectedColor;
+
             int x = (int)e.GetPosition(image).X;
             int y = (int)e.GetPosition(image).Y;
 
@@ -533,11 +537,11 @@ namespace BakalarskaPrace
             brush.Color = colorPallete[colorIndex];
             if (colorIndex == 0)
             {
-                ColorSelector0.Background = brush;
+                colorSelector.SelectedColor = colorPallete[0];
             }
             else
             {
-                ColorSelector1.Background = brush;
+                colorSelector.SecondaryColor = colorPallete[1];
             }
         }
 
@@ -665,12 +669,12 @@ namespace BakalarskaPrace
         private void Move_Click(object sender, RoutedEventArgs e)
         {
             currentTool = toolSelection.move;
-            ToolMove.IsEnabled = false;
+            //ToolMove.IsEnabled = false;
             if (lastToolButton != null)
             {
                 lastToolButton.IsEnabled = true;
             }
-            lastToolButton = ToolMove;
+            //lastToolButton = ToolMove;
         }
 
         private void Path_Click(object sender, RoutedEventArgs e)
@@ -1075,35 +1079,15 @@ namespace BakalarskaPrace
             }
         }
 
-        private void ColorSelection_Click(object sender, RoutedEventArgs e)
+        private void ColorChanged(object sender, RoutedEventArgs e) 
         {
-            System.Windows.Controls.Button button = sender as System.Windows.Controls.Button;
-            String buttonName = button.Name.ToString();
-            buttonName = Regex.Replace(buttonName, "[^0-9]", "");
-            ColorDialog colorDialog = new ColorDialog();
-
-            if (colorDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            {
-                System.Drawing.Color color = colorDialog.Color;
-                colorPallete[Int32.Parse(buttonName)] = System.Windows.Media.Color.FromArgb(alpha, color.R, color.G, color.B);
-                SolidColorBrush brush = new SolidColorBrush();
-                brush.Color = colorPallete[Int32.Parse(buttonName)];
-                button.Background = brush;
-            }
+            colorPallete[1] = colorSelector.SecondaryColor;
+            colorPallete[0] = colorSelector.SelectedColor;
         }
 
         private void BrushSize_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             strokeThickness = (int)e.NewValue;
-        }
-
-        private void Transparency_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            alpha = (byte)e.NewValue;
-            for (int i = 0; i < colorPallete.Length; i++)
-            {
-                colorPallete[i].A = alpha;
-            }
         }
 
         private void ExportSingle_Click(object sender, RoutedEventArgs e)
@@ -1440,7 +1424,7 @@ namespace BakalarskaPrace
             }
         }
 
-        private void SwapColors_Click(object sender, RoutedEventArgs e)
+        /*private void SwapColors_Click(object sender, RoutedEventArgs e)
         {
             Color tempColor = colorPallete[0];
             colorPallete[0] = colorPallete[1];
@@ -1448,12 +1432,12 @@ namespace BakalarskaPrace
 
             SolidColorBrush brush0 = new SolidColorBrush();
             brush0.Color = colorPallete[0];
-            ColorSelector0.Background = brush0;
+            //ColorSelector0.Background = brush0;
 
             SolidColorBrush brush1 = new SolidColorBrush();
             brush1.Color = colorPallete[1];
-            ColorSelector1.Background = brush1;
-        }
+            //ColorSelector1.Background = brush1;
+        }*/
 
         private void OnionSkinning_Checked(object sender, RoutedEventArgs e)
         {
