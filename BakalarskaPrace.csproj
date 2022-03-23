@@ -164,9 +164,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Files\Images\pen.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Files\Images\eraser.png" />
   </ItemGroup>
   <ItemGroup>
@@ -201,6 +198,20 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Files\Images\rotate.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Files\Images\center-alignment.png" />
+    <Resource Include="Files\Images\crop.png" />
+    <Resource Include="Files\Images\resize.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Files\Images\pen.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Files\Images\plus.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Files\Images\minus.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

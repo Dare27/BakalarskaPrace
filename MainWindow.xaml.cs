@@ -19,19 +19,18 @@ namespace BakalarskaPrace
         private readonly List<WriteableBitmap> bitmaps = new List<WriteableBitmap>();
         private List<System.Windows.Controls.Button> previewButtons = new List<System.Windows.Controls.Button>();
         private readonly WriteableBitmap defaultBitmap;
-        int colorPalleteSize = 2;
-        Color[] colorPallete;
+        WriteableBitmap previewBitmap;
+        int colorPalleteSize = 3;
+        Color[] currentColors;
+        List<Color> colorPalette = new List<Color>();
         int currentColorIndex = 0;
         int strokeThickness = 1;
-        byte alpha = 255;
         bool alphaBlending = true;
-        bool additive = false;
         enum toolSelection { brush, eraser, symmetricBrush, colorPicker, bucket, specialBucket, line, ellipsis, shading, rectangle, dithering, move, path };
         toolSelection currentTool = toolSelection.brush;
         Point gridDragStartPoint;
         System.Windows.Vector gridDragOffset;
-        int width;
-        int height;
+        int width, height;
         double currentScale = 1.0;
         Point mousePosition = new Point(0, 0);
         Point mouseDownPosition = new Point(-1, -1);
@@ -42,9 +41,7 @@ namespace BakalarskaPrace
 
         bool onionSkinning;
         System.Windows.Controls.Button lastToolButton;
-
-        Color defaultPreviewColor;
-        WriteableBitmap previewBitmap;
+        System.Windows.Controls.Button currentColorLeftButton;
 
         private Timer timer = new Timer();
         int timerInterval = 1000;
@@ -57,7 +54,6 @@ namespace BakalarskaPrace
 
         public MainWindow()
         {
-            defaultPreviewColor = Color.FromArgb(255, 178, 213, 226);
             imageManipulation = new ImageManipulation();
             geometry = new Geometry();
             transform = new Transform();
@@ -69,9 +65,10 @@ namespace BakalarskaPrace
             WindowStartup windowStartup = new WindowStartup();
             windowStartup.ShowDialog();
 
-            colorPallete = new Color[colorPalleteSize];
-            colorPallete[0] = colorSelector.SelectedColor;
-            colorPallete[1] = colorSelector.SecondaryColor;
+            currentColors = new Color[colorPalleteSize];
+            currentColors[0] = colorSelector.SelectedColor;
+            currentColors[1] = colorSelector.SecondaryColor;
+            currentColors[2] = Color.FromArgb(255, 178, 213, 226);
 
             paintSurface.Visibility = Visibility.Visible;
             width = windowStartup.newWidth;
@@ -117,8 +114,8 @@ namespace BakalarskaPrace
 
         private unsafe void Image_MouseDown(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            colorPallete[1] = colorSelector.SecondaryColor;
-            colorPallete[0] = colorSelector.SelectedColor;
+            currentColors[1] = colorSelector.SecondaryColor;
+            currentColors[0] = colorSelector.SelectedColor;
 
             int x = (int)e.GetPosition(image).X;
             int y = (int)e.GetPosition(image).Y;
@@ -133,15 +130,15 @@ namespace BakalarskaPrace
                 {
                     case toolSelection.brush:
                         {
-                            StrokeThicknessSetter(x, y, colorPallete[colorIndex], currentBitmap);
+                            StrokeThicknessSetter(x, y, currentColors[colorIndex], currentBitmap);
                             break;
                         }
                     case toolSelection.symmetricBrush:
                         {
-                            drawPoints = tools.SymmetricDrawing(x, y, colorPallete[colorIndex], currentBitmap);
+                            drawPoints = tools.SymmetricDrawing(x, y, currentColors[colorIndex], currentBitmap);
                             foreach (Point point in drawPoints)
                             {
-                                StrokeThicknessSetter((int)point.X, (int)point.Y, colorPallete[colorIndex], currentBitmap);
+                                StrokeThicknessSetter((int)point.X, (int)point.Y, currentColors[colorIndex], currentBitmap);
                             }
                             break;
                         }
@@ -158,7 +155,7 @@ namespace BakalarskaPrace
                     case toolSelection.bucket:
                         {
                             Color seedColor = imageManipulation.GetPixelColor(x, y, currentBitmap);
-                            tools.FloodFill(x, y, colorPallete[colorIndex], seedColor, currentBitmap, alphaBlending, width, height);
+                            tools.FloodFill(x, y, currentColors[colorIndex], seedColor, currentBitmap, alphaBlending, width, height);
                             break;
                         }
                     case toolSelection.specialBucket:
@@ -168,12 +165,12 @@ namespace BakalarskaPrace
                             {
                                 foreach (WriteableBitmap writeableBitmap in bitmaps)
                                 {
-                                    tools.SpecialBucket(x, y, currentBitmap, colorPallete[colorIndex], seedColor, alphaBlending, width, height);
+                                    tools.SpecialBucket(x, y, currentBitmap, currentColors[colorIndex], seedColor, alphaBlending, width, height);
                                 }
                             }
                             else
                             {
-                                tools.SpecialBucket(x, y, currentBitmap, colorPallete[colorIndex], seedColor, alphaBlending, width, height);
+                                tools.SpecialBucket(x, y, currentBitmap, currentColors[colorIndex], seedColor, alphaBlending, width, height);
                             }
                             break;
                         }
@@ -210,7 +207,7 @@ namespace BakalarskaPrace
                         }
                     case toolSelection.dithering:
                         {
-                            tools.Dithering(x, y, colorPallete[0], colorPallete[1], currentBitmap);
+                            tools.Dithering(x, y, currentColors[0], currentColors[1], currentBitmap);
                             break;
                         }
                     case toolSelection.shading:
@@ -249,15 +246,15 @@ namespace BakalarskaPrace
                 {
                     case toolSelection.brush:
                         {
-                            StrokeThicknessSetter(x, y, colorPallete[colorIndex], currentBitmap);
+                            StrokeThicknessSetter(x, y, currentColors[colorIndex], currentBitmap);
                             break;
                         }
                     case toolSelection.symmetricBrush:
                         {
-                            drawPoints = tools.SymmetricDrawing(x, y, colorPallete[colorIndex], currentBitmap);
+                            drawPoints = tools.SymmetricDrawing(x, y, currentColors[colorIndex], currentBitmap);
                             foreach (Point point in drawPoints)
                             {
-                                StrokeThicknessSetter((int)point.X, (int)point.Y, colorPallete[colorIndex], currentBitmap);
+                                StrokeThicknessSetter((int)point.X, (int)point.Y, currentColors[colorIndex], currentBitmap);
                             }
                             break;
                         }
@@ -274,7 +271,7 @@ namespace BakalarskaPrace
                     case toolSelection.bucket:
                         {
                             Color seedColor = imageManipulation.GetPixelColor(x, y, currentBitmap);
-                            tools.FloodFill(x, y, colorPallete[colorIndex], seedColor, currentBitmap, alphaBlending, width, height);
+                            tools.FloodFill(x, y, currentColors[colorIndex], seedColor, currentBitmap, alphaBlending, width, height);
                             break;
                         }
                     case toolSelection.specialBucket:
@@ -284,18 +281,18 @@ namespace BakalarskaPrace
                             {
                                 foreach (WriteableBitmap writeableBitmap in bitmaps)
                                 {
-                                    tools.SpecialBucket(x, y, currentBitmap, colorPallete[colorIndex], seedColor, alphaBlending, width, height);
+                                    tools.SpecialBucket(x, y, currentBitmap, currentColors[colorIndex], seedColor, alphaBlending, width, height);
                                 }
                             }
                             else
                             {
-                                tools.SpecialBucket(x, y, currentBitmap, colorPallete[colorIndex], seedColor, alphaBlending, width, height);
+                                tools.SpecialBucket(x, y, currentBitmap, currentColors[colorIndex], seedColor, alphaBlending, width, height);
                             }
                             break;
                         }
                     case toolSelection.dithering:
                         {
-                            tools.Dithering(x, y, colorPallete[0], colorPallete[1], currentBitmap);
+                            tools.Dithering(x, y, currentColors[0], currentColors[1], currentBitmap);
                             break;
                         }
                     case toolSelection.shading:
@@ -438,7 +435,7 @@ namespace BakalarskaPrace
 
                 foreach (Point point in previewMousePoints)
                 {
-                    imageManipulation.AddPixel((int)point.X, (int)point.Y, defaultPreviewColor, previewBitmap);
+                    imageManipulation.AddPixel((int)point.X, (int)point.Y, currentColors[2], previewBitmap);
                 }
             }
         }
@@ -460,7 +457,7 @@ namespace BakalarskaPrace
             {
                 foreach (Point point in previewMousePoints)
                 {
-                    StrokeThicknessSetter((int)point.X, (int)point.Y, colorPallete[currentColorIndex], currentBitmap);
+                    StrokeThicknessSetter((int)point.X, (int)point.Y, currentColors[currentColorIndex], currentBitmap);
                 }
             }
 
@@ -478,7 +475,7 @@ namespace BakalarskaPrace
             previewBitmap.Clear();
             previewMousePoints.Clear();
             previewMousePoints.Add(mousePosition);
-            imageManipulation.AddPixel((int)mousePosition.X, (int)mousePosition.Y, defaultPreviewColor, previewBitmap);
+            imageManipulation.AddPixel((int)mousePosition.X, (int)mousePosition.Y, currentColors[2], previewBitmap);
         }
 
         private List<Point> StrokeThicknessSetter(int x, int y, Color color, WriteableBitmap bitmap, List<Point> points = null)
@@ -532,16 +529,16 @@ namespace BakalarskaPrace
 
         private void ColorPicker(int x, int y, int colorIndex)
         {
-            colorPallete[colorIndex] = imageManipulation.GetPixelColor(x, y, currentBitmap);
+            currentColors[colorIndex] = imageManipulation.GetPixelColor(x, y, currentBitmap);
             SolidColorBrush brush = new SolidColorBrush();
-            brush.Color = colorPallete[colorIndex];
+            brush.Color = currentColors[colorIndex];
             if (colorIndex == 0)
             {
-                colorSelector.SelectedColor = colorPallete[0];
+                colorSelector.SelectedColor = currentColors[0];
             }
             else
             {
-                colorSelector.SecondaryColor = colorPallete[1];
+                colorSelector.SecondaryColor = currentColors[1];
             }
         }
 
@@ -1011,6 +1008,101 @@ namespace BakalarskaPrace
                 transform.CenterAlligment(currentBitmap, width, height);
             }
         }
+        private void ColorPaletteAdd_Click(object sender, RoutedEventArgs e)
+        {
+            if (colorPalette.Contains(colorSelector.SelectedColor) == false) 
+            {
+                colorPalette.Add(colorSelector.SelectedColor);
+                AddColorPaletteButton(colorSelector.SelectedColor);
+            }
+        }
+
+        private void AddColorPaletteButton(Color color) 
+        {
+            System.Windows.Controls.Button newButton = new System.Windows.Controls.Button();
+            newButton.Width = 40;
+            newButton.Height = 40;
+            newButton.Margin = new Thickness(2);
+            WriteableBitmap bitmap = new WriteableBitmap(1, 1, 1, 1, PixelFormats.Bgra32, null);
+            imageManipulation.AddPixel(0, 0, color, bitmap);
+            newButton.Content = new Image
+            {
+                Source = bitmap,
+                VerticalAlignment = VerticalAlignment.Center,
+                Stretch = Stretch.Uniform,
+                Height = 40,
+                Width = 40
+            };
+            newButton.Name = color.ToString().Substring(1);
+            newButton.PreviewMouseDown += new MouseButtonEventHandler(ColorPaletteButton_Click);
+            colorList.Children.Add(newButton);
+        }
+
+        private void ColorPaletteButton_Click(object sender, MouseButtonEventArgs e)
+        {
+            var colorListButtons = colorList.Children.OfType<System.Windows.Controls.Button>();
+
+            currentColorLeftButton = (System.Windows.Controls.Button)sender;
+            string buttonName = "#" + currentColorLeftButton.Name;
+            int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
+            currentColors[colorIndex] = (Color)ColorConverter.ConvertFromString(buttonName);
+            colorSelector.SelectedColor = currentColors[0];
+            colorSelector.SecondaryColor = currentColors[1];
+        }
+
+        private void ColorPaletteRemove_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentColorLeftButton != null)
+            {
+                string buttonName = "#" + currentColorLeftButton.Name;
+                Color color = (Color)ColorConverter.ConvertFromString(buttonName);
+                colorPalette.Remove(color);
+                colorList.Children.Remove(currentColorLeftButton);
+                currentColorLeftButton = null;
+            }
+        }
+
+        private void ExportColorPalette_Click(object sender, RoutedEventArgs e)
+        {
+            WriteableBitmap newBitmap = new WriteableBitmap(colorPalette.Count, 1, 1, 1, PixelFormats.Bgra32, null);
+            for (int i = 0; i < colorPalette.Count; i++) 
+            {
+                imageManipulation.AddPixel(i, 0, colorPalette[i], newBitmap);
+            }
+
+            FileManagement fileManagement = new FileManagement();
+            fileManagement.ExportPNG(newBitmap);
+        }
+
+        private void ImportColorPalette_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Filter = "png images *(.png)|*.png;";
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                try
+                {
+                    var filePath = dialog.FileName;
+                    BitmapImage bitmapImage = new BitmapImage(new Uri(filePath));
+                    WriteableBitmap newBitmap = new WriteableBitmap(bitmapImage);
+                    if (newBitmap.PixelHeight < 2 && newBitmap.PixelWidth < 257) 
+                    {
+                        colorPalette.Clear();
+                        colorList.Children.Clear();
+                        for (int i = 0; i < newBitmap.PixelWidth; i++) 
+                        {
+                            Color color = imageManipulation.GetPixelColor(i, 0, newBitmap);
+                            colorPalette.Add(color);
+                            AddColorPaletteButton(color);
+                        }
+                    }
+                }
+                catch
+                {
+
+                }
+            }
+        }
 
         private void Center_Click(object sender, RoutedEventArgs e)
         {
@@ -1081,8 +1173,8 @@ namespace BakalarskaPrace
 
         private void ColorChanged(object sender, RoutedEventArgs e) 
         {
-            colorPallete[1] = colorSelector.SecondaryColor;
-            colorPallete[0] = colorSelector.SelectedColor;
+            currentColors[1] = colorSelector.SecondaryColor;
+            currentColors[0] = colorSelector.SelectedColor;
         }
 
         private void BrushSize_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -1292,9 +1384,9 @@ namespace BakalarskaPrace
         private void UpdateImagePreviewButtons()
         {
             previewButtons = ImagePreviews.Children.OfType<System.Windows.Controls.Button>().ToList();
-            foreach (System.Windows.Controls.Button btn in previewButtons)
+            foreach (System.Windows.Controls.Button button in previewButtons)
             {
-                ImagePreviews.Children.Remove(btn);
+                ImagePreviews.Children.Remove(button);
             }
 
             for (int i = 0; i < bitmaps.Count; i++)
@@ -1424,21 +1516,6 @@ namespace BakalarskaPrace
             }
         }
 
-        /*private void SwapColors_Click(object sender, RoutedEventArgs e)
-        {
-            Color tempColor = colorPallete[0];
-            colorPallete[0] = colorPallete[1];
-            colorPallete[1] = tempColor;
-
-            SolidColorBrush brush0 = new SolidColorBrush();
-            brush0.Color = colorPallete[0];
-            //ColorSelector0.Background = brush0;
-
-            SolidColorBrush brush1 = new SolidColorBrush();
-            brush1.Color = colorPallete[1];
-            //ColorSelector1.Background = brush1;
-        }*/
-
         private void OnionSkinning_Checked(object sender, RoutedEventArgs e)
         {
             onionSkinning = true;
@@ -1453,12 +1530,12 @@ namespace BakalarskaPrace
 
         private void Additive_Checked(object sender, RoutedEventArgs e)
         {
-            additive = true;
+
         }
 
         private void Additive_Unchecked(object sender, RoutedEventArgs e)
         {
-            additive = false;
+
         }
     }
 }
