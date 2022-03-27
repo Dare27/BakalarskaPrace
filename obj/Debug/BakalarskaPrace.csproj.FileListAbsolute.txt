@@ -151,3 +151,9 @@ C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\ColorPicker.
 C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\Microsoft.Xaml.Behaviors.dll
 C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\Microsoft.Xaml.Behaviors.pdb
 C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\Microsoft.Xaml.Behaviors.xml
+C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\AForge.dll
+C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\AForge.Imaging.dll
+C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\AForge.Math.dll
+C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\AForge.xml
+C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\AForge.Imaging.xml
+C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\AForge.Math.xml

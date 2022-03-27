@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
@@ -47,10 +48,13 @@ namespace BakalarskaPrace
         int timerInterval = 1000;
         int currentAnimationIndex;
         int currentFPSTarget = 12;
+        bool playAnimation = true;
+
         ImageManipulation imageManipulation;
         Geometry geometry;
         Transform transform;
         Tools tools;
+        Filters filters;
 
         public MainWindow()
         {
@@ -58,6 +62,7 @@ namespace BakalarskaPrace
             geometry = new Geometry();
             transform = new Transform();
             tools = new Tools();
+            filters = new Filters();
 
             InitializeComponent();
             this.Show();
@@ -91,6 +96,7 @@ namespace BakalarskaPrace
             LabelScale.Content = "1.0";
             LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
             UpdateImagePreviewButtons();
+            Center();
 
             timerInterval = 1000 / currentFPSTarget;
             timer.Interval = timerInterval;
@@ -1106,9 +1112,40 @@ namespace BakalarskaPrace
 
         private void Center_Click(object sender, RoutedEventArgs e)
         {
+            Center();
+        }
+
+        private void Center() 
+        {
+            MatrixTransform transform = new MatrixTransform();
+            Matrix matrix = transform.Matrix;
+            double scale;
+            if (height >= width)
+            {
+                scale = grid.ActualHeight / height;
+            }
+            else 
+            {
+                scale = grid.ActualWidth / width;
+            }
+
+            matrix.ScaleAtPrepend(scale, scale, 0, 0);
+            transform.Matrix = matrix;
+
+            currentScale = scale;
+            if (currentScale.ToString().Length > 5)
+            {
+                LabelScale.Content = currentScale.ToString().Substring(0, 5);
+            }
+            else
+            {
+                LabelScale.Content = currentScale.ToString();
+            }
+
+            paintSurface.RenderTransform = transform;
+
             Grid_TranslateTransform.X = 0;
             Grid_TranslateTransform.Y = 0;
-            Console.WriteLine(grid.ActualWidth + " " + grid.ActualHeight);
         }
 
         private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)
@@ -1117,16 +1154,22 @@ namespace BakalarskaPrace
             Point position = e.GetPosition(element);
             MatrixTransform transform = (MatrixTransform)paintSurface.RenderTransform;
             Matrix matrix = transform.Matrix;
-            double scale;
+            double scale = 1;
 
             // Pokud je e >= 0 dojde k přibližování
             if (e.Delta >= 0)
             {
-                scale = 1.1;
+                if (currentScale < 70)
+                {
+                    scale = 1.1;
+                }
             }
             else
             {
-                scale = 1.0 / 1.1;
+                if (currentScale > 7)
+                {
+                    scale = 0.9;
+                }
             }
 
             matrix.ScaleAtPrepend(scale, scale, mousePosition.X - paintSurface.Width / 2, mousePosition.Y - paintSurface.Height / 2);
@@ -1300,27 +1343,36 @@ namespace BakalarskaPrace
 
         private void CreateImage_Click(object sender, RoutedEventArgs e)
         {
-            CreateNewFrame(false);
+            WriteableBitmap newBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+            CreateNewFrame(newBitmap);
         }
 
         private void DuplicateImage_Click(object sender, RoutedEventArgs e)
         {
-            CreateNewFrame(true);
+            WriteableBitmap newBitmap = bitmaps[currentBitmapIndex].Clone();
+            CreateNewFrame(newBitmap);
         }
 
-        private void CreateNewFrame(bool duplicate)
+        private void MergeImage_Click(object sender, RoutedEventArgs e)
         {
-            WriteableBitmap newWriteableBitmap;
-
-            if (duplicate)
+            if (currentBitmapIndex < bitmaps.Count - 1)
             {
-                newWriteableBitmap = bitmaps[currentBitmapIndex].Clone();
+                WriteableBitmap newBitmap = filters.MergeImages(currentBitmap, bitmaps[currentBitmapIndex + 1], width, height);
+                CreateNewFrame(newBitmap);
             }
-            else
-            {
-                newWriteableBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
-            }
+        }
 
+        private void IntersectImage_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentBitmapIndex < bitmaps.Count - 1)
+            {
+                WriteableBitmap newBitmap = filters.IntersectImages(currentBitmap, bitmaps[currentBitmapIndex + 1], width, height);
+                CreateNewFrame(newBitmap);
+            }
+        }
+
+        private void CreateNewFrame(WriteableBitmap newWriteableBitmap)
+        {
             if (currentBitmapIndex < bitmaps.Count - 1)
             {
                 bitmaps.Insert(currentBitmapIndex + 1, newWriteableBitmap);
@@ -1371,13 +1423,32 @@ namespace BakalarskaPrace
                 timerInterval = 1000 / currentFPSTarget;
                 timer.Stop();
                 timer.Interval = timerInterval;
-                timer.Start();
+                if (playAnimation == true)
+                {
+                    timer.Start();
+                }
             }
             else
             {
                 timer.Stop();
                 currentAnimationIndex = currentBitmapIndex;
                 animationPreview.Source = bitmaps[currentAnimationIndex];
+            }
+        }
+
+        private void Play_Click(object sender, RoutedEventArgs e)
+        {
+            if (playAnimation == true)
+            {
+                playAnimation = false;
+                timer.Stop();
+                currentAnimationIndex = currentBitmapIndex;
+                animationPreview.Source = bitmaps[currentAnimationIndex];
+            }
+            else
+            {
+                playAnimation = true;
+                timer.Start();
             }
         }
 

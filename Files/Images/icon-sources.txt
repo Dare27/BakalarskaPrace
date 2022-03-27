@@ -8,7 +8,7 @@ color-replace: https://www.flaticon.com/premium-icon/colour_2349995?term=color%2
 line: https://www.flaticon.com/free-icon/minus-horizontal-straight-line_59549?related_id=59549&origin=search
 ellipse: https://www.flaticon.com/free-icon/ellipse_1014918?term=ellipse&page=1&position=1&page=1&position=1&related_id=1014918&origin=search
 rectangle: https://www.flaticon.com/premium-icon/rectangle_3305372?term=rectangle&page=1&position=2&page=1&position=2&related_id=3305372&origin=search
-path: https://www.flaticon.com/free-icon/route_106153?term=path&page=1&position=9&page=1&position=9&related_id=106153&origin=search
+path: https://www.flaticon.com/free-icon/line-chart_7135024?term=line&page=1&position=96&page=1&position=96&related_id=7135024&origin=search
 flip: https://www.flaticon.com/premium-icon/flip_4852769?term=flip&page=1&position=63&page=1&position=63&related_id=4852769&origin=search
 rotate: bol_32418?term=rotate&page=1&position=30&page=1&position=30&related_id=32418&origin=search
 resize: https://www.flaticon.com/premium-icon/resize_3682475?term=resize&page=1&position=7&page=1&position=7&related_id=3682475&origin=search

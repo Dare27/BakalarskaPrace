@@ -181,16 +181,24 @@
                             <StackPanel Width="200" Margin="0,5,0,5">
                                 <Image Margin="4,2" x:Name="animationPreview" Panel.ZIndex="10" MouseMove="Image_MouseMove" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" Width="137" Height="137"/>
                                 <DockPanel Margin="4,2">
-                                    <Label Name="LabelFramesPerSecond"  Content="12" VerticalAlignment="Center"/>
-                                    <Slider IsSnapToTickEnabled="True" TickFrequency="1" Maximum="60" ValueChanged="FramesPerSecond_ValueChanged" Value="12" Height="18" Margin="0,0,0,0"/>
+                                    <Label Name="LabelFramesPerSecond"  Content="12" VerticalAlignment="Center" Width="23"/>
+                                    <Slider IsSnapToTickEnabled="True" TickFrequency="1" Maximum="60" ValueChanged="FramesPerSecond_ValueChanged" Value="12" Height="18" Margin="0,0,0,0" Width="142"/>
+                                    <Button Content=">" Click="Play_Click" Margin="2,0,0,0" Width="20" Height="20"/>
                                 </DockPanel>
                                 <UniformGrid Rows="1" HorizontalAlignment="Stretch" Margin="4,2">
-                                    <Button Content="Previous" Click="Previous_Click" Margin="0,0,2,0"/>
+                                    <Button Content="Previos" Click="Previous_Click" Margin="2,0,0,0"/>
                                     <Button Content="Next" Click="Next_Click" Margin="2,0,0,0"/>
                                 </UniformGrid>
-                                <Button Content="Create image" Click="CreateImage_Click" Margin="4,2"/>
-                                <Button Content="Duplicate image" Click="DuplicateImage_Click" Margin="4,2"/>
-                                <Button Content="Delete image" Click="DeleteImage_Click" Margin="4,2"/>
+                                <UniformGrid Rows="1" HorizontalAlignment="Stretch" Margin="4,2">
+                                    <Button Content="Create image" Click="CreateImage_Click" Margin="2,0,0,0"/>
+                                    <Button Content="Delete image" Click="DeleteImage_Click" Margin="2,0,0,0"/>
+                                </UniformGrid>
+                                <UniformGrid Rows="1" HorizontalAlignment="Stretch" Margin="4,2">
+                                    <Button Content="Duplicate " Click="DuplicateImage_Click" Margin="2,0,0,0"/>
+                                    <Button Content="Merge" Click="MergeImage_Click" Margin="2,0,0,0"/>
+                                    <Button Content="Intersect" Click="IntersectImage_Click" Margin="2,0,0,0"/>
+                                </UniformGrid>
+                                
                                 <CheckBox Content="Onion skinning" Checked="OnionSkinning_Checked" Unchecked="OnionSkinning_Unchecked" IsChecked="False" Margin="4,2"/>
                             </StackPanel>
                             <StackPanel Name="ImagePreviews"/>
