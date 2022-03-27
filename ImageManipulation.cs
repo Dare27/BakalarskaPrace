@@ -9,6 +9,8 @@ namespace BakalarskaPrace
     {
         public void AddPixel(int x, int y, Color color, WriteableBitmap bitmap)
         {
+            bitmap.SetPixel(x, y, color);
+            /*
             try
             {
                 // Reserve the back buffer for updates.
@@ -35,7 +37,7 @@ namespace BakalarskaPrace
             {
                 // Release the back buffer and make it available for display.
                 bitmap.Unlock();
-            }
+            }*/
         }
 
         public unsafe Color GetPixelColor(int x, int y, WriteableBitmap bitmap)

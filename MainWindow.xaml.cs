@@ -78,7 +78,7 @@ namespace BakalarskaPrace
             paintSurface.Visibility = Visibility.Visible;
             width = windowStartup.newWidth;
             height = windowStartup.newHeight;
-            defaultBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+            defaultBitmap = BitmapFactory.New(width, height);
 
             previewBitmap = defaultBitmap.Clone();
             previewImage.Source = previewBitmap;
@@ -439,9 +439,12 @@ namespace BakalarskaPrace
                         break;
                 }
 
-                foreach (Point point in previewMousePoints)
+                using (previewBitmap.GetBitmapContext())
                 {
-                    imageManipulation.AddPixel((int)point.X, (int)point.Y, currentColors[2], previewBitmap);
+                    foreach (Point point in previewMousePoints)
+                    {
+                        imageManipulation.AddPixel((int)point.X, (int)point.Y, currentColors[2], previewBitmap);
+                    }
                 }
             }
         }
@@ -517,17 +520,20 @@ namespace BakalarskaPrace
                 }
             }
 
-            foreach (var point in points)
+            using (bitmap.GetBitmapContext())
             {
-                if (alphaBlending == true)
+                foreach (var point in points)
                 {
-                    Color currentPixelColor = imageManipulation.GetPixelColor((int)point.X, (int)point.Y, bitmap);
-                    Color colorMix = imageManipulation.ColorMix(color, currentPixelColor);
-                    imageManipulation.AddPixel((int)point.X, (int)point.Y, colorMix, bitmap);
-                }
-                else
-                {
-                    imageManipulation.AddPixel((int)point.X, (int)point.Y, color, bitmap);
+                    if (alphaBlending == true)
+                    {
+                        Color currentPixelColor = imageManipulation.GetPixelColor((int)point.X, (int)point.Y, bitmap);
+                        Color colorMix = imageManipulation.ColorMix(color, currentPixelColor);
+                        imageManipulation.AddPixel((int)point.X, (int)point.Y, colorMix, bitmap);
+                    }
+                    else
+                    {
+                        imageManipulation.AddPixel((int)point.X, (int)point.Y, color, bitmap);
+                    }
                 }
             }
             return points;
@@ -697,7 +703,7 @@ namespace BakalarskaPrace
             {
                 for (int i = 0; i < bitmaps.Count; i++)
                 {
-                    WriteableBitmap newBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+                    WriteableBitmap newBitmap = BitmapFactory.New(width, height);
                     transform.Flip(newBitmap, bitmaps[i]);
                     bitmaps[i] = newBitmap;
                     if (i == currentBitmapIndex)
@@ -710,7 +716,7 @@ namespace BakalarskaPrace
             }
             else
             {
-                WriteableBitmap newBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+                WriteableBitmap newBitmap = BitmapFactory.New(width, height);
                 transform.Flip(newBitmap, currentBitmap);
                 currentBitmap = newBitmap;
                 bitmaps[currentBitmapIndex] = newBitmap;
@@ -729,7 +735,7 @@ namespace BakalarskaPrace
                 width = newWidth;
                 for (int i = 0; i < bitmaps.Count; i++)
                 {
-                    WriteableBitmap newBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+                    WriteableBitmap newBitmap = BitmapFactory.New(width, height);
                     transform.RotateAnimation(newBitmap, bitmaps[i]);
                     bitmaps[i] = newBitmap;
                     if (i == currentBitmapIndex)
@@ -740,7 +746,7 @@ namespace BakalarskaPrace
             }
             else
             {
-                WriteableBitmap newBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+                WriteableBitmap newBitmap = BitmapFactory.New(width, height);
                 transform.RotateImage(newBitmap, currentBitmap, width, height);
                 currentBitmap = newBitmap;
             }
@@ -837,18 +843,20 @@ namespace BakalarskaPrace
             {
                 for (int k = 0; k < bitmaps.Count; k++)
                 {
-                    WriteableBitmap newBitmap = new WriteableBitmap(newWidth, newHeight, 1, 1, PixelFormats.Bgra32, null);
-
+                    WriteableBitmap newBitmap = BitmapFactory.New(newWidth, newHeight);
                     //Získání pixelů z aktuální bitmapy
-                    for (int i = leftPixelX; i <= rightPixelX; i++)
+                    using (newBitmap.GetBitmapContext())
                     {
-                        for (int j = topPixelY; j <= downPixelY; j++)
+                        for (int i = leftPixelX; i <= rightPixelX; i++)
                         {
-                            Color color = imageManipulation.GetPixelColor(i, j, bitmaps[k]);
-                            if (color.A != 0)
+                            for (int j = topPixelY; j <= downPixelY; j++)
                             {
-                                //Vytvoření pixelu, který je posunutý v nové bitmapě 
-                                imageManipulation.AddPixel(i - leftPixelX, j - topPixelY, color, newBitmap);
+                                Color color = imageManipulation.GetPixelColor(i, j, bitmaps[k]);
+                                if (color.A != 0)
+                                {
+                                    //Vytvoření pixelu, který je posunutý v nové bitmapě 
+                                    imageManipulation.AddPixel(i - leftPixelX, j - topPixelY, color, newBitmap);
+                                }
                             }
                         }
                     }
@@ -867,12 +875,13 @@ namespace BakalarskaPrace
                 paintSurface.Height = height;
                 image.Width = width;
                 image.Height = height;
-                previewBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+                previewBitmap = BitmapFactory.New(width, height);
                 previewImage.Source = previewBitmap;
                 previewImage.Width = width;
                 previewImage.Height = height;
                 if (onionSkinning == true) UpdateOnionSkinning();
                 UpdateImagePreviewButtons();
+                Center();
             }
         }
 
@@ -965,15 +974,18 @@ namespace BakalarskaPrace
                 {
                     CroppedBitmap croppedBitmap = new CroppedBitmap(bitmaps[k], rect);
                     WriteableBitmap newBitmap = new WriteableBitmap(croppedBitmap);
-                    WriteableBitmap finalBitmap = new WriteableBitmap(subwindow.newWidth, subwindow.newHeight, 1, 1, PixelFormats.Bgra32, null);
+                    WriteableBitmap finalBitmap = BitmapFactory.New(subwindow.newWidth, subwindow.newHeight);
 
                     //Zapsání pixelů z staré bitmapy do nové
-                    for (int i = 0; i < croppedWidth; i++)
+                    using (newBitmap.GetBitmapContext())
                     {
-                        for (int j = 0; j < croppedHeight; j++)
+                        for (int i = 0; i < croppedWidth; i++)
                         {
-                            Color color = imageManipulation.GetPixelColor(i,j, newBitmap);
-                            imageManipulation.AddPixel(i + endPosX, j + endPosY, color, finalBitmap);
+                            for (int j = 0; j < croppedHeight; j++)
+                            {
+                                Color color = imageManipulation.GetPixelColor(i, j, newBitmap);
+                                imageManipulation.AddPixel(i + endPosX, j + endPosY, color, finalBitmap);
+                            }
                         }
                     }
 
@@ -991,12 +1003,13 @@ namespace BakalarskaPrace
                 paintSurface.Height = height;
                 image.Width = width;
                 image.Height = height;
-                previewBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+                previewBitmap = BitmapFactory.New(width, height);
                 previewImage.Source = previewBitmap;
                 previewImage.Width = width;
                 previewImage.Height = height;
                 if (onionSkinning == true) UpdateOnionSkinning();
                 UpdateImagePreviewButtons();
+                Center();
             }
         }
 
@@ -1029,7 +1042,7 @@ namespace BakalarskaPrace
             newButton.Width = 40;
             newButton.Height = 40;
             newButton.Margin = new Thickness(2);
-            WriteableBitmap bitmap = new WriteableBitmap(1, 1, 1, 1, PixelFormats.Bgra32, null);
+            WriteableBitmap bitmap = BitmapFactory.New(1, 1);
             imageManipulation.AddPixel(0, 0, color, bitmap);
             newButton.Content = new Image
             {
@@ -1037,7 +1050,8 @@ namespace BakalarskaPrace
                 VerticalAlignment = VerticalAlignment.Center,
                 Stretch = Stretch.Uniform,
                 Height = 40,
-                Width = 40
+                Width = 40,
+                ToolTip = color
             };
             newButton.Name = color.ToString().Substring(1);
             newButton.PreviewMouseDown += new MouseButtonEventHandler(ColorPaletteButton_Click);
@@ -1070,10 +1084,13 @@ namespace BakalarskaPrace
 
         private void ExportColorPalette_Click(object sender, RoutedEventArgs e)
         {
-            WriteableBitmap newBitmap = new WriteableBitmap(colorPalette.Count, 1, 1, 1, PixelFormats.Bgra32, null);
-            for (int i = 0; i < colorPalette.Count; i++) 
+            WriteableBitmap newBitmap = BitmapFactory.New(colorPalette.Count, 1);
+            using (newBitmap.GetBitmapContext())
             {
-                imageManipulation.AddPixel(i, 0, colorPalette[i], newBitmap);
+                for (int i = 0; i < colorPalette.Count; i++)
+                {
+                    imageManipulation.AddPixel(i, 0, colorPalette[i], newBitmap);
+                }
             }
 
             FileManagement fileManagement = new FileManagement();
@@ -1095,11 +1112,14 @@ namespace BakalarskaPrace
                     {
                         colorPalette.Clear();
                         colorList.Children.Clear();
-                        for (int i = 0; i < newBitmap.PixelWidth; i++) 
+                        using (newBitmap.GetBitmapContext())
                         {
-                            Color color = imageManipulation.GetPixelColor(i, 0, newBitmap);
-                            colorPalette.Add(color);
-                            AddColorPaletteButton(color);
+                            for (int i = 0; i < newBitmap.PixelWidth; i++)
+                            {
+                                Color color = imageManipulation.GetPixelColor(i, 0, newBitmap);
+                                colorPalette.Add(color);
+                                AddColorPaletteButton(color);
+                            }
                         }
                     }
                 }
@@ -1185,6 +1205,7 @@ namespace BakalarskaPrace
                 LabelScale.Content = currentScale.ToString();
             }
         }
+
         private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Middle)
@@ -1235,15 +1256,18 @@ namespace BakalarskaPrace
         {
             int finalWidth = width;
             int finalHeight = height * bitmaps.Count();
-            WriteableBitmap finalBitmap = new WriteableBitmap(finalWidth, finalHeight, 1, 1, PixelFormats.Bgra32, null);
-            for (int k = 0; k < bitmaps.Count; k++)
+            WriteableBitmap finalBitmap = BitmapFactory.New(finalWidth, finalHeight);
+            using (finalBitmap.GetBitmapContext())
             {
-                for (int i = 0; i < width; i++)
+                for (int k = 0; k < bitmaps.Count; k++)
                 {
-                    for (int j = 0; j < height; j++)
+                    for (int i = 0; i < width; i++)
                     {
-                        Color color = imageManipulation.GetPixelColor(i, j, bitmaps[k]);
-                        imageManipulation.AddPixel(i, j + (k * height), color, finalBitmap);
+                        for (int j = 0; j < height; j++)
+                        {
+                            Color color = imageManipulation.GetPixelColor(i, j, bitmaps[k]);
+                            imageManipulation.AddPixel(i, j + (k * height), color, finalBitmap);
+                        }
                     }
                 }
             }
@@ -1315,7 +1339,7 @@ namespace BakalarskaPrace
                         paintSurface.Height = height;
                         image.Width = width;
                         image.Height = height;
-                        previewBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+                        previewBitmap = BitmapFactory.New(width, height);
                         previewImage.Source = previewBitmap;
                         previewImage.Width = width;
                         previewImage.Height = height;
@@ -1343,7 +1367,7 @@ namespace BakalarskaPrace
 
         private void CreateImage_Click(object sender, RoutedEventArgs e)
         {
-            WriteableBitmap newBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+            WriteableBitmap newBitmap = BitmapFactory.New(width, height);
             CreateNewFrame(newBitmap);
         }
 
@@ -1373,15 +1397,7 @@ namespace BakalarskaPrace
 
         private void CreateNewFrame(WriteableBitmap newWriteableBitmap)
         {
-            if (currentBitmapIndex < bitmaps.Count - 1)
-            {
-                bitmaps.Insert(currentBitmapIndex + 1, newWriteableBitmap);
-            }
-            else
-            {
-                bitmaps.Add(newWriteableBitmap);
-            }
-
+            bitmaps.Insert(currentBitmapIndex + 1, newWriteableBitmap);
             currentBitmapIndex += 1;
             currentBitmap = bitmaps[currentBitmapIndex];
             image.Source = currentBitmap;
@@ -1397,7 +1413,7 @@ namespace BakalarskaPrace
             bitmaps.RemoveAt(currentBitmapIndex);
             if (bitmaps.Count == 0)
             {
-                WriteableBitmap newWriteableBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+                WriteableBitmap newWriteableBitmap = BitmapFactory.New(width, height);
                 bitmaps.Add(newWriteableBitmap);
             }
             //pokud je poslední index vrátit se na předchozí obrázek

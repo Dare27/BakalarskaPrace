@@ -119,7 +119,7 @@
                                         </Button>
                                     </WrapPanel>
                                 </Expander>
-                                <Expander Name="transformExpander" HorizontalAlignment="Left" Header="Tools" ExpandDirection="Down" IsExpanded="True" FontSize="14" >
+                                <Expander Name="transformExpander" HorizontalAlignment="Left" Header="Transforms" ExpandDirection="Down" IsExpanded="True" FontSize="14" >
                                     <WrapPanel>
                                         <Button Margin="2" Width="40" Height="40" Click="Flip_Click">
                                             <StackPanel >
@@ -146,6 +146,20 @@
                                                 <Image Source="/Files/images/center-alignment.png" Height="30"/>
                                             </StackPanel>
                                         </Button>
+                                    </WrapPanel>
+                                </Expander>
+                                <Expander Name="filtersExpander" HorizontalAlignment="Left" Header="Filters" ExpandDirection="Down" IsExpanded="True" FontSize="14" >
+                                    <WrapPanel>
+                                        <WrapPanel>
+                                            <Button Margin="2" Width="40" Height="40" Click="ColorPaletteAdd_Click" ToolTip="Add color to color palette">
+                                            </Button>
+                                            <Button Margin="2" Width="40" Height="40" Click="ColorPaletteRemove_Click" ToolTip="Remove color from color palette">
+                                            </Button>
+                                            <Button Margin="2" Width="40" Height="40" Click="ImportColorPalette_Click" ToolTip="Import color palette">
+                                            </Button>
+                                            <Button Margin="2" Width="40" Height="40" Click="ExportColorPalette_Click" ToolTip="Export color palette">
+                                            </Button>
+                                        </WrapPanel>
                                     </WrapPanel>
                                 </Expander>
                                 <Expander Name="colorPaletteExpander" HorizontalAlignment="Left" Header="Color Palette" ExpandDirection="Down" IsExpanded="True" FontSize="14" >
