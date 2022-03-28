@@ -5,7 +5,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Main Window" Height="1080" Width="1920" Background="DarkGray"
         WindowStartupLocation="CenterScreen"
-        WindowState="Maximized">
+        WindowState="Maximized"
+        KeyUp="WindowKeyUp">
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
         <DockPanel>
             <Menu DockPanel.Dock="Top" Panel.ZIndex="1000">

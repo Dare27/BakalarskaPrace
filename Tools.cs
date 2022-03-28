@@ -33,7 +33,7 @@ namespace BakalarskaPrace
 
         //V případě této aplikace musí být použit 4-straná verze tohoto algoritmu aby se zábránilo únikům v rozích
         //Může způsobit StackOverflowException při větších velikostech
-        public void FloodFill(int x, int y, Color newColor, Color seedColor, WriteableBitmap bitmap, bool alphaBlending, int width, int height)
+        public void FloodFill(int x, int y, Color newColor, Color seedColor, WriteableBitmap bitmap, bool alphaBlending)
         {
             Color currentColor = imageManipulation.GetPixelColor(x, y, bitmap);
             if (currentColor != newColor && currentColor == seedColor)
@@ -50,40 +50,43 @@ namespace BakalarskaPrace
 
                 if (x - 1 > -1)
                 {
-                    FloodFill(x - 1, y, newColor, seedColor, bitmap, alphaBlending, width, height);
+                    FloodFill(x - 1, y, newColor, seedColor, bitmap, alphaBlending);
                 }
-                if (x + 1 < width)
+                if (x + 1 < bitmap.PixelWidth)
                 {
-                    FloodFill(x + 1, y, newColor, seedColor, bitmap, alphaBlending, width, height);
+                    FloodFill(x + 1, y, newColor, seedColor, bitmap, alphaBlending);
                 }
                 if (y - 1 > -1)
                 {
-                    FloodFill(x, y - 1, newColor, seedColor, bitmap, alphaBlending, width, height);
+                    FloodFill(x, y - 1, newColor, seedColor, bitmap, alphaBlending);
                 }
-                if (y + 1 < height)
+                if (y + 1 < bitmap.PixelHeight)
                 {
-                    FloodFill(x, y + 1, newColor, seedColor, bitmap, alphaBlending, width, height);
+                    FloodFill(x, y + 1, newColor, seedColor, bitmap, alphaBlending);
                 }
             }
         }
 
-        public void SpecialBucket(int x, int y, WriteableBitmap bitmap, Color newColor, Color seedColor, bool alphaBlending, int width, int height)
+        public void SpecialBucket(int x, int y, List<WriteableBitmap> bitmaps, Color newColor, Color seedColor, bool alphaBlending)
         {
-            for (int i = 0; i < width; i++)
+            foreach (WriteableBitmap bitmap in bitmaps) 
             {
-                for (int j = 0; j < height; j++)
+                for (int i = 0; i < bitmap.PixelWidth; i++)
                 {
-                    Color currentColor = imageManipulation.GetPixelColor(i, j, bitmap);
-                    if (currentColor == seedColor)
+                    for (int j = 0; j < bitmap.PixelHeight; j++)
                     {
-                        if (alphaBlending == true)
+                        Color currentColor = imageManipulation.GetPixelColor(i, j, bitmap);
+                        if (currentColor == seedColor)
                         {
-                            Color colorMix = imageManipulation.ColorMix(newColor, currentColor);
-                            imageManipulation.AddPixel(i, j, colorMix, bitmap);
-                        }
-                        else
-                        {
-                            imageManipulation.AddPixel(i, j, newColor, bitmap);
+                            if (alphaBlending == true)
+                            {
+                                Color colorMix = imageManipulation.ColorMix(newColor, currentColor);
+                                imageManipulation.AddPixel(i, j, colorMix, bitmap);
+                            }
+                            else
+                            {
+                                imageManipulation.AddPixel(i, j, newColor, bitmap);
+                            }
                         }
                     }
                 }
@@ -130,7 +133,7 @@ namespace BakalarskaPrace
             imageManipulation.AddPixel(x, y, Color.FromArgb(currentPixelColor.A, (byte)r, (byte)g, (byte)b), bitmap);
         }
 
-        public List<Point> SymmetricDrawing(int x, int y, Color color, WriteableBitmap bitmap)
+        public List<Point> SymmetricDrawing(int x, int y, WriteableBitmap bitmap)
         {
             int mirrorPostion = 0;
             List<Point> points = new List<Point>();

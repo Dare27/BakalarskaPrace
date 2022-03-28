@@ -66,7 +66,7 @@ namespace BakalarskaPrace
             return Color.FromArgb(a, r, g, b);
         }
 
-        public void Eraser(int x, int y, WriteableBitmap writeableBitmap, int strokeThickness, int width, int height)
+        public void Eraser(int x, int y, WriteableBitmap bitmap, int strokeThickness)
         {
             int size = strokeThickness / 2;
             int isOdd = 0;
@@ -81,11 +81,11 @@ namespace BakalarskaPrace
                 for (int j = -size; j < size + isOdd; j++)
                 {
                     // zkontrolovat jestli se pixel vejde do bitmapy
-                    if (x + i < width && x + i > -1 && y + j < height && y + j > -1)
+                    if (x + i < bitmap.PixelWidth && x + i > -1 && y + j < bitmap.PixelHeight && y + j > -1)
                     {
                         byte[] ColorData = { 0, 0, 0, 0 }; // B G R
                         Int32Rect rect = new Int32Rect(x + i, y + j, 1, 1);
-                        writeableBitmap.WritePixels(rect, ColorData, 4, 0);
+                        bitmap.WritePixels(rect, ColorData, 4, 0);
                     }
                 }
             }

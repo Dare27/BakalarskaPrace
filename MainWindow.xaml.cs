@@ -56,6 +56,9 @@ namespace BakalarskaPrace
         Tools tools;
         Filters filters;
 
+        private List<Action> undoStack = new List<Action>();
+        private List<Action> redoStack = new List<Action>();
+
         public MainWindow()
         {
             imageManipulation = new ImageManipulation();
@@ -132,25 +135,33 @@ namespace BakalarskaPrace
             if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
             {
                 int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
+
+                //Musí být definována nová proměnnou jinak delegát předá odkaz na aktuální 
+                int thickness = strokeThickness;
+                Color color = currentColors[colorIndex];
                 switch (currentTool)
                 {
                     case toolSelection.brush:
                         {
-                            StrokeThicknessSetter(x, y, currentColors[colorIndex], currentBitmap);
+                            Action action = () => StrokeThicknessSetter(x, y, color, currentBitmap, thickness);
+                            action();
+                            undoStack.Add(action);
                             break;
-                        }
+                        }   
                     case toolSelection.symmetricBrush:
                         {
-                            drawPoints = tools.SymmetricDrawing(x, y, currentColors[colorIndex], currentBitmap);
+                            drawPoints = tools.SymmetricDrawing(x, y, currentBitmap);
                             foreach (Point point in drawPoints)
                             {
-                                StrokeThicknessSetter((int)point.X, (int)point.Y, currentColors[colorIndex], currentBitmap);
+                                StrokeThicknessSetter((int)point.X, (int)point.Y, color, currentBitmap, thickness);
                             }
                             break;
                         }
                     case toolSelection.eraser:
                         {
-                            imageManipulation.Eraser(x, y, currentBitmap, strokeThickness, width, height);
+                            Action action = () => imageManipulation.Eraser(x, y, currentBitmap, thickness);
+                            action();
+                            undoStack.Add(action);
                             break;
                         }
                     case toolSelection.colorPicker:
@@ -161,23 +172,27 @@ namespace BakalarskaPrace
                     case toolSelection.bucket:
                         {
                             Color seedColor = imageManipulation.GetPixelColor(x, y, currentBitmap);
-                            tools.FloodFill(x, y, currentColors[colorIndex], seedColor, currentBitmap, alphaBlending, width, height);
+                            Action action = () => tools.FloodFill(x, y, color, seedColor, currentBitmap, alphaBlending);
+                            action();
+                            undoStack.Add(action);
                             break;
                         }
                     case toolSelection.specialBucket:
                         {
                             Color seedColor = imageManipulation.GetPixelColor(x, y, currentBitmap);
+                            List<WriteableBitmap> selectedBitmaps = new List<WriteableBitmap>();
                             if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                             {
-                                foreach (WriteableBitmap writeableBitmap in bitmaps)
-                                {
-                                    tools.SpecialBucket(x, y, currentBitmap, currentColors[colorIndex], seedColor, alphaBlending, width, height);
-                                }
+                                selectedBitmaps = bitmaps;
+                                
                             }
                             else
                             {
-                                tools.SpecialBucket(x, y, currentBitmap, currentColors[colorIndex], seedColor, alphaBlending, width, height);
+                                selectedBitmaps.Add(currentBitmap);
                             }
+                            Action action = () => tools.SpecialBucket(x, y, bitmaps, color, seedColor, alphaBlending);
+                            action();
+                            undoStack.Add(action);
                             break;
                         }
                     case toolSelection.line:
@@ -213,7 +228,9 @@ namespace BakalarskaPrace
                         }
                     case toolSelection.dithering:
                         {
-                            tools.Dithering(x, y, currentColors[0], currentColors[1], currentBitmap);
+                            Action action = () => tools.Dithering(x, y, currentColors[0], currentColors[1], currentBitmap);
+                            action();
+                            undoStack.Add(action);
                             break;
                         }
                     case toolSelection.shading:
@@ -221,12 +238,16 @@ namespace BakalarskaPrace
                             if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                             {
                                 //Zesvětlení
-                                tools.Lighten(x, y, currentBitmap);
+                                Action action = () => tools.Lighten(x, y, currentBitmap);
+                                action();
+                                undoStack.Add(action);
                             }
                             else
                             {
                                 //Ztmavení 
-                                tools.Darken(x, y, currentBitmap);
+                                Action action = () => tools.Darken(x, y, currentBitmap);
+                                action();
+                                undoStack.Add(action);
                             }
                             break;
                         }
@@ -248,25 +269,27 @@ namespace BakalarskaPrace
 
             if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
             {
+                int thickness = strokeThickness;
+                Color color = currentColors[colorIndex];
                 switch (currentTool)
                 {
                     case toolSelection.brush:
                         {
-                            StrokeThicknessSetter(x, y, currentColors[colorIndex], currentBitmap);
+                            //StrokeThicknessSetter(x, y, color, currentBitmap, thickness);
                             break;
                         }
                     case toolSelection.symmetricBrush:
                         {
-                            drawPoints = tools.SymmetricDrawing(x, y, currentColors[colorIndex], currentBitmap);
+                            drawPoints = tools.SymmetricDrawing(x, y, currentBitmap);
                             foreach (Point point in drawPoints)
                             {
-                                StrokeThicknessSetter((int)point.X, (int)point.Y, currentColors[colorIndex], currentBitmap);
+                                StrokeThicknessSetter((int)point.X, (int)point.Y, color, currentBitmap, thickness);
                             }
                             break;
                         }
                     case toolSelection.eraser:
                         {
-                            imageManipulation.Eraser(x, y, currentBitmap, strokeThickness, width, height);
+                            imageManipulation.Eraser(x, y, currentBitmap, thickness);
                             break;
                         }
                     case toolSelection.colorPicker:
@@ -277,23 +300,23 @@ namespace BakalarskaPrace
                     case toolSelection.bucket:
                         {
                             Color seedColor = imageManipulation.GetPixelColor(x, y, currentBitmap);
-                            tools.FloodFill(x, y, currentColors[colorIndex], seedColor, currentBitmap, alphaBlending, width, height);
+                            tools.FloodFill(x, y, color, seedColor, currentBitmap, alphaBlending);
                             break;
                         }
                     case toolSelection.specialBucket:
                         {
                             Color seedColor = imageManipulation.GetPixelColor(x, y, currentBitmap);
+                            List<WriteableBitmap> selectedBitmaps = new List<WriteableBitmap>();
                             if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                             {
-                                foreach (WriteableBitmap writeableBitmap in bitmaps)
-                                {
-                                    tools.SpecialBucket(x, y, currentBitmap, currentColors[colorIndex], seedColor, alphaBlending, width, height);
-                                }
+                                selectedBitmaps = bitmaps;
+
                             }
                             else
                             {
-                                tools.SpecialBucket(x, y, currentBitmap, currentColors[colorIndex], seedColor, alphaBlending, width, height);
+                                selectedBitmaps.Add(currentBitmap);
                             }
+                            tools.SpecialBucket(x, y, selectedBitmaps, color, seedColor, alphaBlending);
                             break;
                         }
                     case toolSelection.dithering:
@@ -466,7 +489,7 @@ namespace BakalarskaPrace
             {
                 foreach (Point point in previewMousePoints)
                 {
-                    StrokeThicknessSetter((int)point.X, (int)point.Y, currentColors[currentColorIndex], currentBitmap);
+                    StrokeThicknessSetter((int)point.X, (int)point.Y, currentColors[currentColorIndex], currentBitmap, strokeThickness);
                 }
             }
 
@@ -487,18 +510,15 @@ namespace BakalarskaPrace
             imageManipulation.AddPixel((int)mousePosition.X, (int)mousePosition.Y, currentColors[2], previewBitmap);
         }
 
-        private List<Point> StrokeThicknessSetter(int x, int y, Color color, WriteableBitmap bitmap, List<Point> points = null)
+        public List<Point> StrokeThicknessSetter(int x, int y, Color color, WriteableBitmap bitmap, int thickness)
         {
             //Při kreslení přímek se musí již navštívené pixely přeskočit, aby nedošlo k nerovnoměrně vybarveným přímkám při velikostech > 1 a alpha < 255
-            if (points == null)
-            {
-                points = new List<Point>();
-            }
+            List<Point> points = new List<Point>();
 
-            int size = strokeThickness / 2;
+            int size = thickness / 2;
             int isOdd = 0;
 
-            if (strokeThickness % 2 != 0)
+            if (thickness % 2 != 0)
             {
                 isOdd = 1;
             }
@@ -524,16 +544,14 @@ namespace BakalarskaPrace
             {
                 foreach (var point in points)
                 {
+                    Color finalColor = color;
+                    Color currentPixelColor = imageManipulation.GetPixelColor((int)point.X, (int)point.Y, bitmap);
                     if (alphaBlending == true)
                     {
-                        Color currentPixelColor = imageManipulation.GetPixelColor((int)point.X, (int)point.Y, bitmap);
-                        Color colorMix = imageManipulation.ColorMix(color, currentPixelColor);
-                        imageManipulation.AddPixel((int)point.X, (int)point.Y, colorMix, bitmap);
+                        finalColor = imageManipulation.ColorMix(color, currentPixelColor);
                     }
-                    else
-                    {
-                        imageManipulation.AddPixel((int)point.X, (int)point.Y, color, bitmap);
-                    }
+
+                    imageManipulation.AddPixel((int)point.X, (int)point.Y, finalColor, bitmap);
                 }
             }
             return points;
@@ -747,7 +765,7 @@ namespace BakalarskaPrace
             else
             {
                 WriteableBitmap newBitmap = BitmapFactory.New(width, height);
-                transform.RotateImage(newBitmap, currentBitmap, width, height);
+                transform.RotateImage(newBitmap, currentBitmap);
                 currentBitmap = newBitmap;
             }
             bitmaps[currentBitmapIndex] = currentBitmap;
@@ -1019,14 +1037,15 @@ namespace BakalarskaPrace
             {
                 for (int i = 0; i < bitmaps.Count; i++)
                 {
-                    transform.CenterAlligment(bitmaps[i], width, height);
+                    transform.CenterAlligment(bitmaps[i]);
                 }
             }
             else
             {
-                transform.CenterAlligment(currentBitmap, width, height);
+                transform.CenterAlligment(currentBitmap);
             }
         }
+
         private void ColorPaletteAdd_Click(object sender, RoutedEventArgs e)
         {
             if (colorPalette.Contains(colorSelector.SelectedColor) == false) 
@@ -1623,6 +1642,45 @@ namespace BakalarskaPrace
         private void Additive_Unchecked(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void Undo()
+        {
+            if (undoStack.Count > 0)
+            {
+                currentBitmap.Clear();
+                if (visitedPoints.Count != 0)
+                {
+                    visitedPoints.Clear();
+                }
+
+                for (int i = 0; i < undoStack.Count - 1; i++) 
+                {
+                    undoStack[i].Invoke();
+                }
+                undoStack.RemoveAt(undoStack.Count - 1);
+            }
+        }
+
+        private void Redo()
+        {
+            if (redoStack.Count > 0)
+            {
+
+            }
+        }
+
+        private void WindowKeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Z && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                Undo();
+            }
+
+            if (e.Key == Key.Y && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                Redo();
+            }
         }
     }
 }

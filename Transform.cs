@@ -70,26 +70,26 @@ namespace BakalarskaPrace
         }
 
         //Může vést ke ztrátě obsahu, pokud není šířka rovná výšce
-        public void RotateImage(WriteableBitmap newBitmap, WriteableBitmap sourceBitmap, int width, int height)
+        public void RotateImage(WriteableBitmap newBitmap, WriteableBitmap sourceBitmap)
         {
             int widthShift = 0;
             int heightShift = 0;
             CroppedBitmap croppedBitmap;
 
             //Zvolení posunu zkrácené bitmapy 
-            if (width < height)
+            if (sourceBitmap.PixelWidth < sourceBitmap.PixelHeight)
             {
-                croppedBitmap = new CroppedBitmap(sourceBitmap, new Int32Rect(0, height / 2 - width / 2, width, height / 2 + width / 2));
-                heightShift = (height / 2 - width / 2);
+                croppedBitmap = new CroppedBitmap(sourceBitmap, new Int32Rect(0, sourceBitmap.PixelHeight / 2 - sourceBitmap.PixelWidth / 2, sourceBitmap.PixelWidth, sourceBitmap.PixelHeight / 2 + sourceBitmap.PixelWidth / 2));
+                heightShift = (sourceBitmap.PixelHeight / 2 - sourceBitmap.PixelWidth / 2);
             }
-            else if (height < width)
+            else if (sourceBitmap.PixelHeight < sourceBitmap.PixelWidth)
             {
-                croppedBitmap = new CroppedBitmap(sourceBitmap, new Int32Rect(width / 2 - height / 2, 0, width / 2 + height / 2, height));
-                widthShift = (width / 2 - height / 2);
+                croppedBitmap = new CroppedBitmap(sourceBitmap, new Int32Rect(sourceBitmap.PixelWidth / 2 - sourceBitmap.PixelHeight / 2, 0, sourceBitmap.PixelWidth / 2 + sourceBitmap.PixelHeight / 2, sourceBitmap.PixelHeight));
+                widthShift = (sourceBitmap.PixelWidth / 2 - sourceBitmap.PixelHeight / 2);
             }
             else
             {
-                croppedBitmap = new CroppedBitmap(sourceBitmap, new Int32Rect(0, 0, width, height));
+                croppedBitmap = new CroppedBitmap(sourceBitmap, new Int32Rect(0, 0, sourceBitmap.PixelWidth, sourceBitmap.PixelHeight));
             }
 
             WriteableBitmap temporaryBitmap = new WriteableBitmap(croppedBitmap);
@@ -126,22 +126,22 @@ namespace BakalarskaPrace
             }
         }
 
-        public void CenterAlligment(WriteableBitmap bitmap, int width, int height)
+        public void CenterAlligment(WriteableBitmap bitmap)
         {
-            int leftPixelX = width;
+            int leftPixelX = bitmap.PixelWidth;
             int rightPixelX = 0;
-            int topPixelY = height;
+            int topPixelY = bitmap.PixelHeight;
             int downPixelY = 0;
 
-            int currentLeftPixelX = width;
+            int currentLeftPixelX = bitmap.PixelWidth;
             int currentRightPixelX = 0;
-            int currentTopPixelY = height;
+            int currentTopPixelY = bitmap.PixelHeight;
             int currentDownPixelY = 0;
 
             //Projít dolu a doprava 
-            for (int i = 0; i < width; i++)
+            for (int i = 0; i < bitmap.PixelWidth; i++)
             {
-                for (int j = 0; j < height; j++)
+                for (int j = 0; j < bitmap.PixelHeight; j++)
                 {
                     Color color = imageManipulation.GetPixelColor(i, j, bitmap);
                     if (color.A != 0)
@@ -160,9 +160,9 @@ namespace BakalarskaPrace
             }
 
             //Projít nahoru a doleva
-            for (int i = width; i >= 0; i--)
+            for (int i = bitmap.PixelWidth; i >= 0; i--)
             {
-                for (int j = height; j >= 0; j--)
+                for (int j = bitmap.PixelHeight; j >= 0; j--)
                 {
                     Color color = imageManipulation.GetPixelColor(i, j, bitmap);
                     if (color.A != 0)
@@ -204,8 +204,8 @@ namespace BakalarskaPrace
             int croppedWidth = rightPixelX - leftPixelX + 1;
             int croppedHeight = downPixelY - topPixelY + 1;
 
-            int startPosX = (width / 2) - (croppedWidth / 2);
-            int startPosY = (height / 2) - (croppedHeight / 2);
+            int startPosX = (bitmap.PixelWidth / 2) - (croppedWidth / 2);
+            int startPosY = (bitmap.PixelHeight / 2) - (croppedHeight / 2);
 
             if (croppedWidth > 0 && croppedHeight > 0) 
             {
