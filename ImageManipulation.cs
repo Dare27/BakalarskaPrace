@@ -60,9 +60,22 @@ namespace BakalarskaPrace
         public Color ColorMix(Color foregroundColor, Color backgroundColor)
         {
             byte a = (byte)(255 - ((255 - backgroundColor.A) * (255 - foregroundColor.A) / 255));
-            byte r = (byte)((backgroundColor.R * (255 - foregroundColor.A) + foregroundColor.R * foregroundColor.A) / 255);
-            byte g = (byte)((backgroundColor.G * (255 - foregroundColor.A) + foregroundColor.G * foregroundColor.A) / 255);
-            byte b = (byte)((backgroundColor.B * (255 - foregroundColor.A) + foregroundColor.B * foregroundColor.A) / 255);
+            byte r;
+            byte g;
+            byte b;
+
+            if (backgroundColor.A != 0)
+            {
+                r = (byte)((backgroundColor.R * (255 - foregroundColor.A) + foregroundColor.R * foregroundColor.A) / 255);
+                g = (byte)((backgroundColor.G * (255 - foregroundColor.A) + foregroundColor.G * foregroundColor.A) / 255);
+                b = (byte)((backgroundColor.B * (255 - foregroundColor.A) + foregroundColor.B * foregroundColor.A) / 255);
+            }
+            else 
+            {
+                r = foregroundColor.R;
+                g = foregroundColor.G;
+                b = foregroundColor.B;
+            }
             return Color.FromArgb(a, r, g, b);
         }
 

@@ -32,7 +32,7 @@ namespace BakalarskaPrace
         }
 
         //V případě této aplikace musí být použit 4-straná verze tohoto algoritmu aby se zábránilo únikům v rozích
-        //Může způsobit StackOverflowException při větších velikostech
+        //Může způsobit StackOverflowException při větších velikostech, proto musím používat nerekurzivní verzi tohoto alg.
         public void FloodFill(int x, int y, Color newColor, Color seedColor, WriteableBitmap bitmap, bool alphaBlending)
         {
             Color currentColor = imageManipulation.GetPixelColor(x, y, bitmap);
@@ -67,7 +67,7 @@ namespace BakalarskaPrace
             }
         }
 
-        public void SpecialBucket(int x, int y, List<WriteableBitmap> bitmaps, Color newColor, Color seedColor, bool alphaBlending)
+        public void SpecialBucket(List<WriteableBitmap> bitmaps, Color newColor, Color seedColor, bool alphaBlending)
         {
             foreach (WriteableBitmap bitmap in bitmaps) 
             {

@@ -6,7 +6,7 @@
         Title="Main Window" Height="1080" Width="1920" Background="DarkGray"
         WindowStartupLocation="CenterScreen"
         WindowState="Maximized"
-        KeyUp="WindowKeyUp">
+        KeyDown="WindowKeyDown">
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
         <DockPanel>
             <Menu DockPanel.Dock="Top" Panel.ZIndex="1000">
@@ -17,6 +17,11 @@
                     <MenuItem Header="_Export animation" Click="ExportFull_Click"/>
                     <MenuItem Header="_Export animation as .gif" Click="ExportGif_CLick"/>
                     <MenuItem Header="_Exit" Click="ExitApp_CLick"/>
+                </MenuItem>
+                <MenuItem Header="_Edit">
+                    <MenuItem Header="_Undo" Click="Undo_Click"/>
+                    <MenuItem Header="_Redo" Click="Redo_Click"/>
+                    <MenuItem Header="_Center" Click="Center_Click"/>
                 </MenuItem>
             </Menu>
             <Grid>
@@ -51,69 +56,69 @@
                     <Canvas x:Name="canvas" Background="#FF545454" HorizontalAlignment="Left" Width="200" MinHeight="900" VerticalAlignment="Stretch">
                         <StackPanel>
                             <colorpicker:StandardColorPicker x:Name="colorSelector" Width="199" Height="380" ColorChanged="ColorChanged"/>
-                            <CheckBox Content="Alpha Blending" Width="176" Margin="5" Checked="AlphaBlending_Checked" Unchecked="AlphaBlending_Unchecked" IsChecked="True"/>
+                            <CheckBox Content="Alpha Blending" Width="176" Margin="5" Checked="AlphaBlending_Changed" Unchecked="AlphaBlending_Changed" IsChecked="True"/>
                             <Label Content="Brush size" Width="176"/>
                             <Slider ValueChanged="BrushSize_ValueChanged" Width="176" Margin="5" Minimum="1" Maximum="8" Value="1" IsSnapToTickEnabled="True" TickFrequency="1" />
 
                             <WrapPanel Width="178">
                                 <Expander Name="toolsExpander" HorizontalAlignment="Left" Header="Tools" ExpandDirection="Down" IsExpanded="True" FontSize="14" >
                                     <WrapPanel>
-                                        <Button Name="ToolBrush" Margin="2" Width="40" Height="40" Click="Brush_Click">
+                                        <Button Name="brush" Margin="2" Width="40" Height="40" Click="ToolButton_Click">
                                             <StackPanel >
                                                 <Image Source="/Files/images/pen.png" Height="30"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Name="ToolEraser" Margin="2" Width="40" Height="40" Click="Eraser_Click">
+                                        <Button Name="eraser" Margin="2" Width="40" Height="40" Click="ToolButton_Click">
                                             <StackPanel >
                                                 <Image Source="/Files/images/eraser.png" Height="26"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Name="ToolColorPicker" Margin="2" Width="40" Height="40" Click="ColorPicker_Click">
+                                        <Button Name="colorPicker" Margin="2" Width="40" Height="40" Click="ToolButton_Click">
                                             <StackPanel >
                                                 <Image Source="/Files/images/color-picker.png" Height="30"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Name="ToolShading" Margin="2"  Width="40" Height="40" Click="Shading_Click">
+                                        <Button Name="shading" Margin="2"  Width="40" Height="40" Click="ToolButton_Click">
                                             <StackPanel >
                                                 <Image Source="/Files/images/shading.png" Height="30"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Name="ToolSymmetricBrush" Margin="2" Width="40" Height="40" Click="SymmetricBrush_Click">
+                                        <Button Name="symmetricBrush" Margin="2" Width="40" Height="40" Click="ToolButton_Click">
                                             <StackPanel>
                                                 <!--<Image Source="/Files/images/path.png"/>-->
                                             </StackPanel>
                                         </Button>
-                                        <Button Name="ToolDithering" Margin="2" Width="40" Height="40" Click="Dithering_Click">
+                                        <Button Name="dithering" Margin="2" Width="40" Height="40" Click="ToolButton_Click">
                                             <StackPanel >
                                                 <Image Source="/Files/images/dithering.png" Height="30"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Name="ToolBucket" Margin="2" Width="40" Height="40" Click="Bucket_Click">
+                                        <Button Name="bucket" Margin="2" Width="40" Height="40" Click="ToolButton_Click">
                                             <StackPanel >
                                                 <Image Source="/Files/images/bucket.png" Height="30"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Name="ToolSpecialBucket" Margin="2" Width="40" Height="40" Click="SpecialBucket_Click">
+                                        <Button Name="specialBucket" Margin="2" Width="40" Height="40" Click="ToolButton_Click">
                                             <StackPanel >
                                                 <Image Source="/Files/images/color-replace.png" Height="30"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Name="ToolLine" Margin="2" Width="40" Height="40" Click="Line_Click">
+                                        <Button Name="line" Margin="2" Width="40" Height="40" Click="ToolButton_Click">
                                             <StackPanel >
                                                 <Image Source="/Files/images/line.png" Height="30"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Name="ToolPath" Margin="2" Width="40" Height="40" Click="Path_Click">
+                                        <Button Name="path" Margin="2" Width="40" Height="40" Click="ToolButton_Click">
                                             <StackPanel >
                                                 <Image Source="/Files/images/path.png" Height="30"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Name="ToolEllipses" Margin="2" Width="40" Height="40" Click="Ellipses_Click">
+                                        <Button Name="ellipse" Margin="2" Width="40" Height="40" Click="ToolButton_Click">
                                             <StackPanel >
                                                 <Image Source="/Files/images/ellipse.png" Height="30"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Name="ToolRectangle" Margin="2" Width="40" Height="40" Click="Rectangle_Click">
+                                        <Button Name="rectangle" Margin="2" Width="40" Height="40" Click="ToolButton_Click">
                                             <StackPanel >
                                                 <Image Source="/Files/images/rectangle.png" Height="30"/>
                                             </StackPanel>
@@ -187,7 +192,6 @@
                             </WrapPanel>
                         </StackPanel>
                         <!--<Button Name="ToolMove" Content="Move" Canvas.Left="82" Canvas.Top="611" Width="66" Click="Move_Click"/>-->
-                        <!--<CheckBox Content="Additive" Canvas.Left="10" Canvas.Top="415" Checked="Additive_Checked" Unchecked="Additive_Unchecked" IsChecked="False"/>-->
                     </Canvas>
                 </ScrollViewer>
                 <ScrollViewer Name="CustomScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalAlignment="Right" CanContentScroll="True" RenderTransformOrigin="0.5,0.5" >
