@@ -6,7 +6,7 @@
         Title="Main Window" Height="1080" Width="1920" Background="DarkGray"
         WindowStartupLocation="CenterScreen"
         WindowState="Maximized"
-        KeyDown="WindowKeyDown">
+        KeyUp="WindowKeyDown">
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
         <DockPanel>
             <Menu DockPanel.Dock="Top" Panel.ZIndex="1000">
