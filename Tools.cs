@@ -19,15 +19,24 @@ namespace BakalarskaPrace
             colorSpaceConvertor = new ColorSpaceConvertor();
         }
 
-        public void Dithering(int x, int y, Color color01, Color color02, WriteableBitmap bitmap)
+        public void Dithering(List<Point> points, Color color01, Color color02, WriteableBitmap bitmap)
         {
-            if ((x + y) % 2 == 0)
+            foreach (Point point in points) 
             {
-                imageManipulation.AddPixel(x, y, color01, bitmap);
-            }
-            else
-            {
-                imageManipulation.AddPixel(x, y, color02, bitmap);
+                int x = (int)point.X;
+                int y = (int)point.Y;
+                Color color;
+
+                if ((x + y) % 2 == 0)
+                {
+                    color = color01;
+                }
+                else
+                {
+                    color = color02;
+                }
+
+                imageManipulation.AddPixel(x, y, color, bitmap);
             }
         }
 
@@ -93,44 +102,40 @@ namespace BakalarskaPrace
             }
         }
 
-        public void Lighten(int x, int y, WriteableBitmap bitmap)
+        public void Shading(List<Point> points, WriteableBitmap bitmap, bool darken)
         {
-            double h;
-            double l;
-            double s;
-            int r;
-            int g;
-            int b;
-
-            Color currentPixelColor = imageManipulation.GetPixelColor(x, y, bitmap);
-            colorSpaceConvertor.RGBToHLS(currentPixelColor.R, currentPixelColor.G, currentPixelColor.B, out h, out l, out s);
-            l += shadingStep;
-            if (l > 1)
+            foreach (Point point in points)
             {
-                l = 1;
-            }
-            colorSpaceConvertor.HLSToRGB(h, l, s, out r, out g, out b);
-            imageManipulation.AddPixel(x, y, Color.FromArgb(currentPixelColor.A, (byte)r, (byte)g, (byte)b), bitmap);
-        }
+                double h, l, s;
+                int r, g, b;
+                int x = (int)point.X;
+                int y = (int)point.Y;
 
-        public void Darken(int x, int y, WriteableBitmap bitmap)
-        {
-            double h;
-            double l;
-            double s;
-            int r;
-            int g;
-            int b;
+                Color color;
+                Color currentPixelColor = imageManipulation.GetPixelColor(x, y, bitmap);
+                colorSpaceConvertor.RGBToHLS(currentPixelColor.R, currentPixelColor.G, currentPixelColor.B, out h, out l, out s);
 
-            Color currentPixelColor = imageManipulation.GetPixelColor(x, y, bitmap);
-            colorSpaceConvertor.RGBToHLS(currentPixelColor.R, currentPixelColor.G, currentPixelColor.B, out h, out l, out s);
-            l -= shadingStep;
-            if (l < 0)
-            {
-                l = 0;
+                if (darken == true) //else lighten
+                {
+                    l -= shadingStep;
+                    if (l < 0)
+                    {
+                        l = 0;
+                    }
+                }
+                else
+                {
+                    l += shadingStep;
+                    if (l > 1)
+                    {
+                        l = 1;
+                    }
+                }
+
+                colorSpaceConvertor.HLSToRGB(h, l, s, out r, out g, out b);
+                color = Color.FromArgb(currentPixelColor.A, (byte)r, (byte)g, (byte)b);
+                imageManipulation.AddPixel(x, y, color, bitmap);
             }
-            colorSpaceConvertor.HLSToRGB(h, l, s, out r, out g, out b);
-            imageManipulation.AddPixel(x, y, Color.FromArgb(currentPixelColor.A, (byte)r, (byte)g, (byte)b), bitmap);
         }
 
         public List<Point> SymmetricDrawing(int x, int y, WriteableBitmap bitmap)

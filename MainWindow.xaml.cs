@@ -17,9 +17,8 @@ namespace BakalarskaPrace
     {
         private WriteableBitmap currentBitmap;
         int currentBitmapIndex = 0;
-        private readonly List<WriteableBitmap> bitmaps = new List<WriteableBitmap>();
+        private List<WriteableBitmap> bitmaps = new List<WriteableBitmap>();
         private List<System.Windows.Controls.Button> previewButtons = new List<System.Windows.Controls.Button>();
-        private readonly WriteableBitmap defaultBitmap;
         WriteableBitmap previewBitmap;
         Color[] currentColors;
         List<Color> colorPalette = new List<Color>();
@@ -27,6 +26,7 @@ namespace BakalarskaPrace
         int strokeThickness = 1;
         bool alphaBlending;
         Color seedColor;
+        bool shadingValue;
         enum toolSelection { brush, eraser, symmetricBrush, colorPicker, bucket, specialBucket, line, ellipse, shading, rectangle, dithering, move, path };
         toolSelection currentTool = toolSelection.brush;
         Point gridDragStartPoint;
@@ -39,7 +39,6 @@ namespace BakalarskaPrace
         List<Point> visitedPoints = new List<Point>();
         List<Point> previewMousePoints = new List<Point>();
         List<Point> drawPoints = new List<Point>();
-        List<Point> eraserPoints = new List<Point>();
 
         bool onionSkinning;
         System.Windows.Controls.Button lastToolButton;
@@ -83,14 +82,13 @@ namespace BakalarskaPrace
             paintSurface.Visibility = Visibility.Visible;
             width = windowStartup.newWidth;
             height = windowStartup.newHeight;
-            defaultBitmap = BitmapFactory.New(width, height);
 
-            previewBitmap = defaultBitmap.Clone();
+            previewBitmap = BitmapFactory.New(width, height);
             previewImage.Source = previewBitmap;
             previewImage.Width = width;
             previewImage.Height = height;
 
-            currentBitmap = defaultBitmap.Clone();
+            currentBitmap = BitmapFactory.New(width, height);
             bitmaps.Add(currentBitmap);
             paintSurface.Width = width;
             paintSurface.Height = height;
@@ -114,7 +112,7 @@ namespace BakalarskaPrace
             if (currentAnimationIndex + 1 < bitmaps.Count) currentAnimationIndex += 1;
             else currentAnimationIndex = 0;
 
-            animationPreview.Source = bitmaps[currentAnimationIndex];
+            //animationPreview.Source = bitmaps[currentAnimationIndex];
         }
 
         private unsafe void Image_MouseDown(object sender, System.Windows.Input.MouseEventArgs e)
@@ -149,7 +147,6 @@ namespace BakalarskaPrace
                     case toolSelection.eraser:
                         {
                             drawPoints = new List<Point>() { new Point(x, y) };
-                            eraserPoints = new List<Point>() { new Point(x, y) };
                             GeneratePoints(drawPoints, currentColors[3], false, currentBitmap, strokeThickness);
                             break;
                         }
@@ -203,21 +200,22 @@ namespace BakalarskaPrace
                     case toolSelection.dithering:
                         {
                             drawPoints = new List<Point>() { new Point(x, y) };
-                            tools.Dithering(x, y, currentColors[0], currentColors[1], currentBitmap);
+                            tools.Dithering(new List<Point>() { new Point(x, y) }, currentColors[0], currentColors[1], currentBitmap);
                             break;
                         }
                     case toolSelection.shading:
                         {
                             if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                             {
-                                //Zesvětlení
-                                tools.Lighten(x, y, currentBitmap);
+                                shadingValue = false;
                             }
                             else
                             {
-                                //Ztmavení 
-                                tools.Darken(x, y, currentBitmap);
+                                shadingValue = true;
                             }
+
+                            drawPoints = new List<Point>() { new Point(x, y) };
+                            tools.Shading(new List<Point>() { new Point(x, y) }, currentBitmap, shadingValue);
                             break;
                         }
                     default: break;
@@ -273,6 +271,7 @@ namespace BakalarskaPrace
                             {
                                 seedColor = imageManipulation.GetPixelColor(x, y, currentBitmap);
                                 List<WriteableBitmap> selectedBitmaps = new List<WriteableBitmap>();
+
                                 if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                                 {
                                     selectedBitmaps = bitmaps;
@@ -281,27 +280,29 @@ namespace BakalarskaPrace
                                 {
                                     selectedBitmaps.Add(currentBitmap);
                                 }
+
                                 tools.SpecialBucket(selectedBitmaps, currentColors[colorIndex], seedColor, alphaBlending);
                                 break;
                             }
                         case toolSelection.dithering:
                             {
                                 drawPoints.Add(new Point(x, y));
-                                tools.Dithering(x, y, currentColors[0], currentColors[1], currentBitmap);
+                                tools.Dithering(new List<Point>() { new Point(x, y) }, currentColors[0], currentColors[1], currentBitmap);
                                 break;
                             }
                         case toolSelection.shading:
                             {
                                 if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                                 {
-                                    //Zesvětlení
-                                    tools.Lighten(x, y, currentBitmap);
+                                    shadingValue = false;
                                 }
                                 else
                                 {
-                                    //Ztmavení 
-                                    tools.Darken(x, y, currentBitmap);
+                                    shadingValue = true;
                                 }
+
+                                drawPoints.Add(new Point(x, y));
+                                tools.Shading(new List<Point>() { new Point(x, y) }, currentBitmap, shadingValue);
                                 break;
                             }
                         default: break;
@@ -420,10 +421,7 @@ namespace BakalarskaPrace
 
                 using (previewBitmap.GetBitmapContext())
                 {
-                    foreach (Point point in previewMousePoints)
-                    {
-                        imageManipulation.AddPixel((int)point.X, (int)point.Y, currentColors[2], previewBitmap);
-                    }
+                    GeneratePoints(previewMousePoints, currentColors[2], false, previewBitmap, strokeThickness);
                 }
             }
         }
@@ -441,10 +439,12 @@ namespace BakalarskaPrace
             int thickness = strokeThickness;
             Color color = new Color();
             color = Color.FromArgb(currentColors[currentColorIndex].A, currentColors[currentColorIndex].R, currentColors[currentColorIndex].G, currentColors[currentColorIndex].B);
-            Color colorSeed = seedColor;
+            Color colorSeed = new Color();
+            colorSeed = Color.FromArgb(seedColor.A, seedColor.R, seedColor.G, seedColor.B);
             Color primaryColor = currentColors[0];
             Color secondaryColor = currentColors[1];
-            WriteableBitmap bitmap = currentBitmap;
+            int index = currentBitmapIndex;
+            WriteableBitmap bitmap = bitmaps[index];
             bool alphaBlend = alphaBlending;
 
             switch (currentTool)
@@ -526,29 +526,18 @@ namespace BakalarskaPrace
                 case toolSelection.dithering:
                     {
                         List<Point> points = new List<Point>(drawPoints);
-                        foreach (Point point in points) {
-                            Action action = () => tools.Dithering(x, y, primaryColor, secondaryColor, bitmap);
-                            undoStack.Add(action);
-                        }
+                        Action action = () => tools.Dithering(points, primaryColor, secondaryColor, bitmap);
+                        undoStack.Add(action);
                         redoStack.Clear();
                         break;
                     }
                 case toolSelection.shading:
                     {
-                        /*if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
-                        {
-                            //Zesvětlení
-                            Action action = () => tools.Lighten(x, y, bitmap);
-                            action();
-                            undoStack.Add(action);
-                        }
-                        else
-                        {
-                            //Ztmavení 
-                            Action action = () => tools.Darken(x, y, bitmap);
-                            action();
-                            undoStack.Add(action);
-                        }*/
+                        List<Point> points = new List<Point>(drawPoints);
+                        bool currentShadingValue = shadingValue;
+                        Action action = () => tools.Shading(points, bitmap, currentShadingValue);
+                        undoStack.Add(action);
+                        redoStack.Clear();
                         break;
                     }
                 default: break;
@@ -562,11 +551,18 @@ namespace BakalarskaPrace
             previewBitmap.Clear();
             previewMousePoints.Clear();
             previewMousePoints.Add(mousePosition);
-            imageManipulation.AddPixel((int)mousePosition.X, (int)mousePosition.Y, currentColors[2], previewBitmap);
+            GeneratePoints(new List<Point>() { new Point(x, y) }, currentColors[2], false, previewBitmap, strokeThickness);
         }
 
         private void GeneratePoints(List<Point> points, Color color, bool alphaBlend, WriteableBitmap bitmap, int thickness)
         {
+            if (bitmap != currentBitmap && bitmap != previewBitmap) 
+            {
+                currentBitmapIndex = bitmaps.IndexOf(bitmap);
+                currentBitmap = bitmaps[currentBitmapIndex];
+                image.Source = currentBitmap;
+            }
+
             foreach (Point point in points)
             {
                 StrokeThicknessSetter((int)point.X, (int)point.Y, color, alphaBlend, bitmap, thickness);
@@ -592,10 +588,19 @@ namespace BakalarskaPrace
                     if (x + i < width && x + i > -1 && y + j < height && y + j > -1)
                     {
                         Point point = new Point(x + i, y + j);
-                        if (!visitedPoints.Contains(point))
+
+                        //Pokud se zapisuje do preview bitmapy tak kontrola navštívených bodů vede k smazání bodů 
+                        if (bitmap == previewBitmap)
                         {
-                            visitedPoints.Add(point);
                             points.Add(point);
+                        }
+                        else 
+                        {
+                            if (!visitedPoints.Contains(point))
+                            {
+                                visitedPoints.Add(point);
+                                points.Add(point);
+                            }
                         }
                     }
                 }
@@ -654,31 +659,44 @@ namespace BakalarskaPrace
         //Transform buttons
         private void Flip_Click(object sender, RoutedEventArgs e)
         {
+            List<WriteableBitmap> selectedBitmaps = new List<WriteableBitmap>();
+            bool horizontal;
+
             if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
             {
-                for (int i = 0; i < bitmaps.Count; i++)
-                {
-                    WriteableBitmap newBitmap = BitmapFactory.New(width, height);
-                    transform.Flip(newBitmap, bitmaps[i]);
-                    bitmaps[i] = newBitmap;
-                    if (i == currentBitmapIndex)
-                    {
-                        currentBitmap = newBitmap;
-                        bitmaps[currentBitmapIndex] = newBitmap;
-                        image.Source = currentBitmap;
-                    }
-                }
+                selectedBitmaps = bitmaps;
             }
             else
             {
-                WriteableBitmap newBitmap = BitmapFactory.New(width, height);
-                transform.Flip(newBitmap, currentBitmap);
-                currentBitmap = newBitmap;
-                bitmaps[currentBitmapIndex] = newBitmap;
-                image.Source = currentBitmap;
+                selectedBitmaps.Add(currentBitmap);
             }
 
+            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
+            {
+                horizontal = false;
+            }
+            else
+            {
+                horizontal = true;
+            }
+
+            List<WriteableBitmap> newBitmaps = transform.Flip(selectedBitmaps, bitmaps, currentBitmapIndex, horizontal);
+            UpdateCanvas(newBitmaps);
             UpdateImagePreviewButtons();
+        }
+
+        private void UpdateCanvas(List<WriteableBitmap> selectedBitmaps) 
+        {
+            for (int i = 0; i < bitmaps.Count; i++)
+            {
+                bitmaps[i] = selectedBitmaps[i];
+                if (i == currentBitmapIndex)
+                {
+                    currentBitmap = bitmaps[i];
+                    bitmaps[currentBitmapIndex] = bitmaps[i];
+                    image.Source = currentBitmap;
+                }
+            }
         }
 
         private void Rotate_Click(object sender, RoutedEventArgs e)
@@ -1140,12 +1158,18 @@ namespace BakalarskaPrace
         {
             WriteableBitmap newBitmap = BitmapFactory.New(width, height);
             CreateNewFrame(newBitmap);
+            Action action = () => CreateNewFrame(newBitmap);
+            undoStack.Add(action);
+            redoStack.Clear();
         }
 
         private void DuplicateImage_Click(object sender, RoutedEventArgs e)
         {
             WriteableBitmap newBitmap = bitmaps[currentBitmapIndex].Clone();
             CreateNewFrame(newBitmap);
+            Action action = () => CreateNewFrame(newBitmap);
+            undoStack.Add(action);
+            redoStack.Clear();
         }
 
         private void MergeImage_Click(object sender, RoutedEventArgs e)
@@ -1154,6 +1178,9 @@ namespace BakalarskaPrace
             {
                 WriteableBitmap newBitmap = filters.MergeImages(currentBitmap, bitmaps[currentBitmapIndex + 1], width, height);
                 CreateNewFrame(newBitmap);
+                Action action = () => CreateNewFrame(newBitmap);
+                undoStack.Add(action);
+                redoStack.Clear();
             }
         }
 
@@ -1163,32 +1190,43 @@ namespace BakalarskaPrace
             {
                 WriteableBitmap newBitmap = filters.IntersectImages(currentBitmap, bitmaps[currentBitmapIndex + 1], width, height);
                 CreateNewFrame(newBitmap);
+                Action action = () => CreateNewFrame(newBitmap);
+                undoStack.Add(action);
+                redoStack.Clear();
             }
         }
 
         private void CreateNewFrame(WriteableBitmap newWriteableBitmap)
         {
-            bitmaps.Insert(currentBitmapIndex + 1, newWriteableBitmap);
-            currentBitmapIndex += 1;
-            currentBitmap = bitmaps[currentBitmapIndex];
-            image.Source = currentBitmap;
-            LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
-            currentAnimationIndex = currentBitmapIndex;
-            animationPreview.Source = bitmaps[currentAnimationIndex];
-            UpdateImagePreviewButtons();
-            if (onionSkinning == true) UpdateOnionSkinning();
+            if (!bitmaps.Contains(newWriteableBitmap)) 
+            {
+                bitmaps.Insert(currentBitmapIndex + 1, newWriteableBitmap);
+                currentBitmapIndex += 1;
+                currentBitmap = bitmaps[currentBitmapIndex];
+                image.Source = currentBitmap;
+                LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
+                currentAnimationIndex = currentBitmapIndex;
+                animationPreview.Source = bitmaps[currentAnimationIndex];
+                UpdateImagePreviewButtons();
+                if (onionSkinning == true) UpdateOnionSkinning();
+            }
         }
 
         private void DeleteImage_Click(object sender, RoutedEventArgs e)
         {
-            bitmaps.RemoveAt(currentBitmapIndex);
+            DeleteImage(currentBitmapIndex);
+        }
+
+        private void DeleteImage(int imageIndex) 
+        {
+            bitmaps.RemoveAt(imageIndex);
             if (bitmaps.Count == 0)
             {
                 WriteableBitmap newWriteableBitmap = BitmapFactory.New(width, height);
                 bitmaps.Add(newWriteableBitmap);
             }
             //pokud je poslední index vrátit se na předchozí obrázek
-            int lastIndex = currentBitmapIndex != bitmaps.Count ? 0 : 1;
+            int lastIndex = imageIndex != bitmaps.Count ? 0 : 1;
             currentBitmapIndex -= lastIndex;
             currentBitmap = bitmaps[currentBitmapIndex];
             image.Source = currentBitmap;
@@ -1485,17 +1523,29 @@ namespace BakalarskaPrace
         {
             if (undoStack.Count > 0)
             {
-                currentBitmap.Clear();
+                foreach (WriteableBitmap bitmap in bitmaps) 
+                {
+                    bitmap.Clear();
+                }
+
+                for (int i = 1; i < bitmaps.Count; i++)
+                {
+                    bitmaps.RemoveAt(i);
+                }
+
                 if (visitedPoints.Count != 0) visitedPoints.Clear();
 
-                for (int i = undoStack.Count - 2; i >= 0; i--) 
+                for (int i = 0; i < undoStack.Count - 1; i++)
                 {
                     undoStack[i].Invoke();
+                    visitedPoints.Clear();
                 }
 
                 redoStack.Add(undoStack[undoStack.Count - 1]);
                 undoStack.RemoveAt(undoStack.Count - 1);
+                UpdateCanvas(bitmaps);
                 UpdateImagePreviewButtons();
+                UpdateCurrentBitmap();
             }
         }
 
@@ -1503,14 +1553,19 @@ namespace BakalarskaPrace
         {
             if (redoStack.Count > 0)
             {
-                currentBitmap.Clear();
+                foreach (WriteableBitmap bitmap in bitmaps)
+                {
+                    bitmap.Clear();
+                }
+
                 if (visitedPoints.Count != 0) visitedPoints.Clear();
                 
-                redoStack[redoStack.Count - 1].Invoke();
-                for (int i = undoStack.Count - 1; i >= 0; i--)
+                for (int i = 0; i < undoStack.Count; i++)
                 {
                     undoStack[i].Invoke();
+                    visitedPoints.Clear();
                 }
+                redoStack[redoStack.Count - 1].Invoke();
 
                 undoStack.Add(redoStack[redoStack.Count - 1]);
                 redoStack.RemoveAt(redoStack.Count - 1);

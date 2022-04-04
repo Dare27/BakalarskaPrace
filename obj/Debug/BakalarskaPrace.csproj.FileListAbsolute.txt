@@ -149,3 +149,4 @@ C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\ColorPicker.
 C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\Microsoft.Xaml.Behaviors.dll
 C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\Microsoft.Xaml.Behaviors.pdb
 C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\Microsoft.Xaml.Behaviors.xml
+C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\obj\Debug\App.baml

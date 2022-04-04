@@ -16,32 +16,56 @@ namespace BakalarskaPrace
             imageManipulation = new ImageManipulation();
         }
 
-        public void Flip(WriteableBitmap newBitmap, WriteableBitmap sourceBitmap)
+        public List<WriteableBitmap> Flip(List<WriteableBitmap> selectedBitmaps, List<WriteableBitmap> bitmaps, int currentBitmapIndex, bool horizontal)
         {
-            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
+            List<WriteableBitmap> newBitmaps = new List<WriteableBitmap>();
+            int width = selectedBitmaps[0].PixelWidth;
+            int height = selectedBitmaps[0].PixelHeight;
+            int start, end;
+
+            if (selectedBitmaps.Count > 1)
             {
-                for (int x = 0; x < sourceBitmap.PixelWidth; x++)
-                {
-                    for (int y = 0; y < sourceBitmap.PixelHeight; y++)
-                    {
-                        int yp = sourceBitmap.PixelHeight - y - 1;
-                        Color color = imageManipulation.GetPixelColor(x, y, sourceBitmap);
-                        imageManipulation.AddPixel(x, yp, color, newBitmap);
-                    }
-                }
+                start = 0;
+                end = selectedBitmaps.Count;
             }
             else
             {
-                for (int x = 0; x < sourceBitmap.PixelWidth; x++)
+                start = currentBitmapIndex;
+                end = currentBitmapIndex + 1;
+            }
+
+            for (int i = start; i < end; i++ ) 
+            {
+                WriteableBitmap newBitmap = BitmapFactory.New(width, height);
+                if (horizontal == false)
                 {
-                    for (int y = 0; y < sourceBitmap.PixelHeight; y++)
+                    for (int x = 0; x < width; x++)
                     {
-                        int xp = sourceBitmap.PixelWidth - x - 1;
-                        Color color = imageManipulation.GetPixelColor(x, y, sourceBitmap);
-                        imageManipulation.AddPixel(xp, y, color, newBitmap);
+                        for (int y = 0; y < height; y++)
+                        {
+                            int yp = bitmaps[i].PixelHeight - y - 1;
+                            Color color = imageManipulation.GetPixelColor(x, y, bitmaps[i]);
+                            imageManipulation.AddPixel(x, yp, color, newBitmap);
+                        }
                     }
                 }
+                else
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        for (int y = 0; y < height; y++)
+                        {
+                            int xp = bitmaps[i].PixelWidth - x - 1;
+                            Color color = imageManipulation.GetPixelColor(x, y, bitmaps[i]);
+                            imageManipulation.AddPixel(xp, y, color, newBitmap);
+                        }
+                    }
+                }
+                newBitmaps.Add(newBitmap);
+                bitmaps[i] = newBitmap;
             }
+
+            return newBitmaps;
         }
 
         public void RotateAnimation(WriteableBitmap newBitmap, WriteableBitmap sourceBitmap)
