@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Windows;
 using System.Windows.Input;
@@ -40,9 +41,8 @@ namespace BakalarskaPrace
             }
         }
 
-        //V případě této aplikace musí být použit 4-straná verze tohoto algoritmu aby se zábránilo únikům v rozích
-        //Může způsobit StackOverflowException při větších velikostech, proto musím používat nerekurzivní verzi tohoto alg.
-        public void FloodFill(int x, int y, Color newColor, Color seedColor, WriteableBitmap bitmap, bool alphaBlending)
+
+        /*public void FloodFill(int x, int y, Color newColor, Color seedColor, WriteableBitmap bitmap, bool alphaBlending)
         {
             Color currentColor = imageManipulation.GetPixelColor(x, y, bitmap);
             if (currentColor != newColor && currentColor == seedColor)
@@ -74,6 +74,62 @@ namespace BakalarskaPrace
                     FloodFill(x, y + 1, newColor, seedColor, bitmap, alphaBlending);
                 }
             }
+        }*/
+
+        //V případě této aplikace musí být použit 4-straná verze tohoto algoritmu aby se zábránilo únikům v rozích
+        //Rekurzivní verze může způsobit StackOverflowException při větších velikostech, proto musím používat nerekurzivní verzi tohoto alg.
+        public List<Point> FloodFill(WriteableBitmap bitmap, Point point, Color seedColor, Color newColor, bool alphaBlending)
+        {
+            Stack<Point> pixels = new Stack<Point>();
+            List<Point> visitedPoints = new List<Point>();
+            pixels.Push(point);
+
+            while (pixels.Count > 0)
+            {
+                Point currentPoint = pixels.Pop();
+                if (currentPoint.X < bitmap.PixelWidth && currentPoint.X >= 0 && currentPoint.Y < bitmap.PixelHeight && currentPoint.Y >= 0 && !pixels.Contains(currentPoint))//make sure we stay within bounds
+                {
+                    Color currentColor = imageManipulation.GetPixelColor((int)currentPoint.X, (int)currentPoint.Y, bitmap);
+                    if (currentColor == seedColor)
+                    {
+                        visitedPoints.Add(currentPoint);
+                        if (!visitedPoints.Contains(new Point(currentPoint.X + 1, currentPoint.Y)))
+                        {
+                            pixels.Push(new Point(currentPoint.X + 1, currentPoint.Y));
+                        }
+
+                        if (!visitedPoints.Contains(new Point(currentPoint.X - 1, currentPoint.Y)))
+                        {
+                            pixels.Push(new Point(currentPoint.X - 1, currentPoint.Y));
+                        }
+
+                        if (!visitedPoints.Contains(new Point(currentPoint.X, currentPoint.Y + 1)))
+                        {
+                            pixels.Push(new Point(currentPoint.X, currentPoint.Y + 1));
+                        }
+
+                        if (!visitedPoints.Contains(new Point(currentPoint.X, currentPoint.Y - 1)))
+                        {
+                            pixels.Push(new Point(currentPoint.X, currentPoint.Y - 1));
+                        }
+                    }
+                }
+            }
+
+            foreach (Point visitedPoint in visitedPoints) 
+            {
+                if (alphaBlending == true)
+                {
+                    Color colorMix = imageManipulation.ColorMix(newColor, imageManipulation.GetPixelColor((int)visitedPoint.X, (int)visitedPoint.Y, bitmap));
+                    imageManipulation.AddPixel((int)visitedPoint.X, (int)visitedPoint.Y, colorMix, bitmap);
+                }
+                else
+                {
+                    imageManipulation.AddPixel((int)visitedPoint.X, (int)visitedPoint.Y, newColor, bitmap);
+                }
+            }
+
+            return visitedPoints;
         }
 
         public void SpecialBucket(List<WriteableBitmap> bitmaps, Color newColor, Color seedColor, bool alphaBlending)

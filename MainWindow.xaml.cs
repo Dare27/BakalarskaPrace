@@ -27,8 +27,8 @@ namespace BakalarskaPrace
         bool alphaBlending;
         Color seedColor;
         bool shadingValue;
-        enum toolSelection { brush, eraser, symmetricBrush, colorPicker, bucket, specialBucket, line, ellipse, shading, rectangle, dithering, move, path };
-        toolSelection currentTool = toolSelection.brush;
+        enum ToolSelection { brush, eraser, symmetricBrush, colorPicker, bucket, specialBucket, line, ellipse, shading, rectangle, dithering, move, path };
+        ToolSelection currentTool = ToolSelection.brush;
         Point gridDragStartPoint;
         System.Windows.Vector gridDragOffset;
         int width, height;
@@ -111,8 +111,7 @@ namespace BakalarskaPrace
         {
             if (currentAnimationIndex + 1 < bitmaps.Count) currentAnimationIndex += 1;
             else currentAnimationIndex = 0;
-
-            //animationPreview.Source = bitmaps[currentAnimationIndex];
+            animationPreview.Source = bitmaps[currentAnimationIndex];
         }
 
         private unsafe void Image_MouseDown(object sender, System.Windows.Input.MouseEventArgs e)
@@ -132,36 +131,37 @@ namespace BakalarskaPrace
 
                 switch (currentTool)
                 {
-                    case toolSelection.brush:
+                    case ToolSelection.brush:
                         {
                             drawPoints = new List<Point>() { new Point(x, y) };
                             GeneratePoints(drawPoints, currentColors[colorIndex], alphaBlending, currentBitmap, strokeThickness);
                             break;
                         }   
-                    case toolSelection.symmetricBrush:
+                    case ToolSelection.symmetricBrush:
                         {
                             drawPoints = tools.SymmetricDrawing(x, y, currentBitmap);
                             GeneratePoints(drawPoints, currentColors[colorIndex], alphaBlending, currentBitmap, strokeThickness);
                             break;
                         }
-                    case toolSelection.eraser:
+                    case ToolSelection.eraser:
                         {
                             drawPoints = new List<Point>() { new Point(x, y) };
                             GeneratePoints(drawPoints, currentColors[3], false, currentBitmap, strokeThickness);
                             break;
                         }
-                    case toolSelection.colorPicker:
+                    case ToolSelection.colorPicker:
                         {
                             ColorPicker(x, y, colorIndex);
                             break;
                         }
-                    case toolSelection.bucket:
+                    case ToolSelection.bucket:
                         {
                             seedColor = imageManipulation.GetPixelColor(x, y, currentBitmap);
-                            tools.FloodFill(x, y, currentColors[colorIndex], seedColor, currentBitmap, alphaBlending);
+                            drawPoints = new List<Point>();
+                            drawPoints = tools.FloodFill(currentBitmap, new Point(x, y), seedColor, currentColors[colorIndex], alphaBlending);
                             break;
                         }
-                    case toolSelection.specialBucket:
+                    case ToolSelection.specialBucket:
                         {
                             seedColor = imageManipulation.GetPixelColor(x, y, currentBitmap);
                             List<WriteableBitmap> selectedBitmaps = new List<WriteableBitmap>();
@@ -170,13 +170,13 @@ namespace BakalarskaPrace
                             tools.SpecialBucket(bitmaps, currentColors[colorIndex], seedColor, alphaBlending);
                             break;
                         }
-                    case toolSelection.line:
+                    case ToolSelection.line:
                         {
                             mouseDownPosition.X = x;
                             mouseDownPosition.Y = y;
                             break;
                         }
-                    case toolSelection.path:
+                    case ToolSelection.path:
                         {
                             if (mouseDownPosition.X == -1 && mouseDownPosition.Y == -1) 
                             {
@@ -185,25 +185,25 @@ namespace BakalarskaPrace
                             }
                             break;
                         }
-                    case toolSelection.ellipse:
+                    case ToolSelection.ellipse:
                         {
                             mouseDownPosition.X = x;
                             mouseDownPosition.Y = y;
                             break;
                         }
-                    case toolSelection.rectangle:
+                    case ToolSelection.rectangle:
                         {
                             mouseDownPosition.X = x;
                             mouseDownPosition.Y = y;
                             break;
                         }
-                    case toolSelection.dithering:
+                    case ToolSelection.dithering:
                         {
                             drawPoints = new List<Point>() { new Point(x, y) };
                             tools.Dithering(new List<Point>() { new Point(x, y) }, currentColors[0], currentColors[1], currentBitmap);
                             break;
                         }
-                    case toolSelection.shading:
+                    case ToolSelection.shading:
                         {
                             if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                             {
@@ -238,36 +238,37 @@ namespace BakalarskaPrace
                 {
                     switch (currentTool)
                     {
-                        case toolSelection.brush:
+                        case ToolSelection.brush:
                             {
                                 drawPoints.Add(new Point(x, y));
                                 GeneratePoints(drawPoints, currentColors[colorIndex], alphaBlending, currentBitmap, strokeThickness);
                                 break;
                             }
-                        case toolSelection.symmetricBrush:
+                        case ToolSelection.symmetricBrush:
                             {
                                 drawPoints.AddRange(tools.SymmetricDrawing(x, y, currentBitmap));
                                 GeneratePoints(drawPoints, currentColors[colorIndex], alphaBlending, currentBitmap, strokeThickness);
                                 break;
                             }
-                        case toolSelection.eraser:
+                        case ToolSelection.eraser:
                             {
                                 drawPoints.Add(new Point(x, y));
                                 GeneratePoints(drawPoints, currentColors[3], false, currentBitmap, strokeThickness);
                                 break;
                             }
-                        case toolSelection.colorPicker:
+                        case ToolSelection.colorPicker:
                             {
                                 ColorPicker(x, y, colorIndex);
                                 break;
                             }
-                        case toolSelection.bucket:
+                        case ToolSelection.bucket:
                             {
                                 seedColor = imageManipulation.GetPixelColor(x, y, currentBitmap);
-                                tools.FloodFill(x, y, currentColors[colorIndex], seedColor, currentBitmap, alphaBlending);
+                                drawPoints = new List<Point>();
+                                drawPoints = tools.FloodFill(currentBitmap, new Point(x, y), seedColor, currentColors[colorIndex], alphaBlending);
                                 break;
                             }
-                        case toolSelection.specialBucket:
+                        case ToolSelection.specialBucket:
                             {
                                 seedColor = imageManipulation.GetPixelColor(x, y, currentBitmap);
                                 List<WriteableBitmap> selectedBitmaps = new List<WriteableBitmap>();
@@ -284,13 +285,13 @@ namespace BakalarskaPrace
                                 tools.SpecialBucket(selectedBitmaps, currentColors[colorIndex], seedColor, alphaBlending);
                                 break;
                             }
-                        case toolSelection.dithering:
+                        case ToolSelection.dithering:
                             {
                                 drawPoints.Add(new Point(x, y));
                                 tools.Dithering(new List<Point>() { new Point(x, y) }, currentColors[0], currentColors[1], currentBitmap);
                                 break;
                             }
-                        case toolSelection.shading:
+                        case ToolSelection.shading:
                             {
                                 if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                                 {
@@ -328,7 +329,7 @@ namespace BakalarskaPrace
 
                 switch (currentTool)
                 {
-                    case toolSelection.line:
+                    case ToolSelection.line:
                         {
                             if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
                             {
@@ -350,7 +351,7 @@ namespace BakalarskaPrace
                             }
                             break;
                         }
-                    case toolSelection.path:
+                    case ToolSelection.path:
                         {
                             if ((int)mouseDownPosition.X != -1 && (int)mouseDownPosition.Y != -1)
                             {
@@ -370,7 +371,7 @@ namespace BakalarskaPrace
                             }
                             break;
                         }
-                    case toolSelection.ellipse:
+                    case ToolSelection.ellipse:
                         {
                             if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
                             {
@@ -392,7 +393,7 @@ namespace BakalarskaPrace
                             }
                             break;
                         }
-                    case toolSelection.rectangle:
+                    case ToolSelection.rectangle:
                         {
                             if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
                             {
@@ -449,7 +450,7 @@ namespace BakalarskaPrace
 
             switch (currentTool)
             {
-                case toolSelection.brush:
+                case ToolSelection.brush:
                     {
                         List<Point> points = new List<Point>(drawPoints);
                         Action action = () => GeneratePoints(points, color, alphaBlend, bitmap, thickness);
@@ -457,7 +458,7 @@ namespace BakalarskaPrace
                         redoStack.Clear();
                         break;
                     }
-                case toolSelection.symmetricBrush:
+                case ToolSelection.symmetricBrush:
                     {
                         List<Point> points = new List<Point>(drawPoints);
                         Action action = () => GeneratePoints(points, color, alphaBlend, bitmap, thickness);
@@ -465,7 +466,7 @@ namespace BakalarskaPrace
                         redoStack.Clear();
                         break;
                     }
-                case toolSelection.eraser:
+                case ToolSelection.eraser:
                     {
                         List<Point> points = new List<Point>(drawPoints);
                         Action action = () => GeneratePoints(points, Color.FromArgb(0, 0, 0, 0), false, bitmap, thickness);
@@ -473,21 +474,22 @@ namespace BakalarskaPrace
                         redoStack.Clear();
                         break;
                     }
-                case toolSelection.bucket:
+                case ToolSelection.bucket:
                     {
-                        Action action = () => tools.FloodFill(x, y, color, colorSeed, bitmap, alphaBlend);
+                        List<Point> points = new List<Point>(drawPoints);
+                        Action action = () => GeneratePoints(points, color, alphaBlend, bitmap, 1);
                         undoStack.Add(action);
                         redoStack.Clear();
                         break;
                     }
-                case toolSelection.specialBucket:
+                case ToolSelection.specialBucket:
                     {
                         Action action = () => tools.SpecialBucket(bitmaps, color, colorSeed, alphaBlend);
                         undoStack.Add(action);
                         redoStack.Clear();
                         break;
                     }
-                case toolSelection.line:
+                case ToolSelection.line:
                     {
                         List<Point> points = new List<Point>(previewMousePoints);
                         Action action = () => GeneratePoints(points, color, alphaBlend, bitmap, thickness);
@@ -496,7 +498,7 @@ namespace BakalarskaPrace
                         redoStack.Clear();
                         break;
                     }
-                case toolSelection.path:
+                case ToolSelection.path:
                     {
                         List<Point> points = new List<Point>(previewMousePoints);
                         Action action = () => GeneratePoints(points, color, alphaBlend, bitmap, thickness);
@@ -505,7 +507,7 @@ namespace BakalarskaPrace
                         redoStack.Clear();
                         break;
                     }
-                case toolSelection.ellipse:
+                case ToolSelection.ellipse:
                     {
                         List<Point> points = new List<Point>(previewMousePoints);
                         Action action = () => GeneratePoints(points, color, alphaBlend, bitmap, thickness);
@@ -514,7 +516,7 @@ namespace BakalarskaPrace
                         redoStack.Clear();
                         break;
                     }
-                case toolSelection.rectangle:
+                case ToolSelection.rectangle:
                     {
                         List<Point> points = new List<Point>(previewMousePoints);
                         Action action = () => GeneratePoints(points, color, alphaBlend, bitmap, thickness);
@@ -523,7 +525,7 @@ namespace BakalarskaPrace
                         redoStack.Clear();
                         break;
                     }
-                case toolSelection.dithering:
+                case ToolSelection.dithering:
                     {
                         List<Point> points = new List<Point>(drawPoints);
                         Action action = () => tools.Dithering(points, primaryColor, secondaryColor, bitmap);
@@ -531,7 +533,7 @@ namespace BakalarskaPrace
                         redoStack.Clear();
                         break;
                     }
-                case toolSelection.shading:
+                case ToolSelection.shading:
                     {
                         List<Point> points = new List<Point>(drawPoints);
                         bool currentShadingValue = shadingValue;
@@ -545,7 +547,7 @@ namespace BakalarskaPrace
 
             drawPoints = new List<Point>();
 
-            if (currentTool != toolSelection.path) mouseDownPosition = new Point(-1, -1);
+            if (currentTool != ToolSelection.path) mouseDownPosition = new Point(-1, -1);
             else mouseDownPosition = new Point(x, y);
 
             previewBitmap.Clear();
@@ -649,7 +651,7 @@ namespace BakalarskaPrace
         {
             System.Windows.Controls.Button button = new System.Windows.Controls.Button();
             string text = ((System.Windows.Controls.Button)sender).Name;
-            currentTool = (toolSelection)Enum.Parse(typeof(toolSelection), text);
+            currentTool = (ToolSelection)Enum.Parse(typeof(ToolSelection), text);
             button = (System.Windows.Controls.Button)sender;
             button.IsEnabled = false;
             if (lastToolButton != null) lastToolButton.IsEnabled = true;
@@ -1089,7 +1091,7 @@ namespace BakalarskaPrace
             transform.Matrix = matrix;
 
             currentScale = scale;
-            if (currentScale.ToString().Length > 5 && currentScale.ToString().Contains(".")) LabelScale.Content = currentScale.ToString().Substring(0, 5);
+            if (currentScale.ToString().Length > 5 && currentScale.ToString().Contains(",")) LabelScale.Content = currentScale.ToString().Substring(0, 5);
             else LabelScale.Content = currentScale.ToString();
 
             paintSurface.RenderTransform = transform;
@@ -1120,7 +1122,7 @@ namespace BakalarskaPrace
             transform.Matrix = matrix;
 
             currentScale *= scale;
-            if (currentScale.ToString().Length > 5 && currentScale.ToString().Contains(".")) LabelScale.Content = currentScale.ToString().Substring(0, 5);
+            if (currentScale.ToString().Length > 5 && currentScale.ToString().Contains(",")) LabelScale.Content = currentScale.ToString().Substring(0, 5);
             else LabelScale.Content = currentScale.ToString();
         }
 
@@ -1290,14 +1292,18 @@ namespace BakalarskaPrace
                 System.Windows.Controls.Button newButton = new System.Windows.Controls.Button();
                 var brush = new ImageBrush();
                 brush.ImageSource = bitmaps[i];
-                newButton.Content = new Image
+                
+                Image newImage = new Image
                 {
                     Source = bitmaps[i],
                     VerticalAlignment = VerticalAlignment.Center,
                     Stretch = Stretch.Uniform,
                     Height = 140,
-                    Width = 140
+                    Width = 140,
                 };
+
+                RenderOptions.SetBitmapScalingMode(newImage, BitmapScalingMode.NearestNeighbor);
+                newButton.Content = newImage;
 
                 if (currentBitmapIndex == i) newButton.IsEnabled = false;
                 else newButton.IsEnabled = true;
@@ -1320,6 +1326,11 @@ namespace BakalarskaPrace
 
         private void Previous_Click(object sender, RoutedEventArgs e)
         {
+            PreviousImage();
+        }
+
+        private void PreviousImage() 
+        {
             if (currentBitmapIndex - 1 > -1)
             {
                 currentBitmapIndex -= 1;
@@ -1328,6 +1339,11 @@ namespace BakalarskaPrace
         }
 
         private void Next_Click(object sender, RoutedEventArgs e)
+        {
+            NextImage();
+        }
+
+        private void NextImage() 
         {
             if (currentBitmapIndex + 1 < bitmaps.Count)
             {
@@ -1575,8 +1591,108 @@ namespace BakalarskaPrace
 
         private void WindowKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
+            //Misc
             if (e.Key == Key.Z && Keyboard.Modifiers == ModifierKeys.Control) Undo();
             if (e.Key == Key.Y && Keyboard.Modifiers == ModifierKeys.Control) Redo();
+            if (e.Key == Key.Tab) Center();
+            if (e.Key == Key.Down) NextImage();
+            if (e.Key == Key.Up) PreviousImage();
+            if (e.Key == Key.Delete) DeleteImage(currentBitmapIndex);
+            if (e.Key == Key.Enter) CreateNewFrame(BitmapFactory.New(width, height));
+
+            //Storage
+            if (e.Key == Key.S && Keyboard.Modifiers == ModifierKeys.Control) //Export spritesheet
+            if (e.Key == Key.S && Keyboard.Modifiers == ModifierKeys.Control && Keyboard.Modifiers == ModifierKeys.Shift) //Export single
+            if (e.Key == Key.O && Keyboard.Modifiers == ModifierKeys.Control) Redo(); //Export gif
+            if (e.Key == Key.E && Keyboard.Modifiers == ModifierKeys.Control) Redo(); //Import
+
+            //Tools
+            if (e.Key == Key.P)
+            { 
+                currentTool = ToolSelection.brush;
+                DisableToolButton(currentTool.ToString());
+            }
+
+            if (e.Key == Key.E)
+            {
+                currentTool = ToolSelection.eraser;
+                DisableToolButton(currentTool.ToString());
+            }
+
+            if (e.Key == Key.O)
+            {
+                currentTool = ToolSelection.colorPicker;
+                DisableToolButton(currentTool.ToString());
+            }
+
+            if (e.Key == Key.C) 
+            { 
+                currentTool = ToolSelection.ellipse;
+                DisableToolButton(currentTool.ToString());
+            }
+
+            if (e.Key == Key.R) 
+            { 
+                currentTool = ToolSelection.rectangle;
+                DisableToolButton(currentTool.ToString());
+            }
+
+            if (e.Key == Key.L) 
+            { 
+                currentTool = ToolSelection.line;
+                DisableToolButton(currentTool.ToString());
+            }
+
+            if (e.Key == Key.K)
+            {
+                currentTool = ToolSelection.path;
+                DisableToolButton(currentTool.ToString());
+            }
+
+            if (e.Key == Key.B)
+            {
+                currentTool = ToolSelection.bucket;
+                DisableToolButton(currentTool.ToString());
+            }
+
+            if (e.Key == Key.A)
+            {
+                currentTool = ToolSelection.specialBucket;
+                DisableToolButton(currentTool.ToString());
+            }
+
+            if (e.Key == Key.U)
+            {
+                currentTool = ToolSelection.shading;
+                DisableToolButton(currentTool.ToString());
+            }
+
+            if (e.Key == Key.T)
+            {
+                currentTool = ToolSelection.dithering;
+                DisableToolButton(currentTool.ToString());
+            }
+
+            if (e.Key == Key.V)
+            {
+                currentTool = ToolSelection.symmetricBrush;
+                DisableToolButton(currentTool.ToString());
+            }
+        }
+
+        private void DisableToolButton(string buttonName) 
+        {
+            List<System.Windows.Controls.Button> children = toolButtons.Children.OfType<System.Windows.Controls.Button>().ToList();
+            foreach (System.Windows.Controls.Button child in children)
+            {
+                if (child.Name == buttonName) 
+                {
+
+                    child.IsEnabled = false;
+                    if (lastToolButton != null) lastToolButton.IsEnabled = true;
+                    lastToolButton = child;
+                }
+            }
         }
 
         private void Undo_Click(object sender, RoutedEventArgs e)

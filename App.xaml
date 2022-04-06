@@ -7,11 +7,15 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/ColorPicker;component/Styles/DefaultColorPickerStyle.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Light.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Defaults.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MaterialDesignColors;component/Themes/Recommended/Primary/MaterialDesignColor.Amber.xaml" />
+                <ResourceDictionary Source="ScrollbarStyleDictionary.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <Style x:Key="ButtonStyle1" TargetType="{x:Type Button}">
-                <Setter Property="Background" Value="#202020"/>
-                <Setter Property="Foreground" Value="Black"/>
+                <Setter Property="Background" Value="#FF292929"/>
                 <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="BorderBrush" Value="#404040"/>
                 <Setter Property="Width" Value="40"/>
                 <Setter Property="Height" Value="40"/>
                 <Setter Property="Margin" Value="2"/>
@@ -27,25 +31,13 @@
                                     <VisualStateGroup x:Name="CommonStates">
                                         <VisualState x:Name="Normal">
                                             <Storyboard>
-                                                
-                                            </Storyboard>
-                                        </VisualState>
-                                        <VisualState x:Name="PointerOver">
-                                            <Storyboard>
-                                                <ThicknessAnimation From="0" To="2" Duration="0" Storyboard.TargetProperty="BorderThickness" />
-                                                <ColorAnimation Duration="0" To="#0066FF" Storyboard.TargetProperty="BorderBrush.Color" />
-                                            </Storyboard>
-                                        </VisualState>
-                                        <VisualState x:Name="Pressed">
-                                            <Storyboard>
-                                                <ThicknessAnimation From="0" To="2" Duration="0" Storyboard.TargetProperty="BorderThickness" />
-                                                <ColorAnimation Duration="0" To="#0066FF" Storyboard.TargetProperty="BorderBrush.Color" />
+
                                             </Storyboard>
                                         </VisualState>
                                         <VisualState x:Name="Disabled">
                                             <Storyboard>
                                                 <ThicknessAnimation From="0" To="2" Duration="0" Storyboard.TargetProperty="BorderThickness" />
-                                                <ColorAnimation Duration="0" To="#0066FF" Storyboard.TargetProperty="BorderBrush.Color" />
+                                                <ColorAnimation Duration="0" To="#ffc107" Storyboard.TargetProperty="BorderBrush.Color" />
                                             </Storyboard>
                                         </VisualState>
                                     </VisualStateGroup>
@@ -57,6 +49,17 @@
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
+            </Style>
+            <Style x:Key="ButtonStyle2" TargetType="{x:Type Button}">
+                <Setter Property="Background" Value="#ffc107"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="FontFamily" Value="Segoe UI"/>
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Margin" Value="2"/>
+                <Setter Property="Padding" Value="2"/>
+                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
             </Style>
         </ResourceDictionary>
     </Application.Resources>

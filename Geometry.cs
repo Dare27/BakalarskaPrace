@@ -52,6 +52,19 @@ namespace BakalarskaPrace
                 }
             }
 
+            //Částečné posunutí 
+            int horizontalOdd;
+            if ((x0 + x1) % 2 != 0)
+                horizontalOdd = 1;
+            else
+                horizontalOdd = 0;
+
+            int verticalOdd;
+            if ((y0 + y1) % 2 != 0)
+                verticalOdd = 1;
+            else
+                verticalOdd = 0;
+
             double centerX = (x0 + x1) / 2;
             double centerY = (y0 + y1) / 2;
             double radX = centerX - Math.Min(x0, x1);
@@ -68,12 +81,12 @@ namespace BakalarskaPrace
             List<Point> points = new List<Point>();
 
             //Vykreslení počátečního bodu do každého kvadrantu
-            points.AddRange(QuadrantPlotter((int)centerX, (int)centerY, (int)x, (int)y, fill));
+            points.AddRange(QuadrantPlotter((int)centerX, (int)centerY, (int)x, (int)y, fill, verticalOdd, horizontalOdd));
 
             //Počáteční rozhodovací parametr regionu 1
             p = (int)Math.Round(radY2 - (radX2 * radY) + (0.25 * radX2));
 
-            //Vykreslení 1. regionu 
+            //Vykreslení 1. regionu - horní/dolní část
             while (px < py)
             {
                 x++;
@@ -89,13 +102,13 @@ namespace BakalarskaPrace
                     py -= twoRadX2;
                     p += radY2 + px - py;
                 }
-                points.AddRange(QuadrantPlotter((int)centerX, (int)centerY, (int)x, (int)y, fill));
+                points.AddRange(QuadrantPlotter((int)centerX, (int)centerY, (int)x, (int)y, fill, verticalOdd, horizontalOdd));
             }
 
             //Počáteční rozhodovací parametr regionu 
             p = (int)Math.Round(radY2 * (x + 0.5) * (x + 0.5) + radX2 * (y - 1) * (y - 1) - radX2 * radY2);
 
-            //Vykreslení 2. regionu 
+            //Vykreslení 2. regionu - pravá/levá část
             while (y > 0)
             {
                 y--;
@@ -111,13 +124,13 @@ namespace BakalarskaPrace
                     px += twoRadX2;
                     p += radX2 - py + px;
                 }
-                points.AddRange(QuadrantPlotter((int)centerX, (int)centerY, (int)x, (int)y, fill));
+                points.AddRange(QuadrantPlotter((int)centerX, (int)centerY, (int)x, (int)y, fill, verticalOdd, horizontalOdd));
             }
             return points;
         }
 
         //Vykreslit symetrické body ve všech kvadrantech pomocí souřadnic
-        public List<Point> QuadrantPlotter(int centerX, int centerY, int x, int y, bool fill)
+        public List<Point> QuadrantPlotter(int centerX, int centerY, int x, int y, bool fill, int verticalOdd, int horizontalOdd)
         {
             List<Point> points = new List<Point>(); ;
             if (fill)
@@ -127,10 +140,10 @@ namespace BakalarskaPrace
             }
             else
             {
-                points.Add(new Point(centerX + x, centerY + y));
-                points.Add(new Point(centerX - x, centerY + y));
-                points.Add(new Point(centerX + x, centerY - y));
-                points.Add(new Point(centerX - x, centerY - y));
+                points.Add(new Point(centerX + x + horizontalOdd, centerY + y + verticalOdd)); //Dolní pravý kvadrant kruhu
+                points.Add(new Point(centerX - x, centerY + y + verticalOdd)); //Dolní levý kvadrant kruhu
+                points.Add(new Point(centerX + x + horizontalOdd, centerY - y)); //Horní pravý kvadrant kruhu
+                points.Add(new Point(centerX - x, centerY - y)); //Horní levý kvadrant kruhu
             }
             return points;
         }
