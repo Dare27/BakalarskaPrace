@@ -156,3 +156,6 @@ C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\obj\Debug\BakalarskaPr
 C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\obj\Debug\BakalarskaPrace.exe
 C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\obj\Debug\BakalarskaPrace.pdb
 C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\obj\Debug\ScrollbarStyleDictionary.baml
+C:\Users\Ivo\source\repos\BakalarskaPrace-master\BakalarskaPrace-master\obj\Debug\BakalarskaPrace.exe
+C:\Users\Ivo\source\repos\BakalarskaPrace-master\BakalarskaPrace-master\obj\Debug\BakalarskaPrace.pdb
+C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\bin\Debug\ColorPicker.pdb

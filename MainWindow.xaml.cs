@@ -69,6 +69,8 @@ namespace BakalarskaPrace
 
             InitializeComponent();
             this.Show();
+            this.StateChanged += new EventHandler(Window_StateChanged);
+            this.SizeChanged += new SizeChangedEventHandler(Window_SizeChanged);
             paintSurface.Visibility = Visibility.Hidden;
             WindowStartup windowStartup = new WindowStartup();
             windowStartup.ShowDialog();
@@ -98,6 +100,7 @@ namespace BakalarskaPrace
             LabelPosition.Content = "[" + width + ":" + height + "] " + 0 + ":" + 0;
             LabelScale.Content = "1.0";
             LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
+            lastToolButton = brush;
             UpdateImagePreviewButtons();
             Center();
 
@@ -1267,6 +1270,8 @@ namespace BakalarskaPrace
         {
             if (playAnimation == true)
             {
+                BitmapImage image = new BitmapImage(new Uri("Files/Images/Dark-theme/play.png", UriKind.Relative));
+                playImage.Source = image;
                 playAnimation = false;
                 timer.Stop();
                 currentAnimationIndex = currentBitmapIndex;
@@ -1274,6 +1279,8 @@ namespace BakalarskaPrace
             }
             else
             {
+                BitmapImage image = new BitmapImage(new Uri("Files/Images/Dark-theme/pause.png", UriKind.Relative));
+                playImage.Source = image;
                 playAnimation = true;
                 timer.Start();
             }
@@ -1399,7 +1406,7 @@ namespace BakalarskaPrace
             List<Image> children = paintSurface.Children.OfType<Image>().ToList();
             foreach (Image child in children)
             {
-                if (child != image) paintSurface.Children.Remove(child);
+                if (child != image && child != previewImage) paintSurface.Children.Remove(child);
             }
         }
 
@@ -1667,7 +1674,7 @@ namespace BakalarskaPrace
                 DisableToolButton(currentTool.ToString());
             }
 
-            if (e.Key == Key.T)
+            if (e.Key == Key.D)
             {
                 currentTool = ToolSelection.dithering;
                 DisableToolButton(currentTool.ToString());
@@ -1687,7 +1694,6 @@ namespace BakalarskaPrace
             {
                 if (child.Name == buttonName) 
                 {
-
                     child.IsEnabled = false;
                     if (lastToolButton != null) lastToolButton.IsEnabled = true;
                     lastToolButton = child;
@@ -1703,6 +1709,16 @@ namespace BakalarskaPrace
         private void Redo_Click(object sender, RoutedEventArgs e)
         {
             Redo();
+        }
+
+        private void Window_StateChanged(object sender, EventArgs e)
+        {
+            Center();
+        }
+
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            Center();
         }
     }
 }

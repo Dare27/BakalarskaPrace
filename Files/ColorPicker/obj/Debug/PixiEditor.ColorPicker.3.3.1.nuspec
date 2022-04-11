@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>PixiEditor.ColorPicker</id>
+    <version>3.3.1</version>
+    <title>A WPF Color Picker</title>
+    <authors>Egor Mozgovoy, Krzysztof Krysiński</authors>
+    <license type="file">LICENSE.md</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <icon>icon.png</icon>
+    <projectUrl>https://github.com/PixiEditor/ColorPicker</projectUrl>
+    <description>A collection of various WPF controls used to select colors. See documentation and usage examples in the project repository, https://github.com/PixiEditor/ColorPicker. Supports .NET Framework 4.5.1+, .NET Core 3.1+, .NET 5 and .NET 6
+
+Originally developed for PixiEditor: https://github.com/PixiEditor/PixiEditor.</description>
+    <copyright>PixiEditor</copyright>
+    <tags>color color-picker graphics wpf</tags>
+    <repository type="git" url="https://github.com/PixiEditor/ColorPicker" />
+    <dependencies>
+      <group targetFramework=".NETFramework4.5.1">
+        <dependency id="Microsoft.Xaml.Behaviors.Wpf" version="1.1.31" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETCoreApp3.1">
+        <dependency id="Microsoft.Xaml.Behaviors.Wpf" version="1.1.31" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net5.0-windows7.0">
+        <dependency id="Microsoft.Xaml.Behaviors.Wpf" version="1.1.31" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net6.0-windows7.0">
+        <dependency id="Microsoft.Xaml.Behaviors.Wpf" version="1.1.31" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+    <frameworkReferences>
+      <group targetFramework=".NETCoreApp3.1">
+        <frameworkReference name="Microsoft.WindowsDesktop.App.WPF" />
+      </group>
+      <group targetFramework="net5.0-windows7.0">
+        <frameworkReference name="Microsoft.WindowsDesktop.App.WPF" />
+      </group>
+      <group targetFramework="net6.0-windows7.0">
+        <frameworkReference name="Microsoft.WindowsDesktop.App.WPF" />
+      </group>
+      <group targetFramework=".NETFramework4.5.1" />
+    </frameworkReferences>
+  </metadata>
+  <files>
+    <file src="C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\Files\ColorPicker\bin\Debug\net451\ColorPicker.dll" target="lib\net451\ColorPicker.dll" />
+    <file src="C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\Files\ColorPicker\bin\Debug\net5.0-windows\ColorPicker.dll" target="lib\net5.0-windows7.0\ColorPicker.dll" />
+    <file src="C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\Files\ColorPicker\bin\Debug\net6.0-windows\ColorPicker.dll" target="lib\net6.0-windows7.0\ColorPicker.dll" />
+    <file src="C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\Files\ColorPicker\bin\Debug\netcoreapp3.1\ColorPicker.dll" target="lib\netcoreapp3.1\ColorPicker.dll" />
+    <file src="C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\Files\ColorPicker\icon.png" target="icon.png" />
+    <file src="C:\Users\Ivo\source\repos\BakalarskaPrace\BakalarskaPrace\LICENSE.md" target="LICENSE.md" />
+  </files>
+</package>

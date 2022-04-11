@@ -40,9 +40,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ColorPicker, Version=3.2.1.0, Culture=neutral, PublicKeyToken=1c61eec504ce2276, processorArchitecture=MSIL">
-      <HintPath>..\packages\PixiEditor.ColorPicker.3.2.0\lib\net451\ColorPicker.dll</HintPath>
-    </Reference>
     <Reference Include="Magick.NET-Q8-AnyCPU, Version=10.1.0.0, Culture=neutral, PublicKeyToken=2004825badfa91ec, processorArchitecture=MSIL">
       <HintPath>..\packages\Magick.NET-Q8-AnyCPU.10.1.0\lib\netstandard20\Magick.NET-Q8-AnyCPU.dll</HintPath>
     </Reference>
@@ -186,9 +183,7 @@
     <Resource Include="Files\Images\Light-theme\flip.png" />
     <Resource Include="Files\Images\Light-theme\line.png" />
     <Resource Include="Files\Images\Light-theme\minus.png" />
-    <Resource Include="Files\Images\Light-theme\path.png" />
     <Resource Include="Files\Images\Light-theme\pen.png" />
-    <Resource Include="Files\Images\Light-theme\plus.png" />
     <Resource Include="Files\Images\Light-theme\rectangle.png" />
     <Resource Include="Files\Images\Light-theme\resize.png" />
     <Resource Include="Files\Images\Light-theme\rotate.png" />
@@ -220,6 +215,57 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Files\Images\Dark-theme\play.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Files\ColorPicker\ColorPicker.csproj">
+      <Project>{c2160daf-42ef-4bd2-a7f3-b109548aac5e}</Project>
+      <Name>ColorPicker</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Files\Images\Light-theme\path.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="path.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="play.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Files\Images\Dark-theme\import.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Files\Images\Dark-theme\export.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Files\Images\Dark-theme\delete.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="delete.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="dark-plus.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="duplicate.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Files\Images\Dark-theme\duplicate.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Files\Images\Dark-theme\intersect.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="merge.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Files\Images\Dark-theme\symmetrical.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Files\Images\Dark-theme\pause.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="pause.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

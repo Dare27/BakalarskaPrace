@@ -41,43 +41,8 @@ namespace BakalarskaPrace
             }
         }
 
-
-        /*public void FloodFill(int x, int y, Color newColor, Color seedColor, WriteableBitmap bitmap, bool alphaBlending)
-        {
-            Color currentColor = imageManipulation.GetPixelColor(x, y, bitmap);
-            if (currentColor != newColor && currentColor == seedColor)
-            {
-                if (alphaBlending == true)
-                {
-                    Color colorMix = imageManipulation.ColorMix(newColor, currentColor);
-                    imageManipulation.AddPixel(x, y, colorMix, bitmap);
-                }
-                else
-                {
-                    imageManipulation.AddPixel(x, y, newColor, bitmap);
-                }
-
-                if (x - 1 > -1)
-                {
-                    FloodFill(x - 1, y, newColor, seedColor, bitmap, alphaBlending);
-                }
-                if (x + 1 < bitmap.PixelWidth)
-                {
-                    FloodFill(x + 1, y, newColor, seedColor, bitmap, alphaBlending);
-                }
-                if (y - 1 > -1)
-                {
-                    FloodFill(x, y - 1, newColor, seedColor, bitmap, alphaBlending);
-                }
-                if (y + 1 < bitmap.PixelHeight)
-                {
-                    FloodFill(x, y + 1, newColor, seedColor, bitmap, alphaBlending);
-                }
-            }
-        }*/
-
         //V případě této aplikace musí být použit 4-straná verze tohoto algoritmu aby se zábránilo únikům v rozích
-        //Rekurzivní verze může způsobit StackOverflowException při větších velikostech, proto musím používat nerekurzivní verzi tohoto alg.
+        //Rekurzivní verze může způsobit StackOverflowException při větších velikostech, proto musí být použíta nerekurzivní verzi tohoto alg.
         public List<Point> FloodFill(WriteableBitmap bitmap, Point point, Color seedColor, Color newColor, bool alphaBlending)
         {
             Stack<Point> pixels = new Stack<Point>();
@@ -196,71 +161,107 @@ namespace BakalarskaPrace
 
         public List<Point> SymmetricDrawing(int x, int y, WriteableBitmap bitmap)
         {
-            int mirrorPostion = 0;
+
             List<Point> points = new List<Point>();
 
-            //Chybí převrácení podle osy souměrnosti
             if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
             {
-                //Použít horizontální a vertikální osu 
-                if (x > bitmap.PixelWidth / 2)
-                {
-                    mirrorPostion = bitmap.PixelWidth - x - 1;
-                    points.Add(new Point(mirrorPostion, y));
-                }
-                else
-                {
-
-                    int dif = (bitmap.PixelWidth / 2) - x;
-                    mirrorPostion = (bitmap.PixelWidth / 2) + dif - 1;
-                    points.Add(new Point(mirrorPostion, y));
-                }
-
-                if (y > bitmap.PixelHeight / 2)
-                {
-                    mirrorPostion = bitmap.PixelHeight - y - 1;
-                    points.Add(new Point(x, mirrorPostion));
-                }
-                else
-                {
-                    int dif = (bitmap.PixelHeight / 2) - y;
-                    mirrorPostion = (bitmap.PixelHeight / 2) + dif - 1;
-                    points.Add(new Point(x, mirrorPostion));
-                }
+                //Vytvořit horizontální, vertikální a osu souměrnosti
+                points.Add(CreateHorizontalPoint(x, y, bitmap.PixelHeight));
+                points.Add(CreateVerticalPoint(x, y, bitmap.PixelWidth));
+                points.Add(CreateAxialPoint(x, y, bitmap.PixelWidth, bitmap.PixelHeight));
             }
             else if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
             {
-                //Použít horizontální osu 
-                if (y > bitmap.PixelHeight / 2)
-                {
-                    mirrorPostion = bitmap.PixelHeight - y - 1;
-                    points.Add(new Point(x, mirrorPostion));
-                }
-                else
-                {
-                    int dif = (bitmap.PixelHeight / 2) - y;
-                    mirrorPostion = (bitmap.PixelHeight / 2) + dif - 1;
-                    points.Add(new Point(x, mirrorPostion));
-                }
+                //Vytvořit horizontální osu 
+                points.Add(CreateHorizontalPoint(x, y, bitmap.PixelHeight));
             }
             else
             {
-                //Použít vertikální osu 
-                if (x > bitmap.PixelWidth / 2)
-                {
-                    mirrorPostion = bitmap.PixelWidth - x - 1;
-                    points.Add(new Point(mirrorPostion, y));
-                }
-                else
-                {
-                    int dif = (bitmap.PixelWidth / 2) - x;
-                    mirrorPostion = (bitmap.PixelWidth / 2) + dif - 1;
-                    points.Add(new Point(mirrorPostion, y));
-                }
+                //Vytvořit vertikální osu 
+                points.Add(CreateVerticalPoint(x, y, bitmap.PixelWidth));
             }
             points.Add(new Point(x, y));
 
             return points;
+        }
+
+        private Point CreateAxialPoint(int x, int y, int width, int height)
+        {
+            int mirrorPostionY = 0;
+            int mirrorPostionX = 0;
+            Point newPoint = new Point();
+
+            if (y > height / 2 && x > width / 2)                            //Right down
+            {
+                mirrorPostionY = height - y - 1;
+                mirrorPostionX = width - x - 1;
+                newPoint = new Point(mirrorPostionX, mirrorPostionY);
+            }
+            else if (y <= height / 2 && x > width / 2)                      //Right up
+            {
+                int difX = (height / 2) - y;
+                mirrorPostionY = (height / 2) + difX - 1;
+                mirrorPostionX = width - x - 1;
+                newPoint = new Point(mirrorPostionX, mirrorPostionY);
+            }
+            else if (y > height / 2 && x <= width / 2)                      //Left down
+            {
+                mirrorPostionY = height - y - 1;
+                int difX = (width / 2) - x;
+                mirrorPostionX = (width / 2) + difX - 1;
+                newPoint = new Point(mirrorPostionX, mirrorPostionY);
+            }
+            else if (y <= height / 2 && x <= width / 2)                     //Left up
+            {
+                int difX = (height / 2) - y;
+                mirrorPostionY = (height / 2) + difX - 1;
+                int dif = (width / 2) - x;
+                mirrorPostionX = (width / 2) + dif - 1;
+                newPoint = new Point(mirrorPostionX, mirrorPostionY);
+            }
+
+            return newPoint;
+        }
+
+        private Point CreateHorizontalPoint(int x, int y, int height) 
+        {
+            Point newPoint;
+            int mirrorPostion;
+
+            if (y > height / 2)
+            {
+                mirrorPostion = height - y - 1;
+                newPoint = new Point(x, mirrorPostion);
+            }
+            else
+            {
+                int dif = (height / 2) - y;
+                mirrorPostion = (height / 2) + dif - 1;
+                newPoint = new Point(x, mirrorPostion);
+            }
+
+            return newPoint;
+        }
+
+        private Point CreateVerticalPoint(int x, int y, int width)
+        {
+            Point newPoint;
+            int mirrorPostion;
+
+            if (x > width / 2)
+            {
+                mirrorPostion = width - x - 1;
+                newPoint = new Point(mirrorPostion, y);
+            }
+            else
+            {
+                int dif = (width / 2) - x;
+                mirrorPostion = (width / 2) + dif - 1;
+                newPoint = new Point(mirrorPostion, y);
+            }
+
+            return newPoint;
         }
     }
 }

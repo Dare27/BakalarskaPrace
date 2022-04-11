@@ -31,7 +31,7 @@
             <Trigger Property="Orientation" Value="Vertical">
                 <Setter Property="Stylus.IsFlicksEnabled" Value="false" />
                 <Setter Property="Foreground" Value="#FFFFC107" />
-                <Setter Property="Background" Value="#252525" />
+                <Setter Property="Background" Value="#2b2b2b" />
                 <Setter Property="Width" Value="7" />
                 <Setter Property="Template">
                     <Setter.Value>
