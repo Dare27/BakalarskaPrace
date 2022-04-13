@@ -27,7 +27,7 @@ namespace BakalarskaPrace
         bool alphaBlending;
         Color seedColor;
         bool shadingValue;
-        enum ToolSelection { brush, eraser, symmetricBrush, colorPicker, bucket, specialBucket, line, ellipse, shading, rectangle, dithering, move, path };
+        enum ToolSelection { brush, eraser, symmetricBrush, colorPicker, bucket, specialBucket, line, ellipse, shading, rectangle, dithering, move, path, squareSelection };
         ToolSelection currentTool = ToolSelection.brush;
         Point gridDragStartPoint;
         System.Windows.Vector gridDragOffset;
@@ -39,6 +39,7 @@ namespace BakalarskaPrace
         List<Point> visitedPoints = new List<Point>();
         List<Point> previewMousePoints = new List<Point>();
         List<Point> drawPoints = new List<Point>();
+        List<Point> clipboardPoints = new List<Point>();
 
         bool onionSkinning;
         System.Windows.Controls.Button lastToolButton;
@@ -221,6 +222,11 @@ namespace BakalarskaPrace
                             tools.Shading(new List<Point>() { new Point(x, y) }, currentBitmap, shadingValue);
                             break;
                         }
+                    case ToolSelection.squareSelection:
+                        {
+                            clipboardPoints.Add(new Point(x, y));
+                            break;
+                        }
                     default: break;
                 }
             }
@@ -307,6 +313,11 @@ namespace BakalarskaPrace
 
                                 drawPoints.Add(new Point(x, y));
                                 tools.Shading(new List<Point>() { new Point(x, y) }, currentBitmap, shadingValue);
+                                break;
+                            }
+                        case ToolSelection.squareSelection:
+                            {
+                                clipboardPoints.Add(new Point(x, y));
                                 break;
                             }
                         default: break;
@@ -425,7 +436,16 @@ namespace BakalarskaPrace
 
                 using (previewBitmap.GetBitmapContext())
                 {
-                    GeneratePoints(previewMousePoints, currentColors[2], false, previewBitmap, strokeThickness);
+                    if (currentTool == ToolSelection.specialBucket || currentTool == ToolSelection.bucket ||
+                        currentTool == ToolSelection.dithering || currentTool == ToolSelection.shading ||
+                        currentTool == ToolSelection.colorPicker)
+                    {
+                        GeneratePoints(previewMousePoints, currentColors[2], false, previewBitmap, 1);
+                    }
+                    else 
+                    {
+                        GeneratePoints(previewMousePoints, currentColors[2], false, previewBitmap, strokeThickness);
+                    }
                 }
             }
         }
@@ -545,6 +565,11 @@ namespace BakalarskaPrace
                         redoStack.Clear();
                         break;
                     }
+                case ToolSelection.squareSelection:
+                    {
+                        clipboardPoints.Clear();
+                        break;
+                    }
                 default: break;
             }
 
@@ -556,7 +581,16 @@ namespace BakalarskaPrace
             previewBitmap.Clear();
             previewMousePoints.Clear();
             previewMousePoints.Add(mousePosition);
-            GeneratePoints(new List<Point>() { new Point(x, y) }, currentColors[2], false, previewBitmap, strokeThickness);
+            if (currentTool == ToolSelection.specialBucket || currentTool == ToolSelection.bucket ||
+                        currentTool == ToolSelection.dithering || currentTool == ToolSelection.shading ||
+                        currentTool == ToolSelection.colorPicker)
+            {
+                GeneratePoints(previewMousePoints, currentColors[2], false, previewBitmap, 1);
+            }
+            else
+            {
+                GeneratePoints(previewMousePoints, currentColors[2], false, previewBitmap, strokeThickness);
+            }
         }
 
         private void GeneratePoints(List<Point> points, Color color, bool alphaBlend, WriteableBitmap bitmap, int thickness)
@@ -1114,11 +1148,11 @@ namespace BakalarskaPrace
             // Pokud je e >= 0 dojde k přibližování
             if (e.Delta >= 0)
             {
-                if (currentScale < 70) scale = 1.1;
+                scale = 1.1;
             }
             else
             {
-                if (currentScale > 7) scale = 0.9;
+                scale = 0.9;
             }
 
             matrix.ScaleAtPrepend(scale, scale, mousePosition.X - paintSurface.Width / 2, mousePosition.Y - paintSurface.Height / 2);
@@ -1305,8 +1339,8 @@ namespace BakalarskaPrace
                     Source = bitmaps[i],
                     VerticalAlignment = VerticalAlignment.Center,
                     Stretch = Stretch.Uniform,
-                    Height = 140,
-                    Width = 140,
+                    Height = 120,
+                    Width = 120,
                 };
 
                 RenderOptions.SetBitmapScalingMode(newImage, BitmapScalingMode.NearestNeighbor);
@@ -1318,6 +1352,7 @@ namespace BakalarskaPrace
                 newButton.Width = 140;
                 newButton.Height = 140;
                 newButton.Name = "ImagePreview" + i.ToString();
+                //newButton.SetResourceReference(System.Windows.Controls.Control.StyleProperty, "AnimationButton");
                 newButton.AddHandler(System.Windows.Controls.Button.ClickEvent, new RoutedEventHandler(PreviewButton_Click));
                 ImagePreviews.Children.Add(newButton);
             }
@@ -1522,6 +1557,7 @@ namespace BakalarskaPrace
                         previewImage.Height = height;
                         if (onionSkinning == true) UpdateOnionSkinning();
                         UpdateImagePreviewButtons();
+                        Center();
                         currentBitmapIndex = 0;
                         LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
                         LabelPosition.Content = "[" + width + ":" + height + "] " + mousePosition.X + ":" + mousePosition.Y;

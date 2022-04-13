@@ -35,8 +35,8 @@ namespace BakalarskaPrace
 
         private void Resize_Click(object sender, RoutedEventArgs e)
         {
-            newWidth = int.Parse(widthTextBox.Text);
-            newHeight = int.Parse(heightTextBox.Text);
+            int.TryParse(widthTextBox.Text, out newWidth);
+            int.TryParse(heightTextBox.Text, out newHeight);
             maintainAspectRatio = maintainAspectRatioCheckBox.IsChecked.GetValueOrDefault();
             this.Close();
         }
@@ -63,7 +63,7 @@ namespace BakalarskaPrace
             {
                 if (heightTextBox != null)
                 {
-                    lastSizeValue = int.Parse(widthTextBox.Text);
+                    int.TryParse(widthTextBox.Text, out lastSizeValue);
                 }
             }
         }
@@ -78,7 +78,7 @@ namespace BakalarskaPrace
             {
                 if (widthTextBox != null)
                 {
-                    lastSizeValue = int.Parse(heightTextBox.Text);
+                    int.TryParse(heightTextBox.Text, out lastSizeValue);
                 }
             }
         }

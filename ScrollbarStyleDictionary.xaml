@@ -16,8 +16,7 @@
                             Margin="0,1,0,1" Background="{TemplateBinding Background}" />
                     </Grid>
                     <ControlTemplate.Triggers>
-                        <Trigger Property="Tag"
-                                Value="Horizontal">
+                        <Trigger Property="Tag" Value="Horizontal">
                             <Setter TargetName="CornerScrollBarRectangle" Property="Width" Value="Auto" />
                             <Setter TargetName="CornerScrollBarRectangle" Property="Height" Value="6" />
                         </Trigger>
@@ -31,7 +30,7 @@
             <Trigger Property="Orientation" Value="Vertical">
                 <Setter Property="Stylus.IsFlicksEnabled" Value="false" />
                 <Setter Property="Foreground" Value="#FFFFC107" />
-                <Setter Property="Background" Value="#2b2b2b" />
+                <Setter Property="Background" Value="#FF1D1D1D" />
                 <Setter Property="Width" Value="7" />
                 <Setter Property="Template">
                     <Setter.Value>

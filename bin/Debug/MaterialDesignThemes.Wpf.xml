@@ -1000,6 +1000,16 @@
             Get or sets the popup vertical offset in relation to the button.
             </summary>
         </member>
+        <member name="F:MaterialDesignThemes.Wpf.PopupBox.PopupUniformCornerRadiusProperty">
+            <summary>
+            Get or sets the corner radius of the popup card.
+            </summary>
+        </member>
+        <member name="P:MaterialDesignThemes.Wpf.PopupBox.PopupUniformCornerRadius">
+            <summary>
+            Get or sets the corner radius of the popup card.
+            </summary>
+        </member>
         <member name="P:MaterialDesignThemes.Wpf.PopupBox.PopupPlacementMethod">
             <summary>
             Framework use. Provides the method used to position the popup.
@@ -1778,6 +1788,36 @@
         <member name="M:MaterialDesignThemes.Wpf.ValidationAssist.GetSuppress(System.Windows.DependencyObject)">
             <summary>
             Framework use only.
+            </summary>
+        </member>
+        <member name="T:XamlGeneratedNamespace.GeneratedInternalTypeHelper">
+            <summary>
+            GeneratedInternalTypeHelper
+            </summary>
+        </member>
+        <member name="M:XamlGeneratedNamespace.GeneratedInternalTypeHelper.CreateInstance(System.Type,System.Globalization.CultureInfo)">
+            <summary>
+            CreateInstance
+            </summary>
+        </member>
+        <member name="M:XamlGeneratedNamespace.GeneratedInternalTypeHelper.GetPropertyValue(System.Reflection.PropertyInfo,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            GetPropertyValue
+            </summary>
+        </member>
+        <member name="M:XamlGeneratedNamespace.GeneratedInternalTypeHelper.SetPropertyValue(System.Reflection.PropertyInfo,System.Object,System.Object,System.Globalization.CultureInfo)">
+            <summary>
+            SetPropertyValue
+            </summary>
+        </member>
+        <member name="M:XamlGeneratedNamespace.GeneratedInternalTypeHelper.CreateDelegate(System.Type,System.Object,System.String)">
+            <summary>
+            CreateDelegate
+            </summary>
+        </member>
+        <member name="M:XamlGeneratedNamespace.GeneratedInternalTypeHelper.AddEventHandler(System.Reflection.EventInfo,System.Object,System.Delegate)">
+            <summary>
+            AddEventHandler
             </summary>
         </member>
     </members>

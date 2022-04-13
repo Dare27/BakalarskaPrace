@@ -1,0 +1,27 @@
+name: Pull Request Verification
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  solution: MaterialDesignToolkit.Full.sln
+  buildConfiguration: 'Release'
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build and Test
+      uses: ./.github/actions/build-and-test
+      timeout-minutes: 20
+      with:
+        solution: ${{ env.solution }}
+        buildConfiguration: ${{ env.buildConfiguration }}
+        nugetKey: ${{ secrets.PAT }}
