@@ -20,24 +20,57 @@ namespace BakalarskaPrace
             colorSpaceConvertor = new ColorSpaceConvertor();
         }
 
-        public void Dithering(List<Point> points, Color color01, Color color02, WriteableBitmap bitmap)
+        public void Dithering(List<Point> points, Color color01, Color color02, WriteableBitmap bitmap, int strokeThickness, bool alphaBlending, List<Point> visitedPoints, List<Point> undoPoints, List<Color> undoColors)
         {
+            if (visitedPoints == null) visitedPoints = new List<Point>();
             foreach (Point point in points) 
             {
+                int size = strokeThickness / 2;
+                int isOdd = 0;
                 int x = (int)point.X;
                 int y = (int)point.Y;
                 Color color;
+                Color colorMix;
+                Color backgroundColor;
 
-                if ((x + y) % 2 == 0)
-                {
-                    color = color01;
-                }
-                else
-                {
-                    color = color02;
-                }
+                if (strokeThickness % 2 != 0) isOdd = 1;
 
-                imageManipulation.AddPixel(x, y, color, bitmap);
+                for (int i = -size; i < size + isOdd; i++)
+                {
+                    for (int j = -size; j < size + isOdd; j++)
+                    {
+                        // zkontrolovat jestli se pixel vejde do bitmapy
+                        if (x + i < bitmap.PixelWidth && x + i > -1 && y + j < bitmap.PixelHeight && y + j > -1)
+                        {
+                            Point newPoint = new Point(x + i, y + j);
+                            if (!visitedPoints.Contains(newPoint))
+                            {
+                                visitedPoints.Add(newPoint);
+                                if ((x + i + y + j) % 2 == 0)
+                                {
+                                    color = color01;
+                                }
+                                else
+                                {
+                                    color = color02;
+                                }
+
+                                backgroundColor = imageManipulation.GetPixelColor(x + i, y + j, bitmap);
+                                if (alphaBlending == true)
+                                {
+                                    colorMix = imageManipulation.ColorMix(color, backgroundColor);
+                                    imageManipulation.AddPixel(x + i, y + j, colorMix, bitmap);
+                                }
+                                else
+                                {
+                                    imageManipulation.AddPixel(x + i, y + j, color, bitmap);
+                                }
+                                undoPoints.Add(newPoint);
+                                undoColors.Add(backgroundColor);
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -45,14 +78,14 @@ namespace BakalarskaPrace
         //Rekurzivní verze může způsobit StackOverflowException při větších velikostech, proto musí být použíta nerekurzivní verzi tohoto alg.
         public List<Point> FloodFill(WriteableBitmap bitmap, Point point, Color seedColor, Color newColor, bool alphaBlending)
         {
-            Stack<Point> pixels = new Stack<Point>();
+            Stack<Point> points = new Stack<Point>();
             List<Point> visitedPoints = new List<Point>();
-            pixels.Push(point);
+            points.Push(point);
 
-            while (pixels.Count > 0)
+            while (points.Count > 0)
             {
-                Point currentPoint = pixels.Pop();
-                if (currentPoint.X < bitmap.PixelWidth && currentPoint.X >= 0 && currentPoint.Y < bitmap.PixelHeight && currentPoint.Y >= 0 && !pixels.Contains(currentPoint))//make sure we stay within bounds
+                Point currentPoint = points.Pop();
+                if (currentPoint.X < bitmap.PixelWidth && currentPoint.X >= 0 && currentPoint.Y < bitmap.PixelHeight && currentPoint.Y >= 0 && !points.Contains(currentPoint))//make sure we stay within bounds
                 {
                     Color currentColor = imageManipulation.GetPixelColor((int)currentPoint.X, (int)currentPoint.Y, bitmap);
                     if (currentColor == seedColor)
@@ -60,28 +93,28 @@ namespace BakalarskaPrace
                         visitedPoints.Add(currentPoint);
                         if (!visitedPoints.Contains(new Point(currentPoint.X + 1, currentPoint.Y)))
                         {
-                            pixels.Push(new Point(currentPoint.X + 1, currentPoint.Y));
+                            points.Push(new Point(currentPoint.X + 1, currentPoint.Y));
                         }
 
                         if (!visitedPoints.Contains(new Point(currentPoint.X - 1, currentPoint.Y)))
                         {
-                            pixels.Push(new Point(currentPoint.X - 1, currentPoint.Y));
+                            points.Push(new Point(currentPoint.X - 1, currentPoint.Y));
                         }
 
                         if (!visitedPoints.Contains(new Point(currentPoint.X, currentPoint.Y + 1)))
                         {
-                            pixels.Push(new Point(currentPoint.X, currentPoint.Y + 1));
+                            points.Push(new Point(currentPoint.X, currentPoint.Y + 1));
                         }
 
                         if (!visitedPoints.Contains(new Point(currentPoint.X, currentPoint.Y - 1)))
                         {
-                            pixels.Push(new Point(currentPoint.X, currentPoint.Y - 1));
+                            points.Push(new Point(currentPoint.X, currentPoint.Y - 1));
                         }
                     }
                 }
             }
 
-            foreach (Point visitedPoint in visitedPoints) 
+            /*foreach (Point visitedPoint in visitedPoints) 
             {
                 if (alphaBlending == true)
                 {
@@ -92,30 +125,80 @@ namespace BakalarskaPrace
                 {
                     imageManipulation.AddPixel((int)visitedPoint.X, (int)visitedPoint.Y, newColor, bitmap);
                 }
-            }
+            }*/
 
             return visitedPoints;
         }
 
-        public void SpecialBucket(List<WriteableBitmap> bitmaps, Color newColor, Color seedColor, bool alphaBlending)
+        public List<Point> SpecialBucket(WriteableBitmap bitmap, Color newColor, Color seedColor, bool alphaBlending)
         {
-            foreach (WriteableBitmap bitmap in bitmaps) 
+            List<Point> points = new List<Point>();
+            for (int i = 0; i < bitmap.PixelWidth; i++)
             {
-                for (int i = 0; i < bitmap.PixelWidth; i++)
+                for (int j = 0; j < bitmap.PixelHeight; j++)
                 {
-                    for (int j = 0; j < bitmap.PixelHeight; j++)
+                    Color currentColor = imageManipulation.GetPixelColor(i, j, bitmap);
+                    if (currentColor == seedColor)
                     {
-                        Color currentColor = imageManipulation.GetPixelColor(i, j, bitmap);
-                        if (currentColor == seedColor)
+                        points.Add(new Point(i, j));
+                    }
+                }
+            }
+            return points;
+        }
+
+        public void Shading(List<Point> points, WriteableBitmap bitmap, bool darken, int strokeThickness, List<Point> visitedPoints, List<Point> undoPoints, List<Color> undoColors)
+        {
+            if (visitedPoints == null) visitedPoints = new List<Point>();
+            foreach (Point point in points)
+            {
+                int size = strokeThickness / 2;
+                int isOdd = 0;
+                int x = (int)point.X;
+                int y = (int)point.Y;
+                Color color;
+                Color currentPixelColor;
+                double h, l, s;
+                int r, g, b;
+
+                if (strokeThickness % 2 != 0) isOdd = 1;
+
+                for (int i = -size; i < size + isOdd; i++)
+                {
+                    for (int j = -size; j < size + isOdd; j++)
+                    {
+                        // zkontrolovat jestli se pixel vejde do bitmapy
+                        if (x + i < bitmap.PixelWidth && x + i > -1 && y + j < bitmap.PixelHeight && y + j > -1)
                         {
-                            if (alphaBlending == true)
+                            Point newPoint = new Point(x + i, y + j);
+                            if (!visitedPoints.Contains(newPoint))
                             {
-                                Color colorMix = imageManipulation.ColorMix(newColor, currentColor);
-                                imageManipulation.AddPixel(i, j, colorMix, bitmap);
-                            }
-                            else
-                            {
-                                imageManipulation.AddPixel(i, j, newColor, bitmap);
+                                visitedPoints.Add(newPoint);
+                                currentPixelColor = imageManipulation.GetPixelColor(x + i, y + j, bitmap);
+                                colorSpaceConvertor.RGBToHLS(currentPixelColor.R, currentPixelColor.G, currentPixelColor.B, out h, out l, out s);
+
+                                if (darken == true) //else lighten
+                                {
+                                    l -= shadingStep;
+                                    if (l < 0)
+                                    {
+                                        l = 0;
+                                    }
+                                }
+                                else
+                                {
+                                    l += shadingStep;
+                                    if (l > 1)
+                                    {
+                                        l = 1;
+                                    }
+                                }
+
+                                colorSpaceConvertor.HLSToRGB(h, l, s, out r, out g, out b);
+                                color = Color.FromArgb(currentPixelColor.A, (byte)r, (byte)g, (byte)b);
+                                imageManipulation.AddPixel(x + i, y + j, color, bitmap);
+                                undoPoints.Add(newPoint);
+                                undoColors.Add(currentPixelColor);
                             }
                         }
                     }
@@ -123,45 +206,8 @@ namespace BakalarskaPrace
             }
         }
 
-        public void Shading(List<Point> points, WriteableBitmap bitmap, bool darken)
-        {
-            foreach (Point point in points)
-            {
-                double h, l, s;
-                int r, g, b;
-                int x = (int)point.X;
-                int y = (int)point.Y;
-
-                Color color;
-                Color currentPixelColor = imageManipulation.GetPixelColor(x, y, bitmap);
-                colorSpaceConvertor.RGBToHLS(currentPixelColor.R, currentPixelColor.G, currentPixelColor.B, out h, out l, out s);
-
-                if (darken == true) //else lighten
-                {
-                    l -= shadingStep;
-                    if (l < 0)
-                    {
-                        l = 0;
-                    }
-                }
-                else
-                {
-                    l += shadingStep;
-                    if (l > 1)
-                    {
-                        l = 1;
-                    }
-                }
-
-                colorSpaceConvertor.HLSToRGB(h, l, s, out r, out g, out b);
-                color = Color.FromArgb(currentPixelColor.A, (byte)r, (byte)g, (byte)b);
-                imageManipulation.AddPixel(x, y, color, bitmap);
-            }
-        }
-
         public List<Point> SymmetricDrawing(int x, int y, WriteableBitmap bitmap)
         {
-
             List<Point> points = new List<Point>();
 
             if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)

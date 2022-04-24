@@ -16,9 +16,8 @@ namespace BakalarskaPrace
             imageManipulation = new ImageManipulation();
         }
 
-        public List<WriteableBitmap> Flip(List<WriteableBitmap> selectedBitmaps, List<WriteableBitmap> bitmaps, int currentBitmapIndex, bool horizontal)
+        public void Flip(List<WriteableBitmap> selectedBitmaps, List<WriteableBitmap> bitmaps, int currentBitmapIndex, bool horizontal)
         {
-            List<WriteableBitmap> newBitmaps = new List<WriteableBitmap>();
             int width = selectedBitmaps[0].PixelWidth;
             int height = selectedBitmaps[0].PixelHeight;
             int start, end;
@@ -37,35 +36,25 @@ namespace BakalarskaPrace
             for (int i = start; i < end; i++ ) 
             {
                 WriteableBitmap newBitmap = BitmapFactory.New(width, height);
-                if (horizontal == false)
+                for (int x = 0; x < width; x++)
                 {
-                    for (int x = 0; x < width; x++)
+                    for (int y = 0; y < height; y++)
                     {
-                        for (int y = 0; y < height; y++)
+                        Color color = imageManipulation.GetPixelColor(x, y, bitmaps[i]);
+                        if (horizontal == false)
                         {
                             int yp = bitmaps[i].PixelHeight - y - 1;
-                            Color color = imageManipulation.GetPixelColor(x, y, bitmaps[i]);
                             imageManipulation.AddPixel(x, yp, color, newBitmap);
                         }
-                    }
-                }
-                else
-                {
-                    for (int x = 0; x < width; x++)
-                    {
-                        for (int y = 0; y < height; y++)
+                        else 
                         {
                             int xp = bitmaps[i].PixelWidth - x - 1;
-                            Color color = imageManipulation.GetPixelColor(x, y, bitmaps[i]);
                             imageManipulation.AddPixel(xp, y, color, newBitmap);
                         }
                     }
                 }
-                newBitmaps.Add(newBitmap);
                 bitmaps[i] = newBitmap;
             }
-
-            return newBitmaps;
         }
 
         public void RotateAnimation(WriteableBitmap newBitmap, WriteableBitmap sourceBitmap)
@@ -95,152 +84,221 @@ namespace BakalarskaPrace
         }
 
         //Může vést ke ztrátě obsahu, pokud není šířka rovná výšce
-        public void RotateImage(WriteableBitmap newBitmap, WriteableBitmap sourceBitmap)
+        public void RotateImage(List<WriteableBitmap> selectedBitmaps, List<WriteableBitmap> bitmaps, int currentBitmapIndex, bool clockwise)
         {
+            int width = selectedBitmaps[0].PixelWidth;
+            int height = selectedBitmaps[0].PixelHeight;
             int widthShift = 0;
             int heightShift = 0;
-            CroppedBitmap croppedBitmap;
+            int start, end;
 
-            //Zvolení posunu zkrácené bitmapy 
-            if (sourceBitmap.PixelWidth < sourceBitmap.PixelHeight)
+            if (selectedBitmaps.Count > 1)
             {
-                croppedBitmap = new CroppedBitmap(sourceBitmap, new Int32Rect(0, sourceBitmap.PixelHeight / 2 - sourceBitmap.PixelWidth / 2, sourceBitmap.PixelWidth, sourceBitmap.PixelHeight / 2 + sourceBitmap.PixelWidth / 2));
-                heightShift = (sourceBitmap.PixelHeight / 2 - sourceBitmap.PixelWidth / 2);
-            }
-            else if (sourceBitmap.PixelHeight < sourceBitmap.PixelWidth)
-            {
-                croppedBitmap = new CroppedBitmap(sourceBitmap, new Int32Rect(sourceBitmap.PixelWidth / 2 - sourceBitmap.PixelHeight / 2, 0, sourceBitmap.PixelWidth / 2 + sourceBitmap.PixelHeight / 2, sourceBitmap.PixelHeight));
-                widthShift = (sourceBitmap.PixelWidth / 2 - sourceBitmap.PixelHeight / 2);
+                start = 0;
+                end = selectedBitmaps.Count;
             }
             else
             {
-                croppedBitmap = new CroppedBitmap(sourceBitmap, new Int32Rect(0, 0, sourceBitmap.PixelWidth, sourceBitmap.PixelHeight));
+                start = currentBitmapIndex;
+                end = currentBitmapIndex + 1;
             }
 
-            WriteableBitmap temporaryBitmap = new WriteableBitmap(croppedBitmap);
-            int size = Math.Min(temporaryBitmap.PixelWidth, temporaryBitmap.PixelHeight);
-            WriteableBitmap rotatedBitmap = new WriteableBitmap(size, size, 1, 1, PixelFormats.Bgra32, null);
-
-            //Rotace dočasné bitmapy
-            for (int x = 0; x < rotatedBitmap.PixelWidth; x++)
+            for (int i = start; i < end; i++)
             {
-                for (int y = 0; y < rotatedBitmap.PixelHeight; y++)
+                WriteableBitmap newBitmap = BitmapFactory.New(width, height);
+                CroppedBitmap croppedBitmap;
+
+                //Zvolení posunu zkrácené bitmapy 
+                if (width < height)
                 {
-                    //Směr rotace
-                    if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
+                    croppedBitmap = new CroppedBitmap(bitmaps[i], new Int32Rect(0, height / 2 - width / 2, width, height / 2 + width / 2));
+                    heightShift = (height / 2 - width / 2);
+                }
+                else if (height < width)
+                {
+                    croppedBitmap = new CroppedBitmap(bitmaps[i], new Int32Rect(width / 2 - height / 2, 0, width / 2 + height / 2, height));
+                    widthShift = (width / 2 - height / 2);
+                }
+                else
+                {
+                    croppedBitmap = new CroppedBitmap(bitmaps[i], new Int32Rect(0, 0, width, height));
+                }
+
+                WriteableBitmap temporaryBitmap = new WriteableBitmap(croppedBitmap);
+                int size = Math.Min(temporaryBitmap.PixelWidth, temporaryBitmap.PixelHeight);
+                WriteableBitmap rotatedBitmap = new WriteableBitmap(size, size, 1, 1, PixelFormats.Bgra32, null);
+
+                //Rotace dočasné bitmapy
+                for (int x = 0; x < rotatedBitmap.PixelWidth; x++)
+                {
+                    for (int y = 0; y < rotatedBitmap.PixelHeight; y++)
                     {
                         Color color = imageManipulation.GetPixelColor(x, y, temporaryBitmap);
-                        imageManipulation.AddPixel(rotatedBitmap.PixelHeight - y - 1, x, color, rotatedBitmap);
-                    }
-                    else
-                    {
-                        Color color = imageManipulation.GetPixelColor(x, y, temporaryBitmap);
-                        imageManipulation.AddPixel(y, rotatedBitmap.PixelWidth - x - 1, color, rotatedBitmap);
+                        //Směr rotace
+                        if (clockwise == true)
+                        {
+                            imageManipulation.AddPixel(rotatedBitmap.PixelHeight - y - 1, x, color, rotatedBitmap);
+                        }
+                        else
+                        {
+                            imageManipulation.AddPixel(y, rotatedBitmap.PixelWidth - x - 1, color, rotatedBitmap);
+                        }
                     }
                 }
+
+                //Zapsaní otočené bitmapy s případným posunem do nové bitmapy
+                for (int x = 0; x < rotatedBitmap.PixelWidth; x++)
+                {
+                    for (int y = 0; y < rotatedBitmap.PixelHeight; y++)
+                    {
+                        Color color = imageManipulation.GetPixelColor(x, y, rotatedBitmap);
+                        imageManipulation.AddPixel(x + widthShift, y + heightShift, color, newBitmap);
+                    }
+                }
+                bitmaps[i] = newBitmap;
+            }
+        }
+
+        public void CropToFit(List<WriteableBitmap> bitmaps)
+        {
+            int width = bitmaps[0].PixelWidth;
+            int height = bitmaps[0].PixelHeight;
+            int leftPixelX = width;
+            int rightPixelX = 0;
+            int topPixelY = height;
+            int downPixelY = 0;
+
+            foreach (WriteableBitmap bitmap in bitmaps)
+            {
+                int currentLeftPixelX = width;
+                int currentRightPixelX = 0;
+                int currentTopPixelY = height;
+                int currentDownPixelY = 0;
+
+                //Projít dolu a doprava 
+                for (int i = 0; i < width; i++)
+                {
+                    for (int j = 0; j < height; j++)
+                    {
+                        Color color = imageManipulation.GetPixelColor(i, j, bitmap);
+                        if (color.A != 0)
+                        {
+                            if (currentRightPixelX < i) currentRightPixelX = i;
+                            if (currentDownPixelY < j) currentDownPixelY = j;
+                        }
+                    }
+                }
+
+                //Projít nahoru a doleva
+                for (int i = width; i >= 0; i--)
+                {
+                    for (int j = height; j >= 0; j--)
+                    {
+                        Color color = imageManipulation.GetPixelColor(i, j, bitmap);
+                        if (color.A != 0)
+                        {
+                            if (currentLeftPixelX > i) currentLeftPixelX = i;
+                            if (currentTopPixelY > j) currentTopPixelY = j;
+                        }
+                    }
+                }
+
+                //Zvolit maxima
+                if (currentTopPixelY < topPixelY) topPixelY = currentTopPixelY;
+                if (currentLeftPixelX < leftPixelX) leftPixelX = currentLeftPixelX;
+                if (currentRightPixelX > rightPixelX) rightPixelX = currentRightPixelX;
+                if (currentDownPixelY > downPixelY) downPixelY = currentDownPixelY;
             }
 
-            //Zapsaní otočené bitmapy s případným posunem do nové bitmapy
-            for (int x = 0; x < rotatedBitmap.PixelWidth; x++)
+            int newWidth = rightPixelX - leftPixelX + 1;
+            int newHeight = downPixelY - topPixelY + 1;
+            if (newWidth > 0 && newHeight > 0)
             {
-                for (int y = 0; y < rotatedBitmap.PixelHeight; y++)
+                for (int k = 0; k < bitmaps.Count; k++)
                 {
-                    Color color = imageManipulation.GetPixelColor(x, y, rotatedBitmap);
-                    imageManipulation.AddPixel(x + widthShift, y + heightShift, color, newBitmap);
+                    WriteableBitmap newBitmap = BitmapFactory.New(newWidth, newHeight);
+                    //Získání pixelů z aktuální bitmapy
+                    using (newBitmap.GetBitmapContext())
+                    {
+                        for (int i = leftPixelX; i <= rightPixelX; i++)
+                        {
+                            for (int j = topPixelY; j <= downPixelY; j++)
+                            {
+                                Color color = imageManipulation.GetPixelColor(i, j, bitmaps[k]);
+                                if (color.A != 0)
+                                {
+                                    //Vytvoření pixelu, který je posunutý v nové bitmapě 
+                                    imageManipulation.AddPixel(i - leftPixelX, j - topPixelY, color, newBitmap);
+                                }
+                            }
+                        }
+                    }
+                    bitmaps[k] = newBitmap;
                 }
             }
         }
 
         public void CenterAlligment(List<WriteableBitmap> bitmaps)
         {
-            foreach (WriteableBitmap bitmap in bitmaps)
+            for(int k = 0; k < bitmaps.Count; k++)
             {
-                int leftPixelX = bitmap.PixelWidth;
+                int leftPixelX = bitmaps[0].PixelWidth;
                 int rightPixelX = 0;
-                int topPixelY = bitmap.PixelHeight;
+                int topPixelY = bitmaps[0].PixelHeight;
                 int downPixelY = 0;
 
-                int currentLeftPixelX = bitmap.PixelWidth;
+                int currentLeftPixelX = bitmaps[0].PixelWidth;
                 int currentRightPixelX = 0;
-                int currentTopPixelY = bitmap.PixelHeight;
+                int currentTopPixelY = bitmaps[0].PixelHeight;
                 int currentDownPixelY = 0;
 
                 //Projít dolu a doprava 
-                for (int i = 0; i < bitmap.PixelWidth; i++)
+                for (int i = 0; i < bitmaps[0].PixelWidth; i++)
                 {
-                    for (int j = 0; j < bitmap.PixelHeight; j++)
+                    for (int j = 0; j < bitmaps[0].PixelHeight; j++)
                     {
-                        Color color = imageManipulation.GetPixelColor(i, j, bitmap);
+                        Color color = imageManipulation.GetPixelColor(i, j, bitmaps[k]);
                         if (color.A != 0)
                         {
-                            if (currentRightPixelX < i)
-                            {
-                                currentRightPixelX = i;
-                            }
-
-                            if (currentDownPixelY < j)
-                            {
-                                currentDownPixelY = j;
-                            }
+                            if (currentRightPixelX < i) currentRightPixelX = i;
+                            if (currentDownPixelY < j) currentDownPixelY = j;
                         }
                     }
                 }
 
                 //Projít nahoru a doleva
-                for (int i = bitmap.PixelWidth; i >= 0; i--)
+                for (int i = bitmaps[0].PixelWidth; i >= 0; i--)
                 {
-                    for (int j = bitmap.PixelHeight; j >= 0; j--)
+                    for (int j = bitmaps[0].PixelHeight; j >= 0; j--)
                     {
-                        Color color = imageManipulation.GetPixelColor(i, j, bitmap);
+                        Color color = imageManipulation.GetPixelColor(i, j, bitmaps[k]);
                         if (color.A != 0)
                         {
-                            if (currentLeftPixelX > i)
-                            {
-                                currentLeftPixelX = i;
-                            }
-
-                            if (currentTopPixelY > j)
-                            {
-                                currentTopPixelY = j;
-                            }
+                            if (currentLeftPixelX > i) currentLeftPixelX = i;
+                            if (currentTopPixelY > j) currentTopPixelY = j;
                         }
                     }
                 }
 
                 //Zvolit maxima
-                if (currentTopPixelY < topPixelY)
-                {
-                    topPixelY = currentTopPixelY;
-                }
-
-                if (currentLeftPixelX < leftPixelX)
-                {
-                    leftPixelX = currentLeftPixelX;
-                }
-
-                if (currentRightPixelX > rightPixelX)
-                {
-                    rightPixelX = currentRightPixelX;
-                }
-
-                if (currentDownPixelY > downPixelY)
-                {
-                    downPixelY = currentDownPixelY;
-                }
+                if (currentTopPixelY < topPixelY) topPixelY = currentTopPixelY;
+                if (currentLeftPixelX < leftPixelX) leftPixelX = currentLeftPixelX;
+                if (currentRightPixelX > rightPixelX) rightPixelX = currentRightPixelX;
+                if (currentDownPixelY > downPixelY) downPixelY = currentDownPixelY;
 
                 int croppedWidth = rightPixelX - leftPixelX + 1;
                 int croppedHeight = downPixelY - topPixelY + 1;
 
-                int startPosX = (bitmap.PixelWidth / 2) - (croppedWidth / 2);
-                int startPosY = (bitmap.PixelHeight / 2) - (croppedHeight / 2);
+                int startPosX = (bitmaps[0].PixelWidth / 2) - (croppedWidth / 2);
+                int startPosY = (bitmaps[0].PixelHeight / 2) - (croppedHeight / 2);
 
                 if (croppedWidth > 0 && croppedHeight > 0)
                 {
                     Int32Rect rect = new Int32Rect(leftPixelX, topPixelY, croppedWidth, croppedHeight);
 
-                    CroppedBitmap croppedBitmap = new CroppedBitmap(bitmap, rect);
+                    CroppedBitmap croppedBitmap = new CroppedBitmap(bitmaps[k], rect);
                     WriteableBitmap newBitmap = new WriteableBitmap(croppedBitmap);
-                    bitmap.Clear();
+                    bitmaps[k].Clear();
 
                     //Zapsání pixelů z staré bitmapy do nové
                     for (int i = 0; i < croppedWidth; i++)
@@ -248,11 +306,110 @@ namespace BakalarskaPrace
                         for (int j = 0; j < croppedHeight; j++)
                         {
                             Color color = imageManipulation.GetPixelColor(i, j, newBitmap);
-                            imageManipulation.AddPixel(i + startPosX, j + startPosY, color, bitmap);
+                            imageManipulation.AddPixel(i + startPosX, j + startPosY, color, bitmaps[k]);
+                        }
+                    }
+
+                    bitmaps[k] = newBitmap;
+                }
+            }
+        }
+
+        public void Resize(List<WriteableBitmap> bitmaps, int newWidth, int newHeight, string position)
+        {
+            int width = bitmaps[0].PixelWidth;
+            int height = bitmaps[0].PixelHeight;
+
+            if (newWidth != 0 && newHeight != 0)
+            {
+                //Získání pixelů z aktuální bitmapy
+                int croppedWidth;
+                int croppedHeight;
+                //startPos je souřadnice zajišťující posun do zkrácené bitmapy při zmenšení 
+                int startPosX = 0;
+                int startPosY = 0;
+                //endPos je souřadnice zajišťující posun do finální bitmapy při zvětšení 
+                int endPosX = 0;
+                int endPosY = 0;
+
+                if (newWidth < width)
+                {
+                    croppedWidth = newWidth;
+                    if (position.Contains("ĺeft")) startPosX = 0;
+                    else if (position.Contains("middle")) startPosX = (width / 2) - (newWidth / 2);
+                    else if (position.Contains("right")) startPosX = width - newWidth;
+                }
+                else
+                {
+                    croppedWidth = width;
+                    if (position.Contains("ĺeft")) endPosX = 0;
+                    else if (position.Contains("middle")) endPosX = (newWidth - width) / 2;
+                    else if (position.Contains("right")) endPosX = newWidth - width;
+                }
+
+                if (newHeight < height)
+                {
+                    croppedHeight = newHeight;
+                    if (position.Contains("top")) startPosY = 0;
+                    else if (position.Contains("middle")) startPosY = (height / 2) - (newHeight / 2);
+                    else if (position.Contains("bottom")) startPosY = height - newHeight;
+                }
+                else
+                {
+                    croppedHeight = height;
+                    if (position.Contains("top")) endPosY = 0;
+                    else if (position.Contains("middle")) endPosY = (newHeight - height) / 2;
+                    else if (position.Contains("bottom")) endPosY = newHeight - height;
+                }
+
+                Int32Rect rect = new Int32Rect(startPosX, startPosY, croppedWidth, croppedHeight);
+
+                for (int k = 0; k < bitmaps.Count; k++)
+                {
+                    CroppedBitmap croppedBitmap = new CroppedBitmap(bitmaps[k], rect);
+                    WriteableBitmap newBitmap = new WriteableBitmap(croppedBitmap);
+                    WriteableBitmap finalBitmap = BitmapFactory.New(newWidth, newHeight);
+
+                    //Zapsání pixelů z staré bitmapy do nové
+                    using (newBitmap.GetBitmapContext())
+                    {
+                        for (int i = 0; i < croppedWidth; i++)
+                        {
+                            for (int j = 0; j < croppedHeight; j++)
+                            {
+                                Color color = imageManipulation.GetPixelColor(i, j, newBitmap);
+                                imageManipulation.AddPixel(i + endPosX, j + endPosY, color, finalBitmap);
+                            }
+                        }
+                    }
+
+                    bitmaps[k] = finalBitmap;
+                }
+            }
+        }
+
+        public WriteableBitmap CreateCompositeBitmap(List<WriteableBitmap> bitmaps)
+        {
+            int width = bitmaps[0].PixelWidth;
+            int height = bitmaps[0].PixelHeight;
+            int finalWidth = width;
+            int finalHeight = height * bitmaps.Count;
+            WriteableBitmap finalBitmap = BitmapFactory.New(finalWidth, finalHeight);
+            using (finalBitmap.GetBitmapContext())
+            {
+                for (int k = 0; k < bitmaps.Count; k++)
+                {
+                    for (int i = 0; i < width; i++)
+                    {
+                        for (int j = 0; j < height; j++)
+                        {
+                            Color color = imageManipulation.GetPixelColor(i, j, bitmaps[k]);
+                            imageManipulation.AddPixel(i, j + (k * height), color, finalBitmap);
                         }
                     }
                 }
             }
+            return finalBitmap;
         }
     }
 }

@@ -135,8 +135,8 @@ namespace BakalarskaPrace
             List<Point> points = new List<Point>(); ;
             if (fill)
             {
-                points.AddRange(DrawHorizontalLine(centerX - x, centerX + x, centerY + y));
-                points.AddRange(DrawHorizontalLine(centerX - x, centerX + x, centerY - y));
+                points.AddRange(DrawHorizontalLine(centerX - x, centerX + x + horizontalOdd, centerY + y + verticalOdd));
+                points.AddRange(DrawHorizontalLine(centerX - x, centerX + x + horizontalOdd, centerY - y));
             }
             else
             {
@@ -284,112 +284,103 @@ namespace BakalarskaPrace
         }
 
         //Bresenhaimův algoritmus pro kreslení přímek
-        public List<Point> DrawLine(int x, int y, int x2, int y2)
+        public List<Point> DrawLine(int x0, int y0, int x1, int y1, int imageWidth, int imageHeight, bool straight)
         {
             List<Point> points = new List<Point>();
-            int w = x2 - x;
-            int h = y2 - y;
-            int dx1 = 0, dy1 = 0, dx2 = 0, dy2 = 0;
 
-            //Nalezení kvadrantu
-            if (w < 0) dx1 = -1; else if (w > 0) dx1 = 1;
-            if (h < 0) dy1 = -1; else if (h > 0) dy1 = 1;
-            if (w < 0) dx2 = -1; else if (w > 0) dx2 = 1;
-            int longest = Math.Abs(w);
-            int shortest = Math.Abs(h);
-
-            if (!(longest > shortest))
+            if (straight == false)
             {
-                longest = Math.Abs(h);
-                shortest = Math.Abs(w);
-                if (h < 0) dy2 = -1; else if (h > 0) dy2 = 1;
-                dx2 = 0;
-            }
+                int w = x1 - x0;
+                int h = y1 - y0;
+                int dx1 = 0, dy1 = 0, dx2 = 0, dy2 = 0;
 
-            int numerator = longest >> 1;
-            for (int i = 0; i <= longest; i++)
-            {
-                points.Add(new Point(x, y));
-                numerator += shortest;
-                if (!(numerator < longest))
+                //Nalezení kvadrantu
+                if (w < 0) dx1 = -1; else if (w > 0) dx1 = 1;
+                if (h < 0) dy1 = -1; else if (h > 0) dy1 = 1;
+                if (w < 0) dx2 = -1; else if (w > 0) dx2 = 1;
+                int longest = Math.Abs(w);
+                int shortest = Math.Abs(h);
+
+                if (!(longest > shortest))
                 {
-                    numerator -= longest;
-                    x += dx1;
-                    y += dy1;
-                }
-                else
-                {
-                    x += dx2;
-                    y += dy2;
-                }
-            }
-            return points;
-        }
-
-        public List<Point> DrawStraightLine(int x0, int y0, int x1, int y1, int imageWidth, int imageHeight)
-        {
-            int dx = Math.Abs(x1 - x0) + 1;
-            int dy = Math.Abs(y1 - y0) + 1;
-
-            //Kroky musí mít rovnoměrné rozdělení
-            double ratio = Math.Max(dx, dy) / Math.Min(dx, dy);
-            double pixelStep = Math.Round(ratio);
-
-            if (pixelStep > Math.Min(dx, dy))
-            {
-                pixelStep = Math.Max(imageWidth, imageHeight);
-            }
-
-            int maxDistance = (int)Math.Sqrt((Math.Pow(x0 - x1, 2) + Math.Pow(y0 - y1, 2)));
-            int x = x0;
-            int y = y0;
-
-            List<Point> points = new List<Point>();
-
-            for (int i = 1; i <= maxDistance + 1; i++)
-            {
-                if (!points.Contains(new Point(x, y)))
-                {
-                    points.Add(new Point(x, y));
+                    longest = Math.Abs(h);
+                    shortest = Math.Abs(w);
+                    if (h < 0) dy2 = -1; else if (h > 0) dy2 = 1;
+                    dx2 = 0;
                 }
 
-                if (Math.Sqrt((Math.Pow(x0 - x, 2) + Math.Pow(y0 - y, 2))) >= maxDistance)
+                int numerator = longest >> 1;
+                for (int i = 0; i <= longest; i++)
                 {
-                    break;
-                }
-
-                bool isAtStep;
-
-                if (i % pixelStep == 0)
-                {
-                    isAtStep = true;
-                }
-                else
-                {
-                    isAtStep = false;
-                }
-
-                if (dx >= dy || isAtStep)
-                {
-                    if (x0 < x1)
+                    points.Add(new Point(x0, y0));
+                    numerator += shortest;
+                    if (!(numerator < longest))
                     {
-                        x += 1;
+                        numerator -= longest;
+                        x0 += dx1;
+                        y0 += dy1;
                     }
                     else
                     {
-                        x -= 1;
+                        x0 += dx2;
+                        y0 += dy2;
                     }
                 }
+            }
+            else 
+            {
+                int dx = Math.Abs(x0 - x1) + 1;
+                int dy = Math.Abs(y0 - y1) + 1;
 
-                if (dy >= dx || isAtStep)
+                //Kroky musí mít rovnoměrné rozdělení
+                double ratio = Math.Max(dx, dy) / Math.Min(dx, dy);
+                double pixelStep = Math.Round(ratio);
+
+                //Nejdelší délka kroku je rovna nejdelší straně obrázku
+                if (pixelStep > Math.Min(dx, dy)) pixelStep = Math.Max(imageWidth, imageHeight);
+
+                int maxDistance = (int)Math.Sqrt((Math.Pow(x1 - x0, 2) + Math.Pow(y1 - y0, 2)));
+                int x = x1;
+                int y = y1;
+
+                for (int i = 1; i <= maxDistance + 1; i++)
                 {
-                    if (y0 < y1)
+                    if (!points.Contains(new Point(x, y)))
                     {
-                        y += 1;
+                        points.Add(new Point(x, y));
                     }
-                    else
+
+                    if (Math.Sqrt((Math.Pow(x1 - x, 2) + Math.Pow(y1 - y, 2))) >= maxDistance)
                     {
-                        y -= 1;
+                        break;
+                    }
+
+                    bool isAtStep;
+                    if (i % pixelStep == 0) isAtStep = true;
+                    else isAtStep = false;
+
+                    if (dx >= dy || isAtStep)
+                    {
+                        if (x1 < x0)
+                        {
+                            x += 1;
+                        }
+                        else
+                        {
+                            x -= 1;
+                        }
+                    }
+
+                    if (dy >= dx || isAtStep)
+                    {
+                        if (y1 < y0)
+                        {
+                            y += 1;
+                        }
+                        else
+                        {
+                            y -= 1;
+                        }
                     }
                 }
             }

@@ -29,6 +29,12 @@
                     <MenuItem Header="_Next Frame" Click="Next_Click"/>
                     <MenuItem Header="_Onion Skinning" IsCheckable="True" Checked="OnionSkinning_Checked" Unchecked="OnionSkinning_Unchecked" IsChecked="False"/>
                 </MenuItem>
+                <MenuItem Header="_Filters"  VerticalAlignment="Center" Height="24" Foreground="Snow" Background="#FF1D1D1D" FontSize="12">
+                    <MenuItem Header="" />
+                    <MenuItem Header="" />
+                    <MenuItem Header="" />
+                    <MenuItem Header="" />
+                </MenuItem>
             </Menu>
             <Grid>
                 <Grid Margin="212,0,200,0" Background="#808080">
@@ -84,15 +90,15 @@
                             </StackPanel>
                         </Button>
                     </WrapPanel>
-                    
+
                 </Grid>
                 <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalAlignment="Left" CanContentScroll="True" RenderTransformOrigin="0.5,0.5" Width="212" Background="#2b2b2b">
                     <WrapPanel HorizontalAlignment="Left" Width="212" VerticalAlignment="Stretch">
                         <WrapPanel Width="200" >
                             <colorpicker:StandardColorPicker x:Name="colorSelector" Height="334" ColorChanged="ColorChanged" Style="{StaticResource DefaultColorPickerStyle}"/>
                         </WrapPanel>
-                        <WrapPanel HorizontalAlignment="Center" Width="200">
-                            <StackPanel Width="200">
+                        <WrapPanel x:Name="wrapPanel" HorizontalAlignment="Center" Width="200">
+                            <StackPanel Width="{Binding Width, ElementName=wrapPanel}">
                                 <WrapPanel Width="176" Margin="0,0,0,4">
                                     <Label Content="Alpha Blending" Width="93" Foreground="#d2d2d2"/>
                                     <CheckBox Width="17" Checked="AlphaBlending_Changed" Unchecked="AlphaBlending_Changed" IsChecked="True"/>
@@ -102,8 +108,7 @@
                                     <Slider ValueChanged="BrushSize_ValueChanged" Width="109" Minimum="1" Maximum="8" Value="1" IsSnapToTickEnabled="True" TickFrequency="1" VerticalAlignment="Center" Panel.ZIndex="20" Style="{DynamicResource MaterialDesignDiscreteSlider}"/>
                                 </WrapPanel>
                             </StackPanel>
-
-                            <StackPanel Width="200" HorizontalAlignment="Right">
+                            <StackPanel Width="{Binding Width, ElementName=wrapPanel}">
                                 <Expander Name="toolsExpander" Width="182" HorizontalAlignment="Center" Header="Tools" ExpandDirection="Down"  IsExpanded="True" Margin="0,2,0,2" Background="#FF1D1D1D" Foreground="#FFFFC107" FontWeight="SemiBold" FontStyle="Normal">
                                     <WrapPanel Margin="3" Name="toolButtons">
                                         <Button x:Name="brush" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="(P) Brush" IsEnabled="False">
@@ -129,7 +134,6 @@
                                         <Button Name="symmetricBrush" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="(V) Symmetric Brush">
                                             <StackPanel>
                                                 <Image Source="/Files/Images/Dark-theme/symmetrical.png" Height="30"/>
-
                                             </StackPanel>
                                         </Button>
                                         <Button Name="dithering" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="(D) Dithering">
@@ -167,24 +171,24 @@
                                                 <Image Source="/Files/Images/Dark-theme/rectangle.png" Height="30"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Style="{StaticResource ButtonStyle1}" ToolTip="Move">
+                                        <Button Name="move" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="Move">
                                             <StackPanel >
-                                                <Image Source="/Files/Images/Dark-theme/line.png" Height="30"/>
+                                                <Image Source="" Height="30"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Style="{StaticResource ButtonStyle1}" ToolTip="">
+                                        <Button Name="shapeSelection" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="Shape Selection">
                                             <StackPanel >
-                                                <Image Source="/Files/Images/Dark-theme/path.png" Height="30"/>
+                                                <Image Source="" Height="30"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Style="{StaticResource ButtonStyle1}" ToolTip="">
+                                        <Button Name="rectangleSelection" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="Rectangle Selection">
                                             <StackPanel >
-                                                <Image Source="/Files/Images/Dark-theme/ellipse.png" Height="30"/>
+                                                <Image Source="" Height="30"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Style="{StaticResource ButtonStyle1}" ToolTip="">
+                                        <Button Name="lassoSelection" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="Lasso Selection">
                                             <StackPanel >
-                                                <Image Source="/Files/Images/Dark-theme/rectangle.png" Height="30"/>
+                                                <Image Source="" Height="30"/>
                                             </StackPanel>
                                         </Button>
                                     </WrapPanel>
@@ -216,20 +220,6 @@
                                                 <Image Source="/Files/Images/Dark-theme/center-alignment.png" Height="30" SnapsToDevicePixels="False"/>
                                             </StackPanel>
                                         </Button>
-                                    </WrapPanel>
-                                </Expander>
-                                <Expander Name="filtersExpander" Width="182" HorizontalAlignment="Center" Header="Filters" ExpandDirection="Down" IsExpanded="True" Margin="0,2,0,2" Background="#FF1D1D1D" Foreground="#FFFFC107" FontWeight="SemiBold">
-                                    <WrapPanel Margin="3">
-                                        <WrapPanel>
-                                            <Button ToolTip="" Style="{StaticResource ButtonStyle1}">
-                                            </Button>
-                                            <Button Click="ColorPaletteRemove_Click" ToolTip="" Style="{StaticResource ButtonStyle1}">
-                                            </Button>
-                                            <Button Click="ImportColorPalette_Click" ToolTip="" Style="{StaticResource ButtonStyle1}">
-                                            </Button>
-                                            <Button Click="ExportColorPalette_Click" ToolTip="" Style="{StaticResource ButtonStyle1}">
-                                            </Button>
-                                        </WrapPanel>
                                     </WrapPanel>
                                 </Expander>
                                 <Expander Name="colorPaletteExpander" Width="182" HorizontalAlignment="Center" Header="Color Palette" ExpandDirection="Down" IsExpanded="True" Margin="0,2,0,2" Background="#FF1D1D1D" Foreground="#FFFFC107" FontWeight="SemiBold">
@@ -267,7 +257,7 @@
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalAlignment="Right" CanContentScroll="True" RenderTransformOrigin="0.5,0.5" Background="#2b2b2b">
                     <Grid HorizontalAlignment="Right" Width="200" >
                         <StackPanel Width="200" >
-                            <StackPanel Width="190" >
+                            <StackPanel Width="190" Margin="0,0,0,5" >
                                 <Canvas SnapsToDevicePixels="False"  Width="190" Height="190" HorizontalAlignment="Center" RenderTransformOrigin="0.5,0.5">
                                     <Image x:Name="animationPreview" Panel.ZIndex="10" MouseMove="Image_MouseMove" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" Width="190" Height="190"/>
                                     <Canvas.Background>
