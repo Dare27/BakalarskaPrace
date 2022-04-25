@@ -77,6 +77,7 @@
     <Compile Include="FileManagement.cs" />
     <Compile Include="Filters.cs" />
     <Compile Include="Geometry.cs" />
+    <Compile Include="History.cs" />
     <Compile Include="ImageManipulation.cs" />
     <Compile Include="Tools.cs" />
     <Compile Include="Transform.cs" />
