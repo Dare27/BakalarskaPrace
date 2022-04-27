@@ -146,19 +146,19 @@ namespace BakalarskaPrace
                     case ToolSelection.brush:
                         {
                             drawPoints = new List<Point>() { new Point(x, y) };
-                            GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, alphaBlending, bitmaps, currentBitmapIndex, strokeThickness);
+                            GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, alphaBlending, strokeThickness);
                             break;
                         }
                     case ToolSelection.symmetricBrush:
                         {
                             drawPoints = tools.SymmetricDrawing(x, y, currentBitmap);
-                            GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, alphaBlending, bitmaps, currentBitmapIndex, strokeThickness);
+                            GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, alphaBlending, strokeThickness);
                             break;
                         }
                     case ToolSelection.eraser:
                         {
                             drawPoints = new List<Point>() { new Point(x, y) };
-                            GeneratePoints(drawPoints, new List<Color>() { currentColors[3] }, false, bitmaps, currentBitmapIndex, strokeThickness);
+                            GeneratePoints(drawPoints, new List<Color>() { currentColors[3] }, currentBitmapIndex, false, strokeThickness);
                             break;
                         }
                     case ToolSelection.colorPicker:
@@ -172,7 +172,7 @@ namespace BakalarskaPrace
                             undoColors.Add(seedColor);
                             drawPoints = tools.FloodFill(currentBitmap, new Point(x, y), seedColor, currentColors[colorIndex], alphaBlending);
                             undoPoints = drawPoints;
-                            GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, alphaBlending, bitmaps, currentBitmapIndex, 1);
+                            GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, alphaBlending, 1);
                             break;
                         }
                     case ToolSelection.specialBucket:
@@ -181,7 +181,7 @@ namespace BakalarskaPrace
                             undoColors.Add(seedColor);
                             drawPoints = tools.SpecialBucket(currentBitmap, currentColors[colorIndex], seedColor, alphaBlending);
                             undoPoints = drawPoints;
-                            GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, false, bitmaps, currentBitmapIndex, 1);
+                            GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, false, 1);
                             break;
                         }
                     case ToolSelection.line:
@@ -255,19 +255,19 @@ namespace BakalarskaPrace
                         case ToolSelection.brush:
                             {
                                 drawPoints.Add(new Point(x, y));
-                                GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, alphaBlending, bitmaps, currentBitmapIndex, strokeThickness);
+                                GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, alphaBlending, strokeThickness);
                                 break;
                             }
                         case ToolSelection.symmetricBrush:
                             {
                                 drawPoints.AddRange(tools.SymmetricDrawing(x, y, currentBitmap));
-                                GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, alphaBlending, bitmaps, currentBitmapIndex, strokeThickness);
+                                GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, alphaBlending, strokeThickness);
                                 break;
                             }
                         case ToolSelection.eraser:
                             {
                                 drawPoints.Add(new Point(x, y));
-                                GeneratePoints(drawPoints, new List<Color>() { currentColors[3] }, false, bitmaps, currentBitmapIndex, strokeThickness);
+                                GeneratePoints(drawPoints, new List<Color>() { currentColors[3] }, currentBitmapIndex, false, strokeThickness);
                                 break;
                             }
                         case ToolSelection.colorPicker:
@@ -282,7 +282,7 @@ namespace BakalarskaPrace
                                 drawPoints = new List<Point>();
                                 drawPoints = tools.FloodFill(currentBitmap, new Point(x, y), seedColor, currentColors[colorIndex], alphaBlending);
                                 undoPoints = drawPoints;
-                                GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, alphaBlending, bitmaps, currentBitmapIndex, 1);
+                                GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, alphaBlending, 1);
                                 break;
                             }
                         case ToolSelection.specialBucket:
@@ -291,7 +291,7 @@ namespace BakalarskaPrace
                                 drawPoints = new List<Point>();
                                 drawPoints = tools.SpecialBucket(currentBitmap, currentColors[colorIndex], seedColor, alphaBlending);
                                 undoPoints = drawPoints;
-                                GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, false, bitmaps, currentBitmapIndex, 1);
+                                GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, false, 1);
                                 break;
                             }
                         case ToolSelection.dithering:
@@ -393,7 +393,10 @@ namespace BakalarskaPrace
                 using (previewBitmap.GetBitmapContext())
                 {
                     int previewStrokeThickness = (currentTool == ToolSelection.specialBucket || currentTool == ToolSelection.bucket || currentTool == ToolSelection.colorPicker) ? 1 : strokeThickness;
-                    GeneratePoints(previewMousePoints, new List<Color> { currentColors[2] }, false, new List<WriteableBitmap>() { previewBitmap }, 0, previewStrokeThickness);
+                    foreach (Point point in previewMousePoints)
+                    {
+                        StrokeThicknessSetter((int)point.X, (int)point.Y, currentColors[2], false, previewBitmap, previewStrokeThickness);
+                    }
                 }
             }
         }
@@ -416,22 +419,22 @@ namespace BakalarskaPrace
             {
                 case ToolSelection.line:
                     {
-                        GeneratePoints(previewMousePoints, new List<Color>() { color }, alphaBlending, bitmaps, index, thickness);
+                        GeneratePoints(previewMousePoints, new List<Color>() { color }, index, alphaBlending, thickness);
                         break;
                     }
                 case ToolSelection.path:
                     {
-                        GeneratePoints(previewMousePoints, new List<Color>() { color }, alphaBlending, bitmaps, index, thickness);
+                        GeneratePoints(previewMousePoints, new List<Color>() { color }, index, alphaBlending, thickness);
                         break;
                     }
                 case ToolSelection.ellipse:
                     {
-                        GeneratePoints(previewMousePoints, new List<Color>() { color }, alphaBlending, bitmaps, index, thickness);
+                        GeneratePoints(previewMousePoints, new List<Color>() { color }, index, alphaBlending, thickness);
                         break;
                     }
                 case ToolSelection.rectangle:
                     {
-                        GeneratePoints(previewMousePoints, new List<Color>() { color }, alphaBlending, bitmaps, index, thickness);
+                        GeneratePoints(previewMousePoints, new List<Color>() { color }, index, alphaBlending, thickness);
                         break;
                     }
                 case ToolSelection.rectangleSelection:
@@ -447,7 +450,7 @@ namespace BakalarskaPrace
                 List<Point> points = new List<Point>(undoPoints);
                 List<Color> colors = new List<Color>(undoColors);
                 List<WriteableBitmap> currentBitmaps = new List<WriteableBitmap>(bitmaps);
-                Action action = () => GeneratePoints(points, colors, false, currentBitmaps, index, 1, true);
+                Action action = () => GeneratePoints(points, colors, index, false, 1, true);
                 AddActionToUndo(action, false, true);
 
                 drawPoints = new List<Point>();
@@ -464,19 +467,18 @@ namespace BakalarskaPrace
                 using (previewBitmap.GetBitmapContext())
                 {
                     int previewStrokeThickness = (currentTool == ToolSelection.specialBucket || currentTool == ToolSelection.bucket || currentTool == ToolSelection.colorPicker) ? 1 : strokeThickness;
-                    GeneratePoints(previewMousePoints, new List<Color> { currentColors[2] }, false, new List<WriteableBitmap>() { previewBitmap }, 0, previewStrokeThickness);
+                    foreach (Point point in previewMousePoints) 
+                    {
+                        StrokeThicknessSetter((int)point.X, (int)point.Y, currentColors[2], false, previewBitmap, previewStrokeThickness);
+                    }
                 }
             }
         }
 
-        private void GeneratePoints(List<Point> points, List<Color> colors, bool alphaBlend, List<WriteableBitmap> bitmaps, int bitmapIndex, int thickness, bool generateInverseAction = false, bool generateAction = false)
+        private void GeneratePoints(List<Point> points, List<Color> colors, int bitmapIndex, bool alphaBlend, int thickness, bool generateInverseAction = false, bool generateAction = false)
         {
-            if (this.bitmaps == bitmaps)
-            {
-                currentBitmapIndex = bitmapIndex;
-                currentBitmap = bitmaps[bitmapIndex];
-                image.Source = currentBitmap;
-            }
+            //Pokud se nezobrazuje aktuální obrázek při undo/redo tak ho zobrazit
+            UpdateCurrentBitmap(bitmapIndex);
 
             if (generateInverseAction == true)
             {
@@ -488,7 +490,7 @@ namespace BakalarskaPrace
                     Color redoColor = imageManipulation.GetPixelColor((int)point.X, (int)point.Y, bitmaps[bitmapIndex]);
                     redoColors.Add(redoColor);
                 }
-                Action action = () => GeneratePoints(redoPoints, redoColors, false, bitmaps, bitmapIndex, 1, false, true);
+                Action action = () => GeneratePoints(redoPoints, redoColors, bitmapIndex, false, 1, false, true);
                 AddActionToRedo(action);
             }
             else if (generateAction == true) 
@@ -501,7 +503,7 @@ namespace BakalarskaPrace
                     Color undoColor = imageManipulation.GetPixelColor((int)point.X, (int)point.Y, bitmaps[bitmapIndex]);
                     undoColors.Add(undoColor);
                 }
-                Action action = () => GeneratePoints(undoPoints, undoColors, false, bitmaps, bitmapIndex, 1, true, false);
+                Action action = () => GeneratePoints(undoPoints, undoColors, bitmapIndex, false, 1, true, false);
                 AddActionToUndo(action, false, false);
             }
             
@@ -615,77 +617,92 @@ namespace BakalarskaPrace
         //Transform buttons
         private void Flip_Click(object sender, RoutedEventArgs e)
         {
-            List<WriteableBitmap> selectedBitmaps = new List<WriteableBitmap>();
-            List<WriteableBitmap> currentBitmaps = new List<WriteableBitmap>(bitmaps);
+            List<int> selectedBitmapIndexes;
             bool horizontal = ((Keyboard.Modifiers & ModifierKeys.Control) != 0) ? false : true;
             int index = currentBitmapIndex;
 
-            if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0) selectedBitmaps = bitmaps;
-            else selectedBitmaps.Add(currentBitmap);
+            if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0) 
+            {
+                selectedBitmapIndexes = new List<int>();
+                for (int i = 0; i < bitmaps.Count; i++) 
+                {
+                    selectedBitmapIndexes.Add(i);
+                }
+            }
+            else selectedBitmapIndexes = new List<int>() { currentBitmapIndex };
 
-            Flip(selectedBitmaps, bitmaps, currentBitmapIndex, horizontal);
-            Action action = () => Flip(selectedBitmaps, bitmaps, index, horizontal, true);
+            Flip(selectedBitmapIndexes, bitmaps, horizontal);
+            Action action = () => Flip(selectedBitmapIndexes, bitmaps, horizontal, true);
             AddActionToUndo(action, false, true);
 
-            UpdateCurrentBitmap();
+            UpdateCurrentBitmap(currentBitmapIndex);
             UpdateImagePreviewButtons();
         }
 
-        private void Flip(List<WriteableBitmap> selectedBitmaps, List<WriteableBitmap> bitmaps, int currentBitmapIndexbool, bool horizontal, bool generateInverseAction = false, bool generateAction = false) 
+        private void Flip(List<int> selectedBitmapIndexes, List<WriteableBitmap> bitmaps, bool horizontal, bool generateInverseAction = false, bool generateAction = false) 
         {
             if (generateInverseAction == true)
             {
-                Action inverseAction = () => Flip(selectedBitmaps, bitmaps, currentBitmapIndex, horizontal, false, true);
+                Action inverseAction = () => Flip(selectedBitmapIndexes, bitmaps, horizontal, false, true);
                 AddActionToRedo(inverseAction);
             }
             else if (generateAction == true)
             {
-                Action action = () => Flip(selectedBitmaps, bitmaps, currentBitmapIndex, horizontal, true, false);
+                Action action = () => Flip(selectedBitmapIndexes, bitmaps, horizontal, true, false);
                 AddActionToUndo(action, false, false);
             }
-
-            transform.Flip(selectedBitmaps, bitmaps, currentBitmapIndex, horizontal);
+            
+            transform.Flip(selectedBitmapIndexes, bitmaps, horizontal);
         }
 
         private void Rotate_Click(object sender, RoutedEventArgs e)
         {
-            List<WriteableBitmap> selectedBitmaps = new List<WriteableBitmap>();
-            List<WriteableBitmap> currentBitmaps = new List<WriteableBitmap>(bitmaps);
+            List<int> selectedBitmapIndexes;
             bool clockwise = ((Keyboard.Modifiers & ModifierKeys.Control) != 0) ? true : false;
             int index = currentBitmapIndex;
 
-            if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0) selectedBitmaps = bitmaps;
-            else selectedBitmaps.Add(currentBitmap);
+            if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+            {
+                selectedBitmapIndexes = new List<int>();
+                for (int i = 0; i < bitmaps.Count; i++)
+                {
+                    selectedBitmapIndexes.Add(i);
+                }
+            }
+            else selectedBitmapIndexes = new List<int>() { currentBitmapIndex };
 
-            Rotate(selectedBitmaps, bitmaps, currentBitmapIndex, clockwise);
-            Action action = () => Rotate(selectedBitmaps, bitmaps, index, !clockwise, true);
+            Rotate(selectedBitmapIndexes, bitmaps, clockwise);
+            Action action = () => Rotate(selectedBitmapIndexes, bitmaps, !clockwise, true);
             AddActionToUndo(action, false, true);
 
-            UpdateCurrentBitmap();
+            UpdateCurrentBitmap(currentBitmapIndex);
             UpdateImagePreviewButtons();
         }
 
-        private void Rotate(List<WriteableBitmap> selectedBitmaps, List<WriteableBitmap> bitmaps, int currentBitmapIndexbool, bool clockwise, bool generateInverseAction = false, bool generateAction = false) 
+        private void Rotate(List<int> selectedBitmapIndexes, List<WriteableBitmap> bitmaps, bool clockwise, bool generateInverseAction = false, bool generateAction = false) 
         {
             if (generateInverseAction == true)
             {
-                Action inverseAction = () => Rotate(selectedBitmaps, bitmaps, currentBitmapIndex, !clockwise, false, true);
+                Action inverseAction = () => Rotate(selectedBitmapIndexes, bitmaps, !clockwise, false, true);
                 AddActionToRedo(inverseAction);
             }
             else if (generateAction == true)
             {
-                Action action = () => Rotate(selectedBitmaps, bitmaps, currentBitmapIndex, !clockwise, true, false);
+                Action action = () => Rotate(selectedBitmapIndexes, bitmaps, !clockwise, true, false);
                 AddActionToUndo(action, false, false);
             }
 
-            transform.RotateImage(selectedBitmaps, bitmaps, currentBitmapIndex, clockwise);
+            transform.RotateImage(selectedBitmapIndexes, bitmaps, clockwise);
         }
 
         private void CropToFit_Click(object sender, RoutedEventArgs e)
         {
-            Action action = () => transform.CropToFit(bitmaps);
-            AddActionToUndo(action, true, false);
-            UpdateCurrentBitmap();
+            List<WriteableBitmap> oldBitmaps = new List<WriteableBitmap>(bitmaps);
+            transform.CropToFit(bitmaps);
+
+            Action action = () => ReplaceBitmaps(oldBitmaps, bitmaps);
+            AddActionToUndo(action, false, true);
+            UpdateCurrentBitmap(currentBitmapIndex);
             UpdateImagePreviewButtons();
             Center();
         }
@@ -697,9 +714,8 @@ namespace BakalarskaPrace
 
             if (subwindow.newWidth != 0 && subwindow.newHeight != 0)
             {
-                Action action = () => transform.Resize(bitmaps, subwindow.newWidth, subwindow.newHeight, subwindow.position);
-                AddActionToUndo(action, true, false);
-                UpdateCurrentBitmap();
+                transform.Resize(bitmaps, subwindow.newWidth, subwindow.newHeight, subwindow.position);
+                UpdateCurrentBitmap(currentBitmapIndex);
                 UpdateImagePreviewButtons();
                 Center();
             }
@@ -713,9 +729,15 @@ namespace BakalarskaPrace
 
             transform.CenterAlligment(selectedBitmaps);
 
-            Action action = () => transform.CenterAlligment(selectedBitmaps);
-            AddActionToUndo(action, false, false);
-            UpdateCurrentBitmap();
+            UpdateCurrentBitmap(currentBitmapIndex);
+            UpdateImagePreviewButtons();
+        }
+
+        private void ReplaceBitmaps(List<WriteableBitmap> oldBitmaps, List<WriteableBitmap> newBitmaps) 
+        {
+            bitmaps = oldBitmaps;
+            currentBitmap = oldBitmaps[currentBitmapIndex];
+            UpdateCurrentBitmap(currentBitmapIndex);
             UpdateImagePreviewButtons();
         }
 
@@ -891,17 +913,19 @@ namespace BakalarskaPrace
         //Animation controls
         private void CreateImage_Click(object sender, RoutedEventArgs e)
         {
+            int bitmapIndex = currentBitmapIndex + 1;
             WriteableBitmap newBitmap = BitmapFactory.New(width, height);
-            CreateNewFrame(newBitmap);
-            //Action action = () => CreateNewFrame(newBitmap);
-            //AddActionToUndo(action, false, true);
+            CreateNewFrame(newBitmap, currentBitmapIndex + 1);
+            Action action = () => DeleteImage(bitmapIndex, true, false, newBitmap);
+            AddActionToUndo(action, false, true);
         }
 
         private void DuplicateImage_Click(object sender, RoutedEventArgs e)
         {
+            int bitmapIndex = currentBitmapIndex + 1;
             WriteableBitmap newBitmap = bitmaps[currentBitmapIndex].Clone();
-            CreateNewFrame(newBitmap);
-            Action action = () => CreateNewFrame(newBitmap);
+            CreateNewFrame(newBitmap, currentBitmapIndex + 1);
+            Action action = () => DeleteImage(bitmapIndex, true, false, newBitmap);
             AddActionToUndo(action, false, true);
         }
 
@@ -909,9 +933,10 @@ namespace BakalarskaPrace
         {
             if (currentBitmapIndex < bitmaps.Count - 1)
             {
+                int bitmapIndex = currentBitmapIndex + 1;
                 WriteableBitmap newBitmap = filters.MergeImages(currentBitmap, bitmaps[currentBitmapIndex + 1], width, height);
-                CreateNewFrame(newBitmap);
-                Action action = () => CreateNewFrame(newBitmap);
+                CreateNewFrame(newBitmap, currentBitmapIndex + 1);
+                Action action = () => DeleteImage(bitmapIndex, true, false, newBitmap);
                 AddActionToUndo(action, false, true);
             }
         }
@@ -920,44 +945,81 @@ namespace BakalarskaPrace
         {
             if (currentBitmapIndex < bitmaps.Count - 1)
             {
+                int bitmapIndex = currentBitmapIndex + 1;
                 WriteableBitmap newBitmap = filters.IntersectImages(currentBitmap, bitmaps[currentBitmapIndex + 1], width, height);
-                CreateNewFrame(newBitmap);
-                Action action = () => CreateNewFrame(newBitmap);
+                CreateNewFrame(newBitmap, bitmapIndex);
+                Action action = () => DeleteImage(bitmapIndex, true, false, newBitmap);
                 AddActionToUndo(action, false, true);
             }
         }
 
-        private void CreateNewFrame(WriteableBitmap newWriteableBitmap)
+        private void CreateNewFrame(WriteableBitmap newWriteableBitmap, int bitmapIndex, bool generateInverseAction = false, bool generateAction = false)
         {
-            if (!bitmaps.Contains(newWriteableBitmap))
+            if (generateInverseAction == true)
             {
-                bitmaps.Insert(currentBitmapIndex + 1, newWriteableBitmap);
-                currentBitmapIndex += 1;
-                currentBitmap = bitmaps[currentBitmapIndex];
-                image.Source = currentBitmap;
-                LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
-                currentAnimationIndex = currentBitmapIndex;
-                animationPreview.Source = bitmaps[currentAnimationIndex];
-                UpdateImagePreviewButtons();
-                if (onionSkinning == true) UpdateOnionSkinning();
+                Action inverseAction = () => DeleteImage(bitmapIndex, false, true, newWriteableBitmap);
+                AddActionToRedo(inverseAction);
             }
+            else if (generateAction == true)
+            {
+                Action action = () => DeleteImage(bitmapIndex, true, false, newWriteableBitmap);
+                AddActionToUndo(action, false, false);
+            }
+
+            if (bitmaps.Count > 0) 
+            {
+                intersectButton.IsEnabled = true;
+                mergeButton.IsEnabled = true;
+            }
+
+            bitmaps.Insert(bitmapIndex, newWriteableBitmap);
+            currentBitmapIndex = bitmapIndex;
+            currentBitmap = bitmaps[currentBitmapIndex];
+            image.Source = currentBitmap;
+            LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
+            currentAnimationIndex = currentBitmapIndex;
+            animationPreview.Source = bitmaps[currentAnimationIndex];
+            UpdateImagePreviewButtons();
+            if (onionSkinning == true) UpdateOnionSkinning();
         }
 
         private void DeleteImage_Click(object sender, RoutedEventArgs e)
         {
-            DeleteImage(currentBitmapIndex);
+            WriteableBitmap currentBitmap = new WriteableBitmap(bitmaps[currentBitmapIndex]);
+            int bitmapIndex = currentBitmapIndex;
+            DeleteImage(bitmapIndex);
+            
+            Action action = () => CreateNewFrame(currentBitmap, bitmapIndex, true, false);
+            AddActionToUndo(action, false, true);
         }
 
-        private void DeleteImage(int imageIndex)
+        private void DeleteImage(int bitmapIndex, bool generateInverseAction = false, bool generateAction = false, WriteableBitmap bitmap = null)
         {
-            bitmaps.RemoveAt(imageIndex);
+            if (generateInverseAction == true)
+            {
+                Action inverseAction = () => CreateNewFrame(bitmap, bitmapIndex, false, true);
+                AddActionToRedo(inverseAction);
+            }
+            else if (generateAction == true) 
+            {
+                Action action = () => CreateNewFrame(bitmap, bitmapIndex, true, false);
+                AddActionToUndo(action, false, false);
+            }
+
+            bitmaps.RemoveAt(bitmapIndex);
             if (bitmaps.Count == 0)
             {
                 WriteableBitmap newWriteableBitmap = BitmapFactory.New(width, height);
                 bitmaps.Add(newWriteableBitmap);
             }
+            else if (bitmaps.Count > 1)
+            {
+                intersectButton.IsEnabled = true;
+                mergeButton.IsEnabled = true;
+            }
+
             //pokud je poslední index vrátit se na předchozí obrázek
-            int lastIndex = imageIndex != bitmaps.Count ? 0 : 1;
+            int lastIndex = bitmapIndex != bitmaps.Count ? 0 : 1;
             currentBitmapIndex -= lastIndex;
             currentBitmap = bitmaps[currentBitmapIndex];
             image.Source = currentBitmap;
@@ -1034,10 +1096,7 @@ namespace BakalarskaPrace
 
                 RenderOptions.SetBitmapScalingMode(newImage, BitmapScalingMode.NearestNeighbor);
                 newButton.Content = newImage;
-
-                if (currentBitmapIndex == i) newButton.IsEnabled = false;
-                else newButton.IsEnabled = true;
-
+                newButton.IsEnabled = (currentBitmapIndex == i) ? false : true;
                 newButton.Width = 140;
                 newButton.Height = 140;
                 newButton.Name = "ImagePreview" + i.ToString();
@@ -1052,7 +1111,7 @@ namespace BakalarskaPrace
             string buttonName = ((System.Windows.Controls.Button)sender).Name;
             int index = int.Parse(buttonName.Replace("ImagePreview", ""));
             currentBitmapIndex = index;
-            UpdateCurrentBitmap();
+            UpdateCurrentBitmap(currentBitmapIndex);
         }
 
         private void Previous_Click(object sender, RoutedEventArgs e)
@@ -1065,7 +1124,7 @@ namespace BakalarskaPrace
             if (currentBitmapIndex - 1 > -1)
             {
                 currentBitmapIndex -= 1;
-                UpdateCurrentBitmap();
+                UpdateCurrentBitmap(currentBitmapIndex);
             }
         }
 
@@ -1079,11 +1138,11 @@ namespace BakalarskaPrace
             if (currentBitmapIndex + 1 < bitmaps.Count)
             {
                 currentBitmapIndex += 1;
-                UpdateCurrentBitmap();
+                UpdateCurrentBitmap(currentBitmapIndex);
             }
         }
 
-        private void UpdateCurrentBitmap()
+        private void UpdateCurrentBitmap(int bitmapIndex)
         {
             width = bitmaps[0].PixelWidth;
             height = bitmaps[0].PixelHeight;
@@ -1096,7 +1155,7 @@ namespace BakalarskaPrace
             previewImage.Width = width;
             previewImage.Height = height;
             if (width != bitmaps[0].PixelWidth && height != bitmaps[0].PixelHeight) Center();
-
+            currentBitmapIndex = bitmapIndex;
             currentBitmap = bitmaps[currentBitmapIndex];
             image.Source = currentBitmap;
             LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
@@ -1246,7 +1305,7 @@ namespace BakalarskaPrace
 
                         currentBitmapIndex = 0;
                         UpdateImagePreviewButtons();
-                        UpdateCurrentBitmap();
+                        UpdateCurrentBitmap(currentBitmapIndex);
                         LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
                         LabelPosition.Content = "[" + width + ":" + height + "] " + mousePosition.X + ":" + mousePosition.Y;
                     }
@@ -1290,7 +1349,7 @@ namespace BakalarskaPrace
                 if (visitedPoints.Count != 0) visitedPoints.Clear();
                 undoStack.Pop().Invoke();
                 UpdateImagePreviewButtons();
-                UpdateCurrentBitmap();
+                UpdateCurrentBitmap(currentBitmapIndex);
             }
         }
 
@@ -1306,7 +1365,7 @@ namespace BakalarskaPrace
                 if (visitedPoints.Count != 0) visitedPoints.Clear();
                 redoStack.Pop().Invoke();
                 UpdateImagePreviewButtons();
-                UpdateCurrentBitmap();
+                UpdateCurrentBitmap(currentBitmapIndex);
             }
         }
 
@@ -1320,7 +1379,7 @@ namespace BakalarskaPrace
             if (e.Key == Key.Down) NextImage();
             if (e.Key == Key.Up) PreviousImage();
             if (e.Key == Key.Subtract) DeleteImage(currentBitmapIndex);
-            if (e.Key == Key.Add) CreateNewFrame(BitmapFactory.New(width, height));
+            if (e.Key == Key.Add) CreateNewFrame(BitmapFactory.New(width, height), currentBitmapIndex + 1);
 
             //Storage
             if (e.Key == Key.S && Keyboard.Modifiers == ModifierKeys.Control) ExportFull();

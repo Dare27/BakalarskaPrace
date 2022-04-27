@@ -295,12 +295,12 @@
                                             <Image Source="/Files/Images/Dark-theme/duplicate.png"  Height="24"/>
                                         </StackPanel>
                                     </Button>
-                                    <Button Padding="0" Margin="2"  Click="MergeImage_Click" ToolTip="Merge Frames">
+                                    <Button Name="mergeButton" Padding="0" Margin="2"  Click="MergeImage_Click" ToolTip="Merge Frames" IsEnabled="false">
                                         <StackPanel>
                                             <Image Source="/Files/Images/Dark-theme/merge.png"  Height="24"/>
                                         </StackPanel>
                                     </Button>
-                                    <Button Padding="0" Margin="2"  Click="IntersectImage_Click" ToolTip="Intersect Frames">
+                                    <Button Name="intersectButton" Padding="0" Margin="2"  Click="IntersectImage_Click" ToolTip="Intersect Frames" IsEnabled="false">
                                         <StackPanel>
                                             <Image Source="/Files/Images/Dark-theme/intersect.png"  Height="24"/>
                                         </StackPanel>

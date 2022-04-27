@@ -16,24 +16,12 @@ namespace BakalarskaPrace
             imageManipulation = new ImageManipulation();
         }
 
-        public void Flip(List<WriteableBitmap> selectedBitmaps, List<WriteableBitmap> bitmaps, int currentBitmapIndex, bool horizontal)
+        public void Flip(List<int> selectedBitmapIndexes, List<WriteableBitmap> bitmaps, bool horizontal)
         {
-            int width = selectedBitmaps[0].PixelWidth;
-            int height = selectedBitmaps[0].PixelHeight;
-            int start, end;
+            int width = bitmaps[0].PixelWidth;
+            int height = bitmaps[0].PixelHeight;
 
-            if (selectedBitmaps.Count > 1)
-            {
-                start = 0;
-                end = selectedBitmaps.Count;
-            }
-            else
-            {
-                start = currentBitmapIndex;
-                end = currentBitmapIndex + 1;
-            }
-
-            for (int i = start; i < end; i++ ) 
+            foreach (int i in selectedBitmapIndexes)
             {
                 WriteableBitmap newBitmap = BitmapFactory.New(width, height);
                 for (int x = 0; x < width; x++)
@@ -53,7 +41,15 @@ namespace BakalarskaPrace
                         }
                     }
                 }
-                bitmaps[i] = newBitmap;
+
+                for (int x = 0; x < width; x++)
+                {
+                    for (int y = 0; y < height; y++)
+                    {
+                        Color color = imageManipulation.GetPixelColor(x, y, newBitmap);
+                        imageManipulation.AddPixel(x, y, color, bitmaps[i]);
+                    }
+                }
             }
         }
 
@@ -84,28 +80,15 @@ namespace BakalarskaPrace
         }
 
         //Může vést ke ztrátě obsahu, pokud není šířka rovná výšce
-        public void RotateImage(List<WriteableBitmap> selectedBitmaps, List<WriteableBitmap> bitmaps, int currentBitmapIndex, bool clockwise)
+        public void RotateImage(List<int> currentBitmapIndexes, List<WriteableBitmap> bitmaps, bool clockwise)
         {
-            int width = selectedBitmaps[0].PixelWidth;
-            int height = selectedBitmaps[0].PixelHeight;
+            int width = bitmaps[0].PixelWidth;
+            int height = bitmaps[0].PixelHeight;
             int widthShift = 0;
             int heightShift = 0;
-            int start, end;
 
-            if (selectedBitmaps.Count > 1)
+            foreach(int i in currentBitmapIndexes)
             {
-                start = 0;
-                end = selectedBitmaps.Count;
-            }
-            else
-            {
-                start = currentBitmapIndex;
-                end = currentBitmapIndex + 1;
-            }
-
-            for (int i = start; i < end; i++)
-            {
-                WriteableBitmap newBitmap = BitmapFactory.New(width, height);
                 CroppedBitmap croppedBitmap;
 
                 //Zvolení posunu zkrácené bitmapy 
@@ -136,26 +119,21 @@ namespace BakalarskaPrace
                         Color color = imageManipulation.GetPixelColor(x, y, temporaryBitmap);
                         //Směr rotace
                         if (clockwise == true)
-                        {
                             imageManipulation.AddPixel(rotatedBitmap.PixelHeight - y - 1, x, color, rotatedBitmap);
-                        }
                         else
-                        {
                             imageManipulation.AddPixel(y, rotatedBitmap.PixelWidth - x - 1, color, rotatedBitmap);
-                        }
                     }
                 }
 
-                //Zapsaní otočené bitmapy s případným posunem do nové bitmapy
+                //Zapsaní otočené bitmapy s případným posunem do bitmapy
                 for (int x = 0; x < rotatedBitmap.PixelWidth; x++)
                 {
                     for (int y = 0; y < rotatedBitmap.PixelHeight; y++)
                     {
                         Color color = imageManipulation.GetPixelColor(x, y, rotatedBitmap);
-                        imageManipulation.AddPixel(x + widthShift, y + heightShift, color, newBitmap);
+                        imageManipulation.AddPixel(x + widthShift, y + heightShift, color, bitmaps[i]);
                     }
                 }
-                bitmaps[i] = newBitmap;
             }
         }
 
