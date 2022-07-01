@@ -619,7 +619,6 @@ namespace BakalarskaPrace
         {
             List<int> selectedBitmapIndexes;
             bool horizontal = ((Keyboard.Modifiers & ModifierKeys.Control) != 0) ? false : true;
-            int index = currentBitmapIndex;
 
             if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0) 
             {
@@ -659,7 +658,6 @@ namespace BakalarskaPrace
         {
             List<int> selectedBitmapIndexes;
             bool clockwise = ((Keyboard.Modifiers & ModifierKeys.Control) != 0) ? true : false;
-            int index = currentBitmapIndex;
 
             if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
             {
@@ -698,10 +696,23 @@ namespace BakalarskaPrace
         private void CropToFit_Click(object sender, RoutedEventArgs e)
         {
             List<WriteableBitmap> oldBitmaps = new List<WriteableBitmap>(bitmaps);
-            transform.CropToFit(bitmaps);
-
-            Action action = () => ReplaceBitmaps(oldBitmaps, bitmaps);
+            Action originalAction = () => CropToFit(true);
+            Action action = () => ReplaceBitmaps(oldBitmaps, originalAction, true);
             AddActionToUndo(action, false, true);
+            CropToFit();
+        }
+
+        private void CropToFit(bool generateAction = false)
+        {
+            if (generateAction == true)
+            {
+                List<WriteableBitmap> oldBitmaps = new List<WriteableBitmap>(bitmaps);
+                Action originalAction = () => CropToFit(true);
+                Action action = () => ReplaceBitmaps(oldBitmaps, originalAction, true);
+                AddActionToUndo(action, false, false);
+            }
+
+            transform.CropToFit(bitmaps);
             UpdateCurrentBitmap(currentBitmapIndex);
             UpdateImagePreviewButtons();
             Center();
@@ -714,31 +725,80 @@ namespace BakalarskaPrace
 
             if (subwindow.newWidth != 0 && subwindow.newHeight != 0)
             {
-                transform.Resize(bitmaps, subwindow.newWidth, subwindow.newHeight, subwindow.position);
-                UpdateCurrentBitmap(currentBitmapIndex);
-                UpdateImagePreviewButtons();
-                Center();
+                int newWidth = subwindow.newWidth;
+                int newHeight = subwindow.newHeight;
+                string position = subwindow.position;
+
+                List<WriteableBitmap> oldBitmaps = new List<WriteableBitmap>(bitmaps);
+                Action originalAction = () => Resize(newWidth, newHeight, position, true);
+                Action action = () => ReplaceBitmaps(oldBitmaps, originalAction, true);
+                AddActionToUndo(action, false, true);
+                Resize(newWidth, newHeight, position);
             }
+        }
+
+        private void Resize(int newWidth, int newHeight, string position, bool generateAction = false)
+        {
+            if (generateAction == true)
+            {
+                List<WriteableBitmap> oldBitmaps = new List<WriteableBitmap>(bitmaps);
+                Action originalAction = () => Resize(newWidth, newHeight, position, true);
+                Action action = () => ReplaceBitmaps(oldBitmaps, originalAction, true);
+                AddActionToUndo(action, false, false);
+            }
+            transform.Resize(bitmaps, newWidth, newHeight, position);
+            UpdateCurrentBitmap(currentBitmapIndex);
+            UpdateImagePreviewButtons();
+            Center();
         }
 
         private void CenterAlligment_Click(object sender, RoutedEventArgs e)
         {
-            List<WriteableBitmap> selectedBitmaps;
-            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0) selectedBitmaps = new List<WriteableBitmap>(bitmaps);
-            else selectedBitmaps = new List<WriteableBitmap>() { currentBitmap };
+            List<int> selectedBitmapIndexes;
 
-            transform.CenterAlligment(selectedBitmaps);
+            if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+            {
+                selectedBitmapIndexes = new List<int>();
+                for (int i = 0; i < bitmaps.Count; i++)
+                {
+                    selectedBitmapIndexes.Add(i);
+                }
+            }
+            else selectedBitmapIndexes = new List<int>() { currentBitmapIndex };
 
+            List<WriteableBitmap> oldBitmaps = new List<WriteableBitmap>(bitmaps);
+            Action originalAction = () => CenterAlligment(selectedBitmapIndexes, true);
+            Action action = () => ReplaceBitmaps(oldBitmaps, originalAction, true);
+            AddActionToUndo(action, false, true);
+            CenterAlligment(selectedBitmapIndexes);
+        }
+
+        private void CenterAlligment(List<int> selectedBitmapIndexes, bool generateAction = false)
+        {
+            if (generateAction == true)
+            {
+                List<WriteableBitmap> oldBitmaps = new List<WriteableBitmap>(bitmaps);
+                Action originalAction = () => CenterAlligment(selectedBitmapIndexes, true);
+                Action action = () => ReplaceBitmaps(oldBitmaps, originalAction, true);
+                AddActionToUndo(action, false, false);
+            }
+
+            transform.CenterAlligment(selectedBitmapIndexes, bitmaps);
             UpdateCurrentBitmap(currentBitmapIndex);
             UpdateImagePreviewButtons();
         }
 
-        private void ReplaceBitmaps(List<WriteableBitmap> oldBitmaps, List<WriteableBitmap> newBitmaps) 
+        private void ReplaceBitmaps(List<WriteableBitmap> oldBitmaps, Action originalAction, bool generateInverseAction = false) 
         {
+            if (generateInverseAction == true) 
+            {
+                AddActionToRedo(originalAction);
+            }
             bitmaps = oldBitmaps;
             currentBitmap = oldBitmaps[currentBitmapIndex];
             UpdateCurrentBitmap(currentBitmapIndex);
             UpdateImagePreviewButtons();
+            Center();
         }
 
         //Color palette buttons
@@ -1344,6 +1404,7 @@ namespace BakalarskaPrace
 
         private void Undo()
         {
+            Console.WriteLine(undoStack.Count);
             if (undoStack.Count > 0)
             {
                 if (visitedPoints.Count != 0) visitedPoints.Clear();
@@ -1360,6 +1421,7 @@ namespace BakalarskaPrace
 
         private void Redo()
         {
+            Console.WriteLine(redoStack.Count);
             if (redoStack.Count > 0)
             {
                 if (visitedPoints.Count != 0) visitedPoints.Clear();

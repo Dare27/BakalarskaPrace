@@ -216,9 +216,9 @@ namespace BakalarskaPrace
             }
         }
 
-        public void CenterAlligment(List<WriteableBitmap> bitmaps)
+        public void CenterAlligment(List<int> currentBitmapIndexes, List<WriteableBitmap> bitmaps)
         {
-            for(int k = 0; k < bitmaps.Count; k++)
+            foreach (int k in currentBitmapIndexes)
             {
                 int leftPixelX = bitmaps[0].PixelWidth;
                 int rightPixelX = 0;
@@ -276,7 +276,7 @@ namespace BakalarskaPrace
 
                     CroppedBitmap croppedBitmap = new CroppedBitmap(bitmaps[k], rect);
                     WriteableBitmap newBitmap = new WriteableBitmap(croppedBitmap);
-                    bitmaps[k].Clear();
+                    WriteableBitmap finalBitmap = BitmapFactory.New(bitmaps[0].PixelWidth, bitmaps[0].PixelHeight);
 
                     //Zapsání pixelů z staré bitmapy do nové
                     for (int i = 0; i < croppedWidth; i++)
@@ -284,11 +284,10 @@ namespace BakalarskaPrace
                         for (int j = 0; j < croppedHeight; j++)
                         {
                             Color color = imageManipulation.GetPixelColor(i, j, newBitmap);
-                            imageManipulation.AddPixel(i + startPosX, j + startPosY, color, bitmaps[k]);
+                            imageManipulation.AddPixel(i + startPosX, j + startPosY, color, finalBitmap);
                         }
                     }
-
-                    bitmaps[k] = newBitmap;
+                    bitmaps[k] = finalBitmap;
                 }
             }
         }
