@@ -17,8 +17,11 @@ namespace BakalarskaPrace
     {
         private WriteableBitmap currentBitmap;
         int currentBitmapIndex = 0;
+        int currentLayerIndex = 0;
         private List<WriteableBitmap> bitmaps = new List<WriteableBitmap>();
+        private List<List<WriteableBitmap>> layers = new List<List<WriteableBitmap>>();
         private List<System.Windows.Controls.Button> previewButtons = new List<System.Windows.Controls.Button>();
+        private List<System.Windows.Controls.Button> layerButtons = new List<System.Windows.Controls.Button>();
         WriteableBitmap previewBitmap;
         Color[] currentColors;
         List<Color> colorPalette = new List<Color>();
@@ -42,6 +45,7 @@ namespace BakalarskaPrace
         List<Point> undoPoints = new List<Point>();
         List<Color> undoColors = new List<Color>();
         List<Point> clipboardPoints = new List<Point>();
+        Point previousMousePoint = new Point();
         bool selection;
 
         bool onionSkinning;
@@ -70,6 +74,8 @@ namespace BakalarskaPrace
             transform = new Transform();
             tools = new Tools();
             filters = new Filters();
+
+            layers.Add(bitmaps); //Výchozí vrstva
 
             InitializeComponent();
             this.Show();
@@ -107,6 +113,7 @@ namespace BakalarskaPrace
             LabelScale.Content = "1.0";
             LabelImages.Content = bitmaps.Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
             lastToolButton = brush;
+            UpdateLayerPreviewButtons();
             UpdateImagePreviewButtons();
             Center();
 
@@ -146,6 +153,7 @@ namespace BakalarskaPrace
                     case ToolSelection.brush:
                         {
                             drawPoints = new List<Point>() { new Point(x, y) };
+                            previousMousePoint = new Point(x, y);
                             GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, alphaBlending, strokeThickness);
                             break;
                         }
@@ -254,7 +262,14 @@ namespace BakalarskaPrace
                     {
                         case ToolSelection.brush:
                             {
-                                drawPoints.Add(new Point(x, y));
+                                Point currentMousePoint = new Point(x, y);
+                                drawPoints.Add(currentMousePoint);
+                                if ((Math.Sqrt(Math.Pow(currentMousePoint.X - previousMousePoint.X, 2)) > 1) || (Math.Sqrt(Math.Pow(currentMousePoint.Y - previousMousePoint.Y, 2)) > 1)) 
+                                {
+                                    Console.WriteLine("line");
+                                }
+                                previousMousePoint = currentMousePoint;
+
                                 GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, alphaBlending, strokeThickness);
                                 break;
                             }
@@ -633,9 +648,6 @@ namespace BakalarskaPrace
             Flip(selectedBitmapIndexes, bitmaps, horizontal);
             Action action = () => Flip(selectedBitmapIndexes, bitmaps, horizontal, true);
             AddActionToUndo(action, false, true);
-
-            UpdateCurrentBitmap(currentBitmapIndex);
-            UpdateImagePreviewButtons();
         }
 
         private void Flip(List<int> selectedBitmapIndexes, List<WriteableBitmap> bitmaps, bool horizontal, bool generateInverseAction = false, bool generateAction = false) 
@@ -652,6 +664,8 @@ namespace BakalarskaPrace
             }
             
             transform.Flip(selectedBitmapIndexes, bitmaps, horizontal);
+            UpdateCurrentBitmap(currentBitmapIndex);
+            UpdateImagePreviewButtons();
         }
 
         private void Rotate_Click(object sender, RoutedEventArgs e)
@@ -672,9 +686,6 @@ namespace BakalarskaPrace
             Rotate(selectedBitmapIndexes, bitmaps, clockwise);
             Action action = () => Rotate(selectedBitmapIndexes, bitmaps, !clockwise, true);
             AddActionToUndo(action, false, true);
-
-            UpdateCurrentBitmap(currentBitmapIndex);
-            UpdateImagePreviewButtons();
         }
 
         private void Rotate(List<int> selectedBitmapIndexes, List<WriteableBitmap> bitmaps, bool clockwise, bool generateInverseAction = false, bool generateAction = false) 
@@ -691,6 +702,8 @@ namespace BakalarskaPrace
             }
 
             transform.RotateImage(selectedBitmapIndexes, bitmaps, clockwise);
+            UpdateCurrentBitmap(currentBitmapIndex);
+            UpdateImagePreviewButtons();
         }
 
         private void CropToFit_Click(object sender, RoutedEventArgs e)
@@ -828,7 +841,7 @@ namespace BakalarskaPrace
                 Width = 40,
                 ToolTip = color
             };
-            newButton.Name = color.ToString().Substring(1);
+            newButton.Name = "_" + color.ToString().Substring(1);
             newButton.PreviewMouseDown += new MouseButtonEventHandler(ColorPaletteButton_Click);
             colorList.Children.Add(newButton);
         }
@@ -836,7 +849,7 @@ namespace BakalarskaPrace
         private void ColorPaletteButton_Click(object sender, MouseButtonEventArgs e)
         {
             currentColorLeftButton = (System.Windows.Controls.Button)sender;
-            string buttonName = "#" + currentColorLeftButton.Name;
+            string buttonName = "#" + currentColorLeftButton.Name.Substring(1);
             int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
             currentColors[colorIndex] = (Color)ColorConverter.ConvertFromString(buttonName);
             colorSelector.SelectedColor = currentColors[0];
@@ -847,7 +860,7 @@ namespace BakalarskaPrace
         {
             if (currentColorLeftButton != null)
             {
-                string buttonName = "#" + currentColorLeftButton.Name;
+                string buttonName = "#" + currentColorLeftButton.Name.Substring(1);
                 Color color = (Color)ColorConverter.ConvertFromString(buttonName);
                 colorPalette.Remove(color);
                 colorList.Children.Remove(currentColorLeftButton);
@@ -1031,6 +1044,16 @@ namespace BakalarskaPrace
                 intersectButton.IsEnabled = true;
                 mergeButton.IsEnabled = true;
             }
+
+            for (int i = 0; i < layers.Count; i++) 
+            {
+                if (i != currentLayerIndex) 
+                {
+                    List<WriteableBitmap> layer = layers[i];
+                    layer.Insert(bitmapIndex, newWriteableBitmap);
+                }
+            }
+            UpdateLayerPreviewButtons();
 
             bitmaps.Insert(bitmapIndex, newWriteableBitmap);
             currentBitmapIndex = bitmapIndex;
@@ -1228,6 +1251,7 @@ namespace BakalarskaPrace
                 if (currentBitmapIndex == i) previewButtons[i].IsEnabled = false;
                 else previewButtons[i].IsEnabled = true;
             }
+            UpdateLayerViewing();
         }
 
         private void UpdateOnionSkinning()
@@ -1271,6 +1295,20 @@ namespace BakalarskaPrace
         {
             onionSkinning = false;
             RemoveOnionSkinning();
+        }
+
+        private void OnionSkinning_Click(object sender, RoutedEventArgs e) 
+        {
+            if (onionSkinning)
+            {
+                onionSkinning = false;
+                RemoveOnionSkinning();
+            }
+            else 
+            {
+                onionSkinning = true;
+                UpdateOnionSkinning();
+            } 
         }
 
         //Menu controls
@@ -1404,7 +1442,6 @@ namespace BakalarskaPrace
 
         private void Undo()
         {
-            Console.WriteLine(undoStack.Count);
             if (undoStack.Count > 0)
             {
                 if (visitedPoints.Count != 0) visitedPoints.Clear();
@@ -1421,7 +1458,6 @@ namespace BakalarskaPrace
 
         private void Redo()
         {
-            Console.WriteLine(redoStack.Count);
             if (redoStack.Count > 0)
             {
                 if (visitedPoints.Count != 0) visitedPoints.Clear();
@@ -1488,6 +1524,142 @@ namespace BakalarskaPrace
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             Center();
+        }
+
+        private void CreateLayer_Click(object sender, RoutedEventArgs e)
+        {
+            currentLayerIndex++;
+            int layerIndex = currentLayerIndex;
+            CreateLayer(currentLayerIndex);
+            Action action = () => DeleteLayer(layerIndex++, true, false);
+            AddActionToUndo(action, false, true);
+        }
+
+        private void CreateLayer(int layerIndex, bool generateInverseAction = false, bool generateAction = false) 
+        {
+            /*if (generateInverseAction == true)
+            {
+                Action inverseAction = () => 
+                AddActionToRedo(inverseAction);
+            }
+            else if (generateAction == true)
+            {
+                Action action = () => 
+                AddActionToUndo(action, false, false);
+            }*/
+            currentLayerIndex = layerIndex;
+            List<WriteableBitmap> newLayer = new List<WriteableBitmap>();
+            foreach (WriteableBitmap bitmap in bitmaps)
+            {
+                WriteableBitmap newBitamp = BitmapFactory.New(width, height);
+                newLayer.Add(newBitamp);
+            }
+            layers.Insert(currentLayerIndex, newLayer);
+            bitmaps = newLayer;
+            
+            UpdateCurrentBitmap(currentBitmapIndex);
+            UpdateImagePreviewButtons();
+            UpdateLayerPreviewButtons();
+        }
+
+        private void UpdateLayerPreviewButtons()
+        {
+            layerButtons = LayerPreviews.Children.OfType<System.Windows.Controls.Button>().ToList();
+            foreach (System.Windows.Controls.Button button in layerButtons)
+            {
+                LayerPreviews.Children.Remove(button);
+            }
+
+            for (int i = 0; i < layers.Count; i++)
+            {
+                System.Windows.Controls.Button newButton = new System.Windows.Controls.Button();
+                newButton.Content = i + 1;
+                newButton.IsEnabled = (currentLayerIndex == i) ? false : true;
+                newButton.Width = 140;
+                newButton.Height = 40;
+                newButton.Name = "LayerPreview" + i.ToString();
+                //newButton.SetResourceReference(System.Windows.Controls.Control.StyleProperty, "AnimationButton");
+                newButton.AddHandler(System.Windows.Controls.Button.ClickEvent, new RoutedEventHandler(LayerButton_Click));
+                LayerPreviews.Children.Add(newButton);
+            }
+
+            UpdateLayerViewing();
+        }
+
+        private void LayerButton_Click(object sender, RoutedEventArgs e)
+        {
+            string buttonName = ((System.Windows.Controls.Button)sender).Name;
+            int index = int.Parse(buttonName.Replace("LayerPreview", ""));
+            currentLayerIndex = index;
+            bitmaps = layers[index];
+            UpdateCurrentBitmap(currentBitmapIndex);
+            UpdateImagePreviewButtons();
+            UpdateLayerViewing();
+            UpdateLayerPreviewButtons();
+        }
+
+        private void UpdateLayerViewing()
+        {
+            RemoveLayers();
+            for (int i = 0; i < layers.Count; i++) 
+            {
+                if (i != currentLayerIndex) 
+                {
+                    Image layerBitmap = new Image();
+                    List<WriteableBitmap> layer = layers[i];
+                    layerBitmap.Source = layer[currentBitmapIndex];
+                    layerBitmap.Opacity = 0.25f;
+                    RenderOptions.SetBitmapScalingMode(layerBitmap, BitmapScalingMode.NearestNeighbor);
+                    paintSurface.Children.Add(layerBitmap);
+                }
+            }
+        }
+
+        private void RemoveLayers()
+        {
+            List<Image> children = paintSurface.Children.OfType<Image>().ToList();
+            foreach (Image child in children)
+            {
+                if (child != image && child != previewImage) paintSurface.Children.Remove(child);
+            }
+        }
+
+        private void DeleteLayer_Click(object sender, RoutedEventArgs e)
+        {
+            int layerIndex = currentLayerIndex;
+            DeleteLayer(layerIndex);
+            Action action = () => CreateLayer(layerIndex, true, false);
+            AddActionToUndo(action, false, true);
+        }
+
+        private void DeleteLayer(int layerIndex, bool generateInverseAction = false, bool generateAction = false) 
+        {
+            /*if (generateInverseAction == true)
+            {
+                Action inverseAction = () => DeleteImage(bitmapIndex, false, true, newWriteableBitmap);
+                AddActionToRedo(inverseAction);
+            }
+            else if (generateAction == true)
+            {
+                Action action = () => DeleteImage(bitmapIndex, true, false, newWriteableBitmap);
+                AddActionToUndo(action, false, false);
+            }*/
+
+            if (layerIndex > 0)
+            {
+                layers.RemoveAt(layerIndex);
+                layerIndex--;
+                bitmaps = layers[layerIndex];
+                currentLayerIndex = layerIndex;
+                UpdateCurrentBitmap(currentBitmapIndex);
+                UpdateImagePreviewButtons();
+                UpdateLayerPreviewButtons();
+            }
+        }
+
+        private void DuplicateLayer_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

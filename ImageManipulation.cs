@@ -42,7 +42,7 @@ namespace BakalarskaPrace
 
         public unsafe Color GetPixelColor(int x, int y, WriteableBitmap bitmap)
         {
-            Color pix = new Color();
+            /*Color pix = new Color();
             byte[] colorData = { 0, 0, 0, 0 }; // ARGB
             IntPtr pBackBuffer = bitmap.BackBuffer;
             byte* pBuff = (byte*)pBackBuffer.ToPointer();
@@ -54,7 +54,10 @@ namespace BakalarskaPrace
             pix.R = r;
             pix.G = g;
             pix.B = b;
-            return pix;
+            return pix;*/
+            Color color = bitmap.GetPixel(x, y);
+            return color;
+
         }
 
         public Color ColorMix(Color foregroundColor, Color backgroundColor)

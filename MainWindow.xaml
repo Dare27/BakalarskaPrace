@@ -79,7 +79,7 @@
                         </Label.Effect>
                     </Label>
                     <WrapPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Vertical">
-                        <Button Style="{StaticResource MaterialDesignIconButton}" Click="Center_Click" Width="30" Height="30" Margin="0,0,3,3" Cursor="Hand" Background="#4C000000">
+                        <Button Style="{StaticResource MaterialDesignIconButton}" Click="OnionSkinning_Click" Width="30" Height="30" Margin="0,0,3,3" Cursor="Hand" Background="#4C000000">
                             <StackPanel Margin="3">
                                 <Image Source="/Files/Images/Dark-theme/onion.png" Height="20"/>
                             </StackPanel>
@@ -95,18 +95,21 @@
                 <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalAlignment="Left" CanContentScroll="True" RenderTransformOrigin="0.5,0.5" Width="212" Background="#2b2b2b">
                     <WrapPanel HorizontalAlignment="Left" Width="212" VerticalAlignment="Stretch">
                         <WrapPanel Width="200" >
-                            <colorpicker:StandardColorPicker x:Name="colorSelector" Height="334" ColorChanged="ColorChanged" Style="{StaticResource DefaultColorPickerStyle}"/>
+                            <colorpicker:StandardColorPicker x:Name="colorSelector" Height="334" ColorChanged="ColorChanged" Style="{StaticResource DefaultColorPickerStyle}" Width="202" Margin="-1,0,0,0" />
                         </WrapPanel>
                         <WrapPanel x:Name="wrapPanel" HorizontalAlignment="Center" Width="200">
-                            <StackPanel Width="{Binding Width, ElementName=wrapPanel}">
-                                <WrapPanel Width="176" Margin="0,0,0,4">
-                                    <Label Content="Alpha Blending" Width="93" Foreground="#d2d2d2"/>
-                                    <CheckBox Width="17" Checked="AlphaBlending_Changed" Unchecked="AlphaBlending_Changed" IsChecked="True"/>
+                            <StackPanel Width="{Binding Width, ElementName=wrapPanel}"  Margin="0,2,0,2">
+                                <WrapPanel Width="182" Background="#FF1D1D1D">
+                                    <WrapPanel Width="176" Margin="0,0,0,4">
+                                        <Label Content="Alpha Blending" Width="93" Foreground="#d2d2d2"/>
+                                        <CheckBox Width="23" Checked="AlphaBlending_Changed" Unchecked="AlphaBlending_Changed" IsChecked="True"/>
+                                    </WrapPanel>
+                                    <WrapPanel Width="176" Margin="0,4,0,4">
+                                        <Label Content="Brush size" Width="67" Foreground="#d2d2d2" VerticalAlignment="Center" />
+                                        <Slider ValueChanged="BrushSize_ValueChanged" Width="109" Minimum="1" Maximum="8" Value="1" IsSnapToTickEnabled="True" TickFrequency="1" VerticalAlignment="Center" Panel.ZIndex="20" Style="{DynamicResource MaterialDesignDiscreteSlider}"/>
+                                    </WrapPanel>
                                 </WrapPanel>
-                                <WrapPanel Width="176" Margin="0,4,0,4">
-                                    <Label Content="Brush size" Width="67" Foreground="#d2d2d2" VerticalAlignment="Center" />
-                                    <Slider ValueChanged="BrushSize_ValueChanged" Width="109" Minimum="1" Maximum="8" Value="1" IsSnapToTickEnabled="True" TickFrequency="1" VerticalAlignment="Center" Panel.ZIndex="20" Style="{DynamicResource MaterialDesignDiscreteSlider}"/>
-                                </WrapPanel>
+                                
                             </StackPanel>
                             <StackPanel Width="{Binding Width, ElementName=wrapPanel}">
                                 <Expander Name="toolsExpander" Width="182" HorizontalAlignment="Center" Header="Tools" ExpandDirection="Down"  IsExpanded="True" Margin="0,2,0,2" Background="#FF1D1D1D" Foreground="#FFFFC107" FontWeight="SemiBold" FontStyle="Normal">
@@ -171,7 +174,7 @@
                                                 <Image Source="/Files/Images/Dark-theme/rectangle.png" Height="30"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Name="move" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="Move">
+                                        <!--<Button Name="move" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="Move">
                                             <StackPanel >
                                                 <Image Source="" Height="30"/>
                                             </StackPanel>
@@ -190,7 +193,7 @@
                                             <StackPanel >
                                                 <Image Source="" Height="30"/>
                                             </StackPanel>
-                                        </Button>
+                                        </Button>-->
                                     </WrapPanel>
                                 </Expander>
                                 <Expander Name="transformExpander" Width="182" HorizontalAlignment="Center" Header="Transforms" ExpandDirection="Down" IsExpanded="True" Margin="0,2,0,2" Background="#FF1D1D1D" Foreground="#FFFFC107" FontWeight="SemiBold">
@@ -316,6 +319,40 @@
                                 <WrapPanel Height="300">
                                     <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalAlignment="Center" CanContentScroll="True" RenderTransformOrigin="0.5,0.5" Background="#2b2b2b">
                                         <WrapPanel Name="ImagePreviews"/>
+                                    </ScrollViewer>
+                                </WrapPanel>
+                            </StackPanel>
+                            <UniformGrid Rows="1" HorizontalAlignment="Stretch" Height="38">
+                                <Button Padding="0" Margin="2"  Click="CreateLayer_Click" ToolTip="Create New Layer">
+                                    <StackPanel>
+                                        <Image Source="/Files/Images/Dark-theme/dark-plus.png" Height="24"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Padding="0" Margin="2"  Click="DuplicateLayer_Click" ToolTip="Duplicate Layer">
+                                    <StackPanel>
+                                        <Image Source="/Files/Images/Dark-theme/duplicate.png"  Height="24"/>
+                                    </StackPanel>
+                                </Button>
+                                <Button Padding="0" Margin="2"  Click="MergeImage_Click" ToolTip="Merge Frames" IsEnabled="false">
+                                    <StackPanel>
+                                        <!--<Image Source="/Files/Images/Dark-theme/merge.png"  Height="24"/>-->
+                                    </StackPanel>
+                                </Button>
+                                <Button Padding="0" Margin="2"  Click="IntersectImage_Click" ToolTip="Intersect Frames" IsEnabled="false">
+                                    <StackPanel>
+                                        <!--<Image Source="/Files/Images/Dark-theme/intersect.png"  Height="24"/>-->
+                                    </StackPanel>
+                                </Button>
+                                <Button Padding="0" Margin="2" Click="DeleteLayer_Click" ToolTip="Delete Layer">
+                                    <StackPanel>
+                                        <Image Source="/Files/Images/Dark-theme/delete.png" Height="24"/>
+                                    </StackPanel>
+                                </Button>
+                            </UniformGrid>
+                            <StackPanel HorizontalAlignment="Center">
+                                <WrapPanel Height="300">
+                                    <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalAlignment="Center" CanContentScroll="True" RenderTransformOrigin="0.5,0.5" Background="#2b2b2b">
+                                        <WrapPanel Name="LayerPreviews"/>
                                     </ScrollViewer>
                                 </WrapPanel>
                             </StackPanel>
