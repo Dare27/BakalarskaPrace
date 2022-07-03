@@ -137,8 +137,17 @@ namespace BakalarskaPrace
             }
         }
 
-        public void CropToFit(List<WriteableBitmap> bitmaps)
+        public void CropToFit(List<List<WriteableBitmap>> layers)
         {
+            List<WriteableBitmap> bitmaps = new List<WriteableBitmap>();
+            for (int j = 0; j < layers.Count; j++)
+            {
+                for (int i = 0; i < layers[j].Count; i++)
+                {
+                    bitmaps.Add(layers[j][i]);
+                }
+            }
+
             int width = bitmaps[0].PixelWidth;
             int height = bitmaps[0].PixelHeight;
             int leftPixelX = width;
@@ -192,26 +201,29 @@ namespace BakalarskaPrace
             int newHeight = downPixelY - topPixelY + 1;
             if (newWidth > 0 && newHeight > 0)
             {
-                for (int k = 0; k < bitmaps.Count; k++)
+                for (int k = 0; k < layers.Count; k++) 
                 {
-                    WriteableBitmap newBitmap = BitmapFactory.New(newWidth, newHeight);
-                    //Získání pixelů z aktuální bitmapy
-                    using (newBitmap.GetBitmapContext())
+                    for (int l = 0; l < layers[k].Count; l++)
                     {
-                        for (int i = leftPixelX; i <= rightPixelX; i++)
+                        WriteableBitmap newBitmap = BitmapFactory.New(newWidth, newHeight);
+                        //Získání pixelů z aktuální bitmapy
+                        using (newBitmap.GetBitmapContext())
                         {
-                            for (int j = topPixelY; j <= downPixelY; j++)
+                            for (int i = leftPixelX; i <= rightPixelX; i++)
                             {
-                                Color color = imageManipulation.GetPixelColor(i, j, bitmaps[k]);
-                                if (color.A != 0)
+                                for (int j = topPixelY; j <= downPixelY; j++)
                                 {
-                                    //Vytvoření pixelu, který je posunutý v nové bitmapě 
-                                    imageManipulation.AddPixel(i - leftPixelX, j - topPixelY, color, newBitmap);
+                                    Color color = imageManipulation.GetPixelColor(i, j, layers[k][l]);
+                                    if (color.A != 0)
+                                    {
+                                        //Vytvoření pixelu, který je posunutý v nové bitmapě 
+                                        imageManipulation.AddPixel(i - leftPixelX, j - topPixelY, color, newBitmap);
+                                    }
                                 }
                             }
                         }
+                        layers[k][l] = newBitmap;
                     }
-                    bitmaps[k] = newBitmap;
                 }
             }
         }
@@ -292,8 +304,17 @@ namespace BakalarskaPrace
             }
         }
 
-        public void Resize(List<WriteableBitmap> bitmaps, int newWidth, int newHeight, string position)
+        public void Resize(List<List<WriteableBitmap>> layers, int newWidth, int newHeight, string position)
         {
+            List<WriteableBitmap> bitmaps = new List<WriteableBitmap>();
+            for (int j = 0; j < layers.Count; j++)
+            {
+                for (int i = 0; i < layers[j].Count; i++)
+                {
+                    bitmaps.Add(layers[j][i]);
+                }
+            }
+
             int width = bitmaps[0].PixelWidth;
             int height = bitmaps[0].PixelHeight;
 
@@ -341,27 +362,31 @@ namespace BakalarskaPrace
 
                 Int32Rect rect = new Int32Rect(startPosX, startPosY, croppedWidth, croppedHeight);
 
-                for (int k = 0; k < bitmaps.Count; k++)
+                for (int k = 0; k < layers.Count; k++) 
                 {
-                    CroppedBitmap croppedBitmap = new CroppedBitmap(bitmaps[k], rect);
-                    WriteableBitmap newBitmap = new WriteableBitmap(croppedBitmap);
-                    WriteableBitmap finalBitmap = BitmapFactory.New(newWidth, newHeight);
-
-                    //Zapsání pixelů z staré bitmapy do nové
-                    using (newBitmap.GetBitmapContext())
+                    for (int l = 0; l < layers[k].Count; l++)
                     {
-                        for (int i = 0; i < croppedWidth; i++)
+                        CroppedBitmap croppedBitmap = new CroppedBitmap(layers[k][l], rect);
+                        WriteableBitmap newBitmap = new WriteableBitmap(croppedBitmap);
+                        WriteableBitmap finalBitmap = BitmapFactory.New(newWidth, newHeight);
+
+                        //Zapsání pixelů z staré bitmapy do nové
+                        using (newBitmap.GetBitmapContext())
                         {
-                            for (int j = 0; j < croppedHeight; j++)
+                            for (int i = 0; i < croppedWidth; i++)
                             {
-                                Color color = imageManipulation.GetPixelColor(i, j, newBitmap);
-                                imageManipulation.AddPixel(i + endPosX, j + endPosY, color, finalBitmap);
+                                for (int j = 0; j < croppedHeight; j++)
+                                {
+                                    Color color = imageManipulation.GetPixelColor(i, j, newBitmap);
+                                    imageManipulation.AddPixel(i + endPosX, j + endPosY, color, finalBitmap);
+                                }
                             }
                         }
-                    }
 
-                    bitmaps[k] = finalBitmap;
+                        layers[k][l] = finalBitmap;
+                    }
                 }
+                
             }
         }
 

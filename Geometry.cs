@@ -386,5 +386,15 @@ namespace BakalarskaPrace
             }
             return points;
         }
+
+        public List<Point> Interpolate(int currentPointX, int currentPointY, int previousPointX, int previousPointY, int width, int height)
+        {
+            List<Point> points = new List<Point>();
+            if ((Math.Abs(currentPointX - previousPointX) > 1) || (Math.Abs(currentPointY - previousPointY) > 1))
+            {
+                points.AddRange(DrawLine(currentPointX, currentPointY, previousPointX, previousPointY, width, height, false));
+            }
+            return points;
+        }
     }
 }
