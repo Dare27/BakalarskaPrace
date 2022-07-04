@@ -261,8 +261,8 @@
                     <Grid HorizontalAlignment="Right" Width="200" >
                         <StackPanel Width="200" >
                             <StackPanel Width="190" Margin="0,0,0,5" >
-                                <Canvas SnapsToDevicePixels="False"  Width="190" Height="190" HorizontalAlignment="Center" RenderTransformOrigin="0.5,0.5">
-                                    <Image x:Name="animationPreview" Panel.ZIndex="10" MouseMove="Image_MouseMove" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" Width="190" Height="190"/>
+                                <Canvas x:Name="PreviewCanvas"  SnapsToDevicePixels="False"  Width="190" Height="190" HorizontalAlignment="Center" RenderTransformOrigin="0.5,0.5" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased">
+                                    <Image x:Name="animationPreview" Panel.ZIndex="10" MouseMove="Image_MouseMove"  Width="190" Height="190"/>
                                     <Canvas.Background>
                                         <DrawingBrush TileMode="Tile" Viewport="0,0,8.5,8.5" ViewportUnits="Absolute">
                                             <DrawingBrush.Drawing>
