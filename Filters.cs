@@ -65,10 +65,14 @@ namespace BakalarskaPrace
         {
             WriteableBitmap combinedBitmap = BitmapFactory.New(width, height);
 
-            for (int i = 0; i < layers.Count - 1; i++)
-            {
-                combinedBitmap = MergeImages(layers[i][index], layers[i + 1][index], width, height);
-            }
+            
+                for (int i = 0; i < layers.Count - 1; i++)
+                {
+                    if (i + 1  < layers.Count - 1)
+                    {
+                        combinedBitmap = MergeImages(layers[i][index], layers[i + 1][index], width, height);
+                    }
+                }
 
             return combinedBitmap;
         }

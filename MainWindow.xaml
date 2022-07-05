@@ -37,7 +37,7 @@
                 </MenuItem>
             </Menu>
             <Grid>
-                <Grid Margin="212,0,200,0" Background="#808080">
+                <Grid Margin="212,0,204,0" Background="#808080">
                     <Border>
                         <Grid x:Name="grid" MouseDown="Grid_MouseDown" MouseMove="Grid_MouseMove" MouseUp="Grid_MouseUp" Margin="0,0,0,0">
                             <Grid.RenderTransform>
@@ -99,20 +99,20 @@
                         </WrapPanel>
                         <WrapPanel x:Name="wrapPanel" HorizontalAlignment="Center" Width="200">
                             <StackPanel Width="{Binding Width, ElementName=wrapPanel}"  Margin="0,2,0,2">
-                                <WrapPanel Width="182" Background="#FF1D1D1D">
-                                    <WrapPanel Width="176" Margin="0,0,0,4">
-                                        <Label Content="Alpha Blending" Width="93" Foreground="#d2d2d2"/>
-                                        <CheckBox Width="23" Checked="AlphaBlending_Changed" Unchecked="AlphaBlending_Changed" IsChecked="True"/>
-                                    </WrapPanel>
+                                <WrapPanel Width="182" Background="#FF131313">
+                                    <DockPanel Width="182" Margin="0,4,0,4">
+                                        <Label Content="Alpha Blending" Width="93" Foreground="#d2d2d2" HorizontalAlignment="Left"/>
+                                        <CheckBox Width="23" Checked="AlphaBlending_Changed" Unchecked="AlphaBlending_Changed" IsChecked="True" HorizontalAlignment="Right" Margin="8,1,13,0"/>
+                                    </DockPanel>
                                     <WrapPanel Width="176" Margin="0,4,0,4">
                                         <Label Content="Brush size" Width="67" Foreground="#d2d2d2" VerticalAlignment="Center" />
-                                        <Slider ValueChanged="BrushSize_ValueChanged" Width="109" Minimum="1" Maximum="8" Value="1" IsSnapToTickEnabled="True" TickFrequency="1" VerticalAlignment="Center" Panel.ZIndex="20" Style="{DynamicResource MaterialDesignDiscreteSlider}"/>
+                                        <Slider ValueChanged="BrushSize_ValueChanged" Width="109" Minimum="1" Maximum="8" Value="1" IsSnapToTickEnabled="True" TickFrequency="1" VerticalAlignment="Center" Panel.ZIndex="20" Style="{DynamicResource MaterialDesignDiscreteSlider}" Margin="0,3,0,0"/>
                                     </WrapPanel>
                                 </WrapPanel>
                                 
                             </StackPanel>
                             <StackPanel Width="{Binding Width, ElementName=wrapPanel}">
-                                <Expander Name="toolsExpander" Width="182" HorizontalAlignment="Center" Header="Tools" ExpandDirection="Down"  IsExpanded="True" Margin="0,2,0,2" Background="#FF1D1D1D" Foreground="#FFFFC107" FontWeight="SemiBold" FontStyle="Normal">
+                                <Expander Name="toolsExpander" Width="182" HorizontalAlignment="Center" Header="Tools" ExpandDirection="Down"  IsExpanded="True" Margin="0,2,0,2" Background="#FF131313" Foreground="#FFFFC107" FontWeight="SemiBold" FontStyle="Normal">
                                     <WrapPanel Margin="3" Name="toolButtons">
                                         <Button x:Name="brush" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="(P) Brush" IsEnabled="False">
                                             <StackPanel >
@@ -129,12 +129,12 @@
                                                 <Image Source="/Files/Images/Dark-theme/color-picker.png" Height="30"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Name="shading" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="(U) Darken">
+                                        <Button Name="shading" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="(U) Darken &#x0a; CTRL - Lighten">
                                             <StackPanel >
                                                 <Image Source="/Files/Images/Dark-theme/shading.png" Height="30"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Name="symmetricBrush" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="(V) Symmetric Brush">
+                                        <Button Name="symmetricBrush" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="(V) Symmetric Brush &#x0a; CTRL - Horizontal axis &#x0a; SHIFT - Horizontal and vertical axis">
                                             <StackPanel>
                                                 <Image Source="/Files/Images/Dark-theme/symmetrical.png" Height="30"/>
                                             </StackPanel>
@@ -154,22 +154,22 @@
                                                 <Image Source="/Files/Images/Dark-theme/color-replace.png" Height="30"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Name="line" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="(L) Line">
+                                        <Button Name="line" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="(L) Line &#x0a; CTRL - Straight line">
                                             <StackPanel >
                                                 <Image Source="/Files/Images/Dark-theme/line.png" Height="30"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Name="path" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="(K) Path">
+                                        <Button Name="path" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="(K) Path &#x0a; CTRL - New starting point">
                                             <StackPanel >
                                                 <Image Source="/Files/Images/Dark-theme/path.png" Height="30"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Name="ellipse" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="(C) Ellipse">
+                                        <Button Name="ellipse" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="(C) Ellipse &#x0a; CTRL - Circle &#x0a; SHIFT - Fill">
                                             <StackPanel >
                                                 <Image Source="/Files/Images/Dark-theme/ellipse.png" Height="30"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Name="rectangle" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="(R) Rectangle">
+                                        <Button Name="rectangle" Click="ToolButton_Click" Style="{StaticResource ButtonStyle1}" ToolTip="(R) Rectangle  &#x0a; CTRL - Square &#x0a; SHIFT - Fill">
                                             <StackPanel >
                                                 <Image Source="/Files/Images/Dark-theme/rectangle.png" Height="30"/>
                                             </StackPanel>
@@ -196,36 +196,36 @@
                                         </Button>-->
                                     </WrapPanel>
                                 </Expander>
-                                <Expander Name="transformExpander" Width="182" HorizontalAlignment="Center" Header="Transforms" ExpandDirection="Down" IsExpanded="True" Margin="0,2,0,2" Background="#FF1D1D1D" Foreground="#FFFFC107" FontWeight="SemiBold">
+                                <Expander Name="transformExpander" Width="182" HorizontalAlignment="Center" Header="Transforms" ExpandDirection="Down" IsExpanded="True" Margin="0,2,0,2" Background="#FF131313" Foreground="#FFFFC107" FontWeight="SemiBold">
                                     <WrapPanel Margin="3">
-                                        <Button  Click="Flip_Click" Style="{StaticResource ButtonStyle1}">
+                                        <Button  Click="Flip_Click" Style="{StaticResource ButtonStyle1}"  ToolTip="Horizontal flip  &#x0a; CTRL - Vertical flip">
                                             <StackPanel >
                                                 <Image Source="/Files/Images/Dark-theme/flip.png" Height="30"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Click="Rotate_Click" Style="{StaticResource ButtonStyle1}">
+                                        <Button Click="Rotate_Click" Style="{StaticResource ButtonStyle1}" ToolTip="Counter clockwise rotation  &#x0a; CTRL - Clockwise rotation">
                                             <StackPanel >
                                                 <Image Source="/Files/Images/Dark-theme/rotate.png" Height="30" SnapsToDevicePixels="False"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Click="Resize_Click" Style="{StaticResource ButtonStyle1}">
+                                        <Button Click="Resize_Click" Style="{StaticResource ButtonStyle1}" ToolTip="Resize">
                                             <StackPanel >
                                                 <Image Source="/Files/Images/Dark-theme/resize.png" Height="30" SnapsToDevicePixels="False"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Click="CropToFit_Click" Style="{StaticResource ButtonStyle1}">
+                                        <Button Click="CropToFit_Click" Style="{StaticResource ButtonStyle1}" ToolTip="Crop to fit">
                                             <StackPanel >
                                                 <Image Source="/Files/Images/Dark-theme/crop.png" Height="30" SnapsToDevicePixels="False"/>
                                             </StackPanel>
                                         </Button>
-                                        <Button Click="CenterAlligment_Click" Style="{StaticResource ButtonStyle1}" Cursor="Hand">
+                                        <Button Click="CenterAlligment_Click" Style="{StaticResource ButtonStyle1}" Cursor="Hand"  ToolTip="Center aligment &#x0a; CTRL - All frames">
                                             <StackPanel >
                                                 <Image Source="/Files/Images/Dark-theme/center-alignment.png" Height="30" SnapsToDevicePixels="False"/>
                                             </StackPanel>
                                         </Button>
                                     </WrapPanel>
                                 </Expander>
-                                <Expander Name="colorPaletteExpander" Width="182" HorizontalAlignment="Center" Header="Color Palette" ExpandDirection="Down" IsExpanded="True" Margin="0,2,0,2" Background="#FF1D1D1D" Foreground="#FFFFC107" FontWeight="SemiBold">
+                                <Expander Name="colorPaletteExpander" Width="182" HorizontalAlignment="Center" Header="Color Palette" ExpandDirection="Down" IsExpanded="True" Margin="0,2,0,2" Background="#FF131313" Foreground="#FFFFC107" FontWeight="SemiBold">
                                     <WrapPanel Margin="3">
                                         <WrapPanel>
                                             <Button Click="ColorPaletteAdd_Click" ToolTip="Add Color" Style="{StaticResource ButtonStyle1}">
@@ -257,108 +257,124 @@
                     </WrapPanel>
                     <!--<Button Name="ToolMove" Content="Move" Canvas.Left="82" Canvas.Top="611" Width="66" Click="Move_Click"/>-->
                 </ScrollViewer>
-                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalAlignment="Right" CanContentScroll="True" RenderTransformOrigin="0.5,0.5" Background="#2b2b2b">
-                    <Grid HorizontalAlignment="Right" Width="200" >
-                        <StackPanel Width="200" >
-                            <StackPanel Width="190" Margin="0,0,0,5" >
-                                <Canvas x:Name="PreviewCanvas"  SnapsToDevicePixels="False"  Width="190" Height="190" HorizontalAlignment="Center" RenderTransformOrigin="0.5,0.5" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased">
-                                    <Image x:Name="animationPreview" Panel.ZIndex="10" MouseMove="Image_MouseMove"  Width="190" Height="190"/>
-                                    <Canvas.Background>
-                                        <DrawingBrush TileMode="Tile" Viewport="0,0,8.5,8.5" ViewportUnits="Absolute">
-                                            <DrawingBrush.Drawing>
-                                                <DrawingGroup>
-                                                    <GeometryDrawing Geometry="M0,0 L2,0 2,2, 0,2Z" Brush="#FFF3F3F3"/>
-                                                    <GeometryDrawing Geometry="M0,1 L2,1 2,2, 1,2 1,0 0,0Z" Brush="#cccccc"/>
-                                                </DrawingGroup>
-                                            </DrawingBrush.Drawing>
-                                        </DrawingBrush>
-                                    </Canvas.Background>
-                                    <Canvas.RenderTransform>
-                                        <MatrixTransform/>
-                                    </Canvas.RenderTransform>
-                                </Canvas>
-                                <DockPanel Margin="0,3,0,2">
-                                    <Label Name="LabelFramesPerSecond"  Content="12" Width="23" Foreground="White" Height="26"/>
-                                    <Slider IsSnapToTickEnabled="True" TickFrequency="1" Maximum="32
-                                            " ValueChanged="FramesPerSecond_ValueChanged" Value="12"  Margin="0,0,0,0" Width="133" Panel.ZIndex="20" Height="20"/>
-                                    <Button Style="{StaticResource MaterialDesignIconButton}" Click="Play_Click" Cursor="Hand" IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}" Width="24" Height="24" Background="#FF191919">
-                                        <StackPanel>
-                                            <Image Name="playImage" Source="/Files/Images/Dark-theme/pause.png" Height="24"/>
-                                        </StackPanel>
-                                    </Button>
+                <Grid HorizontalAlignment="Right" Width="204" >
+                    <DockPanel Width="190" Margin="0,0,0,5" >
+                        <Canvas x:Name="PreviewCanvas" DockPanel.Dock="Top" SnapsToDevicePixels="False"  Width="190" Height="190" HorizontalAlignment="Center" RenderTransformOrigin="0.5,0.5" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased">
+                            <!--<Image x:Name="animationPreview" Panel.ZIndex="10" MouseMove="Image_MouseMove"  Width="190" Height="190"/>-->
+                            <Canvas.Background>
+                                <DrawingBrush TileMode="Tile" Viewport="0,0,8.5,8.5" ViewportUnits="Absolute">
+                                    <DrawingBrush.Drawing>
+                                        <DrawingGroup>
+                                            <GeometryDrawing Geometry="M0,0 L2,0 2,2, 0,2Z" Brush="#FFF3F3F3"/>
+                                            <GeometryDrawing Geometry="M0,1 L2,1 2,2, 1,2 1,0 0,0Z" Brush="#cccccc"/>
+                                        </DrawingGroup>
+                                    </DrawingBrush.Drawing>
+                                </DrawingBrush>
+                            </Canvas.Background>
+                            <Canvas.RenderTransform>
+                                <MatrixTransform/>
+                            </Canvas.RenderTransform>
+                        </Canvas>
+                        <DockPanel Margin="0,5,0,4" DockPanel.Dock="Top">
+                            <Label Name="LabelFramesPerSecond"  Content="12" Width="23" Foreground="White" Height="26"/>
+                            <Slider IsSnapToTickEnabled="True" TickFrequency="1" Maximum="32
+                                        " ValueChanged="FramesPerSecond_ValueChanged" Value="12"  Margin="0,0,0,0" Width="133" Panel.ZIndex="20" Height="20"/>
+                            <Button Style="{StaticResource MaterialDesignIconButton}" Click="Play_Click" Cursor="Hand" IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}" Width="24" Height="24" Background="#FF191919">
+                                <StackPanel>
+                                    <Image Name="playImage" Source="/Files/Images/Dark-theme/pause.png" Height="24"/>
+                                </StackPanel>
+                            </Button>
+                        </DockPanel>
+                        <Grid DockPanel.Dock="Top">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="3*" />
+                                <RowDefinition Height="1*" />
+                            </Grid.RowDefinitions>
+                            <Border Background="#FF131313" BorderBrush="#FF131313" BorderThickness="1" CornerRadius="3" Margin="0,0,0,4">
+                                <DockPanel HorizontalAlignment="Stretch">
+                                    <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Stretch">
+                                        <UniformGrid DockPanel.Dock="Top" Height="30" >
+                                            <Label VerticalAlignment="Center" Foreground="#FFFFC107" FontWeight="SemiBold" HorizontalAlignment="Stretch" Margin="5,0,15,0">Frames</Label>
+                                        </UniformGrid>
+                                        <UniformGrid DockPanel.Dock="Top" Rows="1" HorizontalAlignment="Stretch" Height="38" Margin="4,0,4,1" VerticalAlignment="Top" >
+                                            <Button Padding="0" Margin="2"  Click="CreateImage_Click" ToolTip="Create New Frame" Cursor="Hand">
+                                                <StackPanel>
+                                                    <Image Source="/Files/Images/Dark-theme/dark-plus.png" Height="24"/>
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Padding="0" Margin="2"  Click="DuplicateImage_Click" ToolTip="Duplicate Frame">
+                                                <StackPanel>
+                                                    <Image Source="/Files/Images/Dark-theme/duplicate.png"  Height="24"/>
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Name="mergeButton" Padding="0" Margin="2"  Click="MergeImage_Click" ToolTip="Merge Frames" IsEnabled="false">
+                                                <StackPanel>
+                                                    <Image Source="/Files/Images/Dark-theme/merge.png"  Height="24"/>
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Name="intersectButton" Padding="0" Margin="2"  Click="IntersectImage_Click" ToolTip="Intersect Frames" IsEnabled="false">
+                                                <StackPanel>
+                                                    <Image Source="/Files/Images/Dark-theme/intersect.png"  Height="24"/>
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Padding="0" Margin="2" Click="DeleteImage_Click" ToolTip="Delete Frame">
+                                                <StackPanel>
+                                                    <Image Source="/Files/Images/Dark-theme/delete.png" Height="24"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </UniformGrid>
+                                    </DockPanel>
+                                    <WrapPanel HorizontalAlignment="Center" VerticalAlignment="Stretch" Margin="6,0">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalAlignment="Center" CanContentScroll="True" RenderTransformOrigin="0.5,0.5" Width="188">
+                                            <WrapPanel Name="ImagePreviews" RenderOptions.BitmapScalingMode="NearestNeighbor" HorizontalAlignment="Center"/>
+                                        </ScrollViewer>
+                                    </WrapPanel>
                                 </DockPanel>
-                                <UniformGrid Rows="1" HorizontalAlignment="Stretch" Height="38">
-                                    <Button Padding="0" Margin="2"  Click="CreateImage_Click" ToolTip="Create New Frame">
-                                        <StackPanel>
-                                            <Image Source="/Files/Images/Dark-theme/dark-plus.png" Height="24"/>
-                                        </StackPanel>
-                                    </Button>
-                                    <Button Padding="0" Margin="2"  Click="DuplicateImage_Click" ToolTip="Duplicate Frame">
-                                        <StackPanel>
-                                            <Image Source="/Files/Images/Dark-theme/duplicate.png"  Height="24"/>
-                                        </StackPanel>
-                                    </Button>
-                                    <Button Name="mergeButton" Padding="0" Margin="2"  Click="MergeImage_Click" ToolTip="Merge Frames" IsEnabled="false">
-                                        <StackPanel>
-                                            <Image Source="/Files/Images/Dark-theme/merge.png"  Height="24"/>
-                                        </StackPanel>
-                                    </Button>
-                                    <Button Name="intersectButton" Padding="0" Margin="2"  Click="IntersectImage_Click" ToolTip="Intersect Frames" IsEnabled="false">
-                                        <StackPanel>
-                                            <Image Source="/Files/Images/Dark-theme/intersect.png"  Height="24"/>
-                                        </StackPanel>
-                                    </Button>
-                                    <Button Padding="0" Margin="2" Click="DeleteImage_Click" ToolTip="Delete Frame">
-                                        <StackPanel>
-                                            <Image Source="/Files/Images/Dark-theme/delete.png" Height="24"/>
-                                        </StackPanel>
-                                    </Button>
-                                </UniformGrid>
-                            </StackPanel>
-                            <StackPanel HorizontalAlignment="Center">
-                                <WrapPanel Height="300">
-                                    <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalAlignment="Center" CanContentScroll="True" RenderTransformOrigin="0.5,0.5" Background="#2b2b2b">
-                                        <WrapPanel Name="ImagePreviews"/>
-                                    </ScrollViewer>
-                                </WrapPanel>
-                            </StackPanel>
-                            <UniformGrid Rows="1" HorizontalAlignment="Stretch" Height="38">
-                                <Button Padding="0" Margin="2"  Click="CreateLayer_Click" ToolTip="Create New Layer">
-                                    <StackPanel>
-                                        <Image Source="/Files/Images/Dark-theme/dark-plus.png" Height="24"/>
-                                    </StackPanel>
-                                </Button>
-                                <Button Padding="0" Margin="2"  Click="DuplicateLayer_Click" ToolTip="Duplicate Layer">
-                                    <StackPanel>
-                                        <Image Source="/Files/Images/Dark-theme/duplicate.png"  Height="24"/>
-                                    </StackPanel>
-                                </Button>
-                                <Button Padding="0" Margin="2"  Click="MergeImage_Click" ToolTip="Merge Frames" IsEnabled="false">
-                                    <StackPanel>
-                                        <!--<Image Source="/Files/Images/Dark-theme/merge.png"  Height="24"/>-->
-                                    </StackPanel>
-                                </Button>
-                                <Button Padding="0" Margin="2"  Click="IntersectImage_Click" ToolTip="Intersect Frames" IsEnabled="false">
-                                    <StackPanel>
-                                        <!--<Image Source="/Files/Images/Dark-theme/intersect.png"  Height="24"/>-->
-                                    </StackPanel>
-                                </Button>
-                                <Button Padding="0" Margin="2" Click="DeleteLayer_Click" ToolTip="Delete Layer">
-                                    <StackPanel>
-                                        <Image Source="/Files/Images/Dark-theme/delete.png" Height="24"/>
-                                    </StackPanel>
-                                </Button>
-                            </UniformGrid>
-                            <StackPanel HorizontalAlignment="Center">
-                                <WrapPanel Height="300">
-                                    <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalAlignment="Center" CanContentScroll="True" RenderTransformOrigin="0.5,0.5" Background="#2b2b2b">
-                                        <WrapPanel Name="LayerPreviews"/>
-                                    </ScrollViewer>
-                                </WrapPanel>
-                            </StackPanel>
-                        </StackPanel>
-                    </Grid>
-                </ScrollViewer>
+                            </Border>
+                            <Border Grid.Row="2" Background="#FF131313" BorderBrush="#FF131313" BorderThickness="1" CornerRadius="3" Margin="0,0,0,0">
+                                <DockPanel HorizontalAlignment="Stretch">
+                                    <DockPanel HorizontalAlignment="Stretch"  DockPanel.Dock="Top">
+                                        <UniformGrid DockPanel.Dock="Top" Height="30" >
+                                            <Label VerticalAlignment="Center" Foreground="#FFFFC107" FontWeight="SemiBold" HorizontalAlignment="Stretch" Margin="5,0,15,0">Layers</Label>
+                                        </UniformGrid>
+                                        <UniformGrid DockPanel.Dock="Top" Rows="1" HorizontalAlignment="Stretch" Height="38" Margin="4,0" VerticalAlignment="Top" >
+                                            <Button x:Name="CreateLayerButton" Padding="0" Margin="2"  Click="CreateLayer_Click" ToolTip="Create New Layer">
+                                                <StackPanel>
+                                                    <Image Source="/Files/Images/Dark-theme/dark-plus.png" Height="24"/>
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Padding="0" Margin="2"  Click="DuplicateLayer_Click" ToolTip="Duplicate Layer">
+                                                <StackPanel>
+                                                    <Image Source="/Files/Images/Dark-theme/duplicate.png"  Height="24"/>
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Padding="0" Margin="2"  Click="MergeImage_Click" ToolTip="Merge Frames" IsEnabled="false">
+                                                <StackPanel>
+                                                    <!--<Image Source="/Files/Images/Dark-theme/merge.png"  Height="24"/>-->
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Padding="0" Margin="2"  Click="IntersectImage_Click" ToolTip="Intersect Frames" IsEnabled="false">
+                                                <StackPanel>
+                                                    <!--<Image Source="/Files/Images/Dark-theme/intersect.png"  Height="24"/>-->
+                                                </StackPanel>
+                                            </Button>
+                                            <Button x:Name="DeleteLayerButton" Padding="0" Margin="2" Click="DeleteLayer_Click" ToolTip="Delete Layer" IsEnabled="False">
+                                                <StackPanel>
+                                                    <Image Source="/Files/Images/Dark-theme/delete.png" Height="24"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </UniformGrid>
+                                    </DockPanel>
+                                    <WrapPanel HorizontalAlignment="Center" Margin="4,0">
+                                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalAlignment="Center" CanContentScroll="True" RenderTransformOrigin="0.5,0.5">
+                                            <WrapPanel Name="LayerPreviews" HorizontalAlignment="Left" />
+                                        </ScrollViewer>
+                                    </WrapPanel>
+                                </DockPanel>
+                            </Border>
+                        </Grid>
+                    </DockPanel>
+                </Grid>
             </Grid>
         </DockPanel>
     </ScrollViewer>

@@ -6,7 +6,6 @@ using System.Numerics;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -46,12 +45,14 @@ namespace BakalarskaPrace
         List<Point> clipboardPoints = new List<Point>();
         Point previousMousePoint = new Point();
         bool selection;
+        readonly int layersMax = 20;
+        List<Image> layerPreviewImages = new List<Image>();
 
         bool onionSkinning;
         System.Windows.Controls.Button lastToolButton;
         System.Windows.Controls.Button currentColorLeftButton;
 
-        private Timer timer = new Timer();
+        private System.Windows.Forms.Timer timer = new System.Windows.Forms.Timer();
         int timerInterval = 1000;
         int currentAnimationIndex;
         int currentFPSTarget = 12;
@@ -115,6 +116,7 @@ namespace BakalarskaPrace
             UpdateLayerPreviewButtons();
             UpdateImagePreviewButtons();
             Center();
+            CreatePreviews();
 
             timerInterval = 1000 / currentFPSTarget;
             timer.Interval = timerInterval;
@@ -122,20 +124,41 @@ namespace BakalarskaPrace
             timer.Tick += new System.EventHandler(OnTimedEvent);
         }
 
+        private void CreatePreviews() 
+        {
+            for (int i = 0; i < layersMax; i++)
+            {
+                Image image = new Image();
+                image.Width = 190;
+                image.Height = 190;
+                image.Name = "PreviewLayerImage" + i.ToString();
+                layerPreviewImages.Add(image);
+                PreviewCanvas.Children.Add(image);
+            }
+        }
+
         private void OnTimedEvent(object sender, EventArgs e)
         {
             if (currentAnimationIndex + 1 < layers[currentLayerIndex].Count) currentAnimationIndex += 1;
             else currentAnimationIndex = 0;
 
-            if (layers.Count > 1)
-            {
-                animationPreview.Source = filters.MergeAllLayers(layers, currentAnimationIndex, width, height);
-            }
+            /*if (layers.Count > 1)
+            {*/
+                for (int i = 0; i < layersMax; i++)
+                {
+                    layerPreviewImages[i].Source = null;
+                    if (i < layers.Count)
+                    {
+                        layerPreviewImages[i].Source = layers[i][currentAnimationIndex];
+                    }
+                    
+                }
+                //animationPreview.Source = filters.MergeAllLayers(layers, currentAnimationIndex, width, height);
+            /*}
             else
             {
-                List<WriteableBitmap> layer = new List<WriteableBitmap>(layers[currentLayerIndex]);
-                animationPreview.Source = layer[currentAnimationIndex];
-            }
+                animationPreview.Source = layers[currentLayerIndex][currentAnimationIndex];
+            }*/
         }
 
         private unsafe void Image_MouseDown(object sender, System.Windows.Input.MouseEventArgs e)
@@ -814,7 +837,7 @@ namespace BakalarskaPrace
             List<int> selectedBitmapIndexes;
             int layerIndex = currentLayerIndex;
 
-            if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
             {
                 selectedBitmapIndexes = new List<int>();
                 for (int i = 0; i < layers[currentLayerIndex].Count; i++)
@@ -940,7 +963,7 @@ namespace BakalarskaPrace
 
         private void ImportColorPalette_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog dialog = new OpenFileDialog();
+            System.Windows.Forms.OpenFileDialog dialog = new System.Windows.Forms.OpenFileDialog();
             dialog.Filter = "png images *(.png)|*.png;";
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
@@ -1049,8 +1072,8 @@ namespace BakalarskaPrace
                 layer.Add(newBitmap);
             }
             CreateNewFrame(layer, bitmapIndex);
-            //Action action = () => DeleteImage(bitmapIndex, true, false, newBitmap);
-            //AddActionToUndo(action, false, true);
+            Action action = () => DeleteImage(bitmapIndex, true, false, layer);
+            AddActionToUndo(action, false, true);
         }
 
         private void DuplicateImage_Click(object sender, RoutedEventArgs e)
@@ -1063,8 +1086,8 @@ namespace BakalarskaPrace
                 layer.Add(newBitmap);
             }
             CreateNewFrame(layer, bitmapIndex);
-            //Action action = () => DeleteImage(bitmapIndex, true, false, newBitmap);
-            //AddActionToUndo(action, false, true);
+            Action action = () => DeleteImage(bitmapIndex, true, false, layer);
+            AddActionToUndo(action, false, true);
         }
 
         private void MergeImage_Click(object sender, RoutedEventArgs e)
@@ -1079,8 +1102,8 @@ namespace BakalarskaPrace
                     layer.Add(newBitmap);
                 }
                 CreateNewFrame(layer, bitmapIndex);
-                //Action action = () => DeleteImage(bitmapIndex, true, false, newBitmap);
-                //AddActionToUndo(action, false, true);
+                Action action = () => DeleteImage(bitmapIndex, true, false, layer);
+                AddActionToUndo(action, false, true);
             }
         }
 
@@ -1096,8 +1119,8 @@ namespace BakalarskaPrace
                     layer.Add(newBitmap);
                 }
                 CreateNewFrame(layer, bitmapIndex);
-                //Action action = () => DeleteImage(bitmapIndex, true, false, newBitmap);
-                //AddActionToUndo(action, false, true);
+                Action action = () => DeleteImage(bitmapIndex, true, false, layer);
+                AddActionToUndo(action, false, true);
             }
         }
 
@@ -1105,13 +1128,13 @@ namespace BakalarskaPrace
         {
             if (generateInverseAction == true)
             {
-                /*Action inverseAction = () => DeleteImage(bitmapIndex, false, true, newWriteableBitmap);
-                AddActionToRedo(inverseAction);*/
+                Action inverseAction = () => DeleteImage(bitmapIndex, false, true, layer);
+                AddActionToRedo(inverseAction);
             }
             else if (generateAction == true)
             {
-                /*Action action = () => DeleteImage(bitmapIndex, true, false, newWriteableBitmap);
-                AddActionToUndo(action, false, false);*/
+                Action action = () => DeleteImage(bitmapIndex, true, false, layer);
+                AddActionToUndo(action, false, false);
             }
 
             if (layers[currentLayerIndex].Count > 0) 
@@ -1130,47 +1153,44 @@ namespace BakalarskaPrace
             image.Source = currentBitmap;
             LabelImages.Content = layers[currentLayerIndex].Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
             currentAnimationIndex = currentBitmapIndex;
-            animationPreview.Source = layers[currentLayerIndex][currentAnimationIndex];
+            //animationPreview.Source = layers[currentLayerIndex][currentAnimationIndex];
             UpdateImagePreviewButtons();
             if (onionSkinning == true) UpdateOnionSkinning();
         }
 
         private void DeleteImage_Click(object sender, RoutedEventArgs e)
         {
-            WriteableBitmap currentBitmap = new WriteableBitmap(layers[currentLayerIndex][currentBitmapIndex]);
-            int bitmapIndex = currentBitmapIndex;
-            DeleteImage(bitmapIndex);
-            
-            /*Action action = () => CreateNewFrame(currentBitmap, bitmapIndex, true, false);
-            AddActionToUndo(action, false, true);*/
+            if (layers[currentLayerIndex].Count != 1)
+            {
+                List<WriteableBitmap> layer = new List<WriteableBitmap>();
+                int bitmapIndex = currentBitmapIndex;
+                for (int i = 0; i < layers.Count; i++)
+                {
+                    layer.Add(layers[i][bitmapIndex]);
+                }
+                DeleteImage(bitmapIndex);
+
+                Action action = () => CreateNewFrame(layer, bitmapIndex, true, false);
+                AddActionToUndo(action, false, true);
+            }
         }
 
-        private void DeleteImage(int bitmapIndex, bool generateInverseAction = false, bool generateAction = false, WriteableBitmap bitmap = null)
+        private void DeleteImage(int bitmapIndex, bool generateInverseAction = false, bool generateAction = false, List<WriteableBitmap> layer = null)
         {
             if (generateInverseAction == true)
             {
-                /*Action inverseAction = () => CreateNewFrame(bitmap, bitmapIndex, false, true);
-                AddActionToRedo(inverseAction);*/
+                Action inverseAction = () => CreateNewFrame(layer, bitmapIndex, false, true);
+                AddActionToRedo(inverseAction);
             }
             else if (generateAction == true) 
             {
-                /*Action action = () => CreateNewFrame(bitmap, bitmapIndex, true, false);
-                AddActionToUndo(action, false, false);*/
+                Action action = () => CreateNewFrame(layer, bitmapIndex, true, false);
+                AddActionToUndo(action, false, false);
             }
 
             for (int i = 0; i < layers.Count; i++) 
             {
                 layers[i].RemoveAt(bitmapIndex);
-            }
-            if (layers[currentLayerIndex].Count == 0)
-            {
-                WriteableBitmap newWriteableBitmap = BitmapFactory.New(width, height);
-                layers[currentLayerIndex].Add(newWriteableBitmap);
-            }
-            else if (layers[currentLayerIndex].Count > 1)
-            {
-                intersectButton.IsEnabled = true;
-                mergeButton.IsEnabled = true;
             }
 
             //pokud je poslední index vrátit se na předchozí obrázek
@@ -1180,7 +1200,7 @@ namespace BakalarskaPrace
             image.Source = currentBitmap;
             LabelImages.Content = layers[currentLayerIndex].Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
             currentAnimationIndex = currentBitmapIndex;
-            animationPreview.Source = layers[currentLayerIndex][currentAnimationIndex];
+            //animationPreview.Source = layers[currentLayerIndex][currentAnimationIndex];
             UpdateImagePreviewButtons();
             if (onionSkinning == true) UpdateOnionSkinning();
         }
@@ -1202,7 +1222,7 @@ namespace BakalarskaPrace
             {
                 timer.Stop();
                 currentAnimationIndex = currentBitmapIndex;
-                animationPreview.Source = layers[currentLayerIndex][currentAnimationIndex];
+                //animationPreview.Source = layers[currentLayerIndex][currentAnimationIndex];
             }
         }
 
@@ -1215,7 +1235,7 @@ namespace BakalarskaPrace
                 playAnimation = false;
                 timer.Stop();
                 currentAnimationIndex = currentBitmapIndex;
-                animationPreview.Source = layers[currentLayerIndex][currentAnimationIndex];
+                //animationPreview.Source = layers[currentLayerIndex][currentAnimationIndex];
             }
             else
             {
@@ -1237,9 +1257,6 @@ namespace BakalarskaPrace
             for (int i = 0; i < layers[currentLayerIndex].Count; i++)
             {
                 System.Windows.Controls.Button newButton = new System.Windows.Controls.Button();
-                /*var brush = new ImageBrush();
-                brush.ImageSource = bitmaps[i];*/
-
                 Image newImage = new Image
                 {
                     Source = layers[currentLayerIndex][i],
@@ -1248,12 +1265,11 @@ namespace BakalarskaPrace
                     Height = 120,
                     Width = 120,
                 };
-
-                RenderOptions.SetBitmapScalingMode(newImage, BitmapScalingMode.NearestNeighbor);
                 newButton.Content = newImage;
                 newButton.IsEnabled = (currentBitmapIndex == i) ? false : true;
-                newButton.Width = 140;
-                newButton.Height = 140;
+                newButton.Width = 180;
+                newButton.Height = 180;
+                newButton.Margin = new Thickness(2, 1, 2, 1);
                 newButton.Name = "ImagePreview" + i.ToString();
                 //newButton.SetResourceReference(System.Windows.Controls.Control.StyleProperty, "AnimationButton");
                 newButton.AddHandler(System.Windows.Controls.Button.ClickEvent, new RoutedEventHandler(PreviewButton_Click));
@@ -1319,7 +1335,7 @@ namespace BakalarskaPrace
 
             LabelImages.Content = layers[currentLayerIndex].Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
             currentAnimationIndex = currentBitmapIndex;
-            animationPreview.Source = layers[currentLayerIndex][currentAnimationIndex];
+            //animationPreview.Source = layers[currentLayerIndex][currentAnimationIndex];
             if (onionSkinning == true) UpdateOnionSkinning();
             previewButtons = ImagePreviews.Children.OfType<System.Windows.Controls.Button>().ToList();
             for (int i = 0; i < previewButtons.Count; i++)
@@ -1429,7 +1445,7 @@ namespace BakalarskaPrace
 
         private void Import()
         {
-            OpenFileDialog dialog = new OpenFileDialog();
+            System.Windows.Forms.OpenFileDialog dialog = new System.Windows.Forms.OpenFileDialog();
             dialog.Filter = "png images *(.png)|*.png;";
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
@@ -1604,17 +1620,26 @@ namespace BakalarskaPrace
 
         private void CreateLayer_Click(object sender, RoutedEventArgs e)
         {
-            currentLayerIndex++;
-            int layerIndex = currentLayerIndex;
-            List<WriteableBitmap> newLayer = new List<WriteableBitmap>();
-            foreach (WriteableBitmap bitmap in layers[0])
+            if (layers.Count + 1 <= layersMax)
             {
-                WriteableBitmap newBitamp = BitmapFactory.New(width, height);
-                newLayer.Add(newBitamp);
+                if (layers.Count + 1 > 1) DeleteLayerButton.IsEnabled = true;
+                currentLayerIndex++;
+                int layerIndex = currentLayerIndex;
+                List<WriteableBitmap> newLayer = new List<WriteableBitmap>();
+                foreach (WriteableBitmap bitmap in layers[0])
+                {
+                    WriteableBitmap newBitamp = BitmapFactory.New(width, height);
+                    newLayer.Add(newBitamp);
+                }
+                CreateLayer(newLayer, currentLayerIndex);
+                Action action = () => DeleteLayer(layerIndex++, true, false);
+                AddActionToUndo(action, false, true);
+
             }
-            CreateLayer(newLayer, currentLayerIndex);
-            Action action = () => DeleteLayer(layerIndex++, true, false);
-            AddActionToUndo(action, false, true);
+            else 
+            {
+                CreateLayerButton.IsEnabled = false;
+            }
         }
 
         private void CreateLayer(List<WriteableBitmap> newLayer, int layerIndex, bool generateInverseAction = false, bool generateAction = false) 
@@ -1641,6 +1666,7 @@ namespace BakalarskaPrace
 
         private void UpdateLayerPreviewButtons()
         {
+            Console.WriteLine(currentLayerIndex);
             layerButtons = LayerPreviews.Children.OfType<System.Windows.Controls.Button>().ToList();
             foreach (System.Windows.Controls.Button button in layerButtons)
             {
@@ -1649,18 +1675,18 @@ namespace BakalarskaPrace
 
             for (int i = 0; i < layers.Count; i++)
             {
-                System.Windows.Controls.Button newButton = new System.Windows.Controls.Button();
+                Button newButton = new Button();
                 newButton.Content = i + 1;
                 newButton.IsEnabled = (currentLayerIndex == i) ? false : true;
-                newButton.Width = 140;
-                newButton.Height = 40;
+                newButton.Width = 200;
+                newButton.Height = 24;
                 newButton.Name = "LayerPreview" + i.ToString();
+                newButton.HorizontalContentAlignment = HorizontalAlignment.Left;
+                newButton.Margin = new Thickness(2, 1, 2, 1);
                 //newButton.SetResourceReference(System.Windows.Controls.Control.StyleProperty, "AnimationButton");
                 newButton.AddHandler(System.Windows.Controls.Button.ClickEvent, new RoutedEventHandler(LayerButton_Click));
                 LayerPreviews.Children.Add(newButton);
             }
-
-            UpdateLayerViewing();
         }
 
         private void LayerButton_Click(object sender, RoutedEventArgs e)
@@ -1671,7 +1697,6 @@ namespace BakalarskaPrace
             layers[currentLayerIndex] = layers[index];
             UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
             UpdateImagePreviewButtons();
-            UpdateLayerViewing();
             UpdateLayerPreviewButtons();
         }
 
@@ -1704,9 +1729,18 @@ namespace BakalarskaPrace
         private void DeleteLayer_Click(object sender, RoutedEventArgs e)
         {
             int layerIndex = currentLayerIndex;
-            DeleteLayer(layerIndex);
-            /*Action action = () => CreateLayer(layerIndex, true, false);
-            AddActionToUndo(action, false, true);*/
+
+            if (layers.Count - 2 <= layersMax) CreateLayerButton.IsEnabled = true;
+
+            if (layers.Count - 1 == 1) DeleteLayerButton.IsEnabled = false;
+
+            if(layers.Count > 1)
+            {
+                List<WriteableBitmap> layer = new List<WriteableBitmap>(layers[layerIndex]);
+                DeleteLayer(layerIndex);
+                Action action = () => CreateLayer(layer, layerIndex, true, false);
+                AddActionToUndo(action, false, true);
+            }
         }
 
         private void DeleteLayer(int layerIndex, bool generateInverseAction = false, bool generateAction = false) 
@@ -1724,16 +1758,14 @@ namespace BakalarskaPrace
                 AddActionToUndo(action, false, false);
             }
 
-            if (layerIndex > 0)
-            {
-                layers.RemoveAt(layerIndex);
-                layerIndex--;
-                layers[currentLayerIndex] = layers[layerIndex];
-                currentLayerIndex = layerIndex;
-                UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
-                UpdateImagePreviewButtons();
-                UpdateLayerPreviewButtons();
-            }
+            layers.RemoveAt(layerIndex);
+            if (layerIndex - 1 == -1) layerIndex = 0;
+            else layerIndex--;
+            //layers[currentLayerIndex] = layers[layerIndex];
+            currentLayerIndex = layerIndex;
+            UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
+            UpdateImagePreviewButtons();
+            UpdateLayerPreviewButtons();
         }
 
         private void DuplicateLayer_Click(object sender, RoutedEventArgs e)
