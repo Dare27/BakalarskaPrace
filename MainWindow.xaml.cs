@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -142,23 +143,14 @@ namespace BakalarskaPrace
             if (currentAnimationIndex + 1 < layers[currentLayerIndex].Count) currentAnimationIndex += 1;
             else currentAnimationIndex = 0;
 
-            /*if (layers.Count > 1)
-            {*/
-                for (int i = 0; i < layersMax; i++)
-                {
-                    layerPreviewImages[i].Source = null;
-                    if (i < layers.Count)
-                    {
-                        layerPreviewImages[i].Source = layers[i][currentAnimationIndex];
-                    }
-                    
-                }
-                //animationPreview.Source = filters.MergeAllLayers(layers, currentAnimationIndex, width, height);
-            /*}
-            else
+            for (int i = 0; i < layersMax; i++)
             {
-                animationPreview.Source = layers[currentLayerIndex][currentAnimationIndex];
-            }*/
+                layerPreviewImages[i].Source = null;
+                if (i < layers.Count)
+                {
+                    layerPreviewImages[i].Source = layers[i][currentAnimationIndex];
+                } 
+            }
         }
 
         private unsafe void Image_MouseDown(object sender, System.Windows.Input.MouseEventArgs e)
@@ -283,12 +275,11 @@ namespace BakalarskaPrace
             int x = (int)e.GetPosition(image).X;
             int y = (int)e.GetPosition(image).Y;
             mousePosition = new Point(x, y);
-
             bool shift = ((Keyboard.Modifiers & ModifierKeys.Shift) != 0) ? true : false;
             bool ctrl = ((Keyboard.Modifiers & ModifierKeys.Control) != 0) ? true : false;
-
-            LabelPosition.Content = "[" + width + ":" + height + "] " + x + ":" + y;
             int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
+            LabelPosition.Content = "[" + width + ":" + height + "] " + x + ":" + y;
+
             if (x >= 0 && y >= 0 && x < width && y < height && (previewMousePosition.X != x || previewMousePosition.Y != y))
             {
                 if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
@@ -507,10 +498,10 @@ namespace BakalarskaPrace
                 Action action = () => GeneratePoints(points, colors, index, index02, false, 1, true);
                 AddActionToUndo(action, false, true);
 
-                drawPoints = new List<Point>();
-                undoPoints = new List<Point>();
-                undoColors = new List<Color>();
-                visitedPoints = new List<Point>();
+                drawPoints.Clear();
+                undoPoints.Clear();
+                undoColors.Clear();
+                visitedPoints.Clear();
 
                 if (currentTool != ToolSelection.path) mouseDownPosition = new Point(-1, -1);
                 else mouseDownPosition = new Point(x, y);
@@ -1404,6 +1395,76 @@ namespace BakalarskaPrace
         }
 
         //Menu controls
+        private void SaveFull_Click(object sender, RoutedEventArgs e) 
+        {
+            /*List<WriteableBitmap> bitmaps = new List<WriteableBitmap>();
+            for (int i = 0; i < layers.Count; i++) 
+            {
+                WriteableBitmap finalBitmap = transform.CreateCompositeBitmap(layers[i]);
+                bitmaps.Add(finalBitmap);
+            }
+            FileManagement fileManagement = new FileManagement();
+            fileManagement.SaveFile(bitmaps);*/
+            FileManagement fileManagement = new FileManagement();
+            fileManagement.SaveFile(layers, width, height);
+        }
+
+        private void LoadFull_Click(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Forms.OpenFileDialog dialog = new System.Windows.Forms.OpenFileDialog();
+            dialog.Filter = ".pixela|*.pixela;";
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                try
+                {
+                    using (StreamReader readtext = new StreamReader(dialog.FileName))
+                    {
+                        string[] lines = File.ReadAllLines(dialog.FileName);
+                        width = int.Parse(lines[0]);
+                        height = int.Parse(lines[1]);
+                        int layersCount = Convert.ToInt32(lines[2]);
+                        int framesCount = Convert.ToInt32(lines[3]);
+                        List<WriteableBitmap> bitmaps = new List<WriteableBitmap>();
+                        List<List<WriteableBitmap>> newLayers = new List<List<WriteableBitmap>>();
+
+                        for (int i = 4; i < lines.Count(); i++) 
+                        {
+                            if (lines[i] != "") 
+                            {
+                                byte[] buffer = Encoding.Unicode.GetBytes(lines[i]);
+                                WriteableBitmap bitmap = BitmapFactory.New(width, height);
+                                bitmap.FromByteArray(buffer);
+                                bitmaps.Add(bitmap);
+                            }
+                        }
+
+                        for (int i = 0; i < layersCount; i++) 
+                        {
+                            List<WriteableBitmap> newLayer = new List<WriteableBitmap>();
+                            newLayers.Add(newLayer);
+                            for (int j = 0; j < framesCount; j++) 
+                            {
+                                newLayers[i].Add(bitmaps[j + framesCount * i]);
+                            }
+                        }
+                        layers = new List<List<WriteableBitmap>>(newLayers);
+                        currentBitmapIndex = 0;
+                        currentLayerIndex = 0;
+                        UpdateImagePreviewButtons();
+                        UpdateLayerPreviewButtons();
+                        UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
+                        LabelImages.Content = layers[currentLayerIndex].Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
+                        LabelPosition.Content = "[" + width + ":" + height + "] " + mousePosition.X + ":" + mousePosition.Y;
+                    }
+
+                }
+                catch
+                {
+
+                }
+            }
+        }
+
         private void ExportSingle_Click(object sender, RoutedEventArgs e)
         {
             ExportSingle();

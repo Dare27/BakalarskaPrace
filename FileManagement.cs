@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Windows.Forms;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -10,6 +11,46 @@ namespace BakalarskaPrace
 {
     internal class FileManagement
     {
+        public void SaveFile(List<List<WriteableBitmap>> layers, int width, int height)
+        {
+            SaveFileDialog dialog = new SaveFileDialog();
+            dialog.Filter = ".pixela|*.pixela";
+            DateTime localDate = DateTime.Now;
+            string format = "H-mm-d-M-yyyy";
+            string result = localDate.ToString(format);
+            string name = "New Animation " + result;
+            dialog.FileName = name;
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                try
+                {
+                    if (dialog.FileName != string.Empty)
+                    {
+                        using (StreamWriter streamWriter = new StreamWriter(dialog.FileName))
+                        {
+                            streamWriter.WriteLine(/*"Width=" + */width);
+                            streamWriter.WriteLine(/*"Height=" + */height);
+                            streamWriter.WriteLine(/*"Layers=" + */layers.Count);
+                            streamWriter.WriteLine(/*"Frames=" + */layers[0].Count);
+                            for (int i = 0; i < layers.Count; i++) 
+                            {
+                                for (int j = 0; j < layers[i].Count; j++) 
+                                {
+                                    byte[] buffer = layers[i][j].ToByteArray();
+                                    string line = Encoding.Unicode.GetString(buffer);
+                                    streamWriter.WriteLine(line); 
+                                }
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+
+                }
+            }
+        }
+
         public void ExportPNG(WriteableBitmap bitmap)
         {
             SaveFileDialog dialog = new SaveFileDialog();
@@ -27,6 +68,40 @@ namespace BakalarskaPrace
                             encoder.Save(fileStream);
                             fileStream.Close();
                             fileStream.Dispose();
+                        }
+                    }
+                }
+                catch
+                {
+
+                }
+            }
+        }
+
+        public void ExportPSD(List<WriteableBitmap> layers/*, WriteableBitmap combinedBitmap*/)
+        {
+            SaveFileDialog dialog = new SaveFileDialog();
+            dialog.Filter = ".psd|*.psd";
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                try
+                {
+                    if (dialog.FileName != string.Empty)
+                    {
+                        using (MagickImageCollection collection = new MagickImageCollection())
+                        {
+                            //Pro tento formát by měla být správně jako první obrázek kombinace všech vrstev
+                            WriteableBitmap emptyBitmap = BitmapFactory.New((int)layers[0].Width, (int)layers[0].Height);
+                            MagickImage imgBase = new MagickImage(ImageToByte(emptyBitmap));
+                            collection.Add(imgBase);
+                            for (int i = 0; i < layers.Count; i++)
+                            {
+                                //Převedení WriteableBitmap na byte pole
+                                byte[] bitmapData = ImageToByte(layers[i]);
+                                MagickImage image = new MagickImage(bitmapData);
+                                collection.Add(image);
+                            }
+                            collection.Write(System.IO.Path.GetFullPath(dialog.FileName));
                         }
                     }
                 }

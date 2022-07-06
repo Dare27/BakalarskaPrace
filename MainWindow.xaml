@@ -13,6 +13,8 @@
             <Menu DockPanel.Dock="Top" Panel.ZIndex="1000" Height="24px" Background="#FF1D1D1D" BorderThickness="0,0,0,1" BorderBrush="#FF1D1D1D">
                 <MenuItem Header="_File" VerticalAlignment="Center" Height="24" Foreground="Snow" Background="#FF1D1D1D" FontSize="12">
                     <MenuItem Header="_Create new animation" Click="Load_Click"/>
+                    <MenuItem Header="_Load animation" Click="LoadFull_Click" />
+                    <MenuItem Header="_Save animation" Click="SaveFull_Click" />
                     <MenuItem Header="_Import .png" Click="Load_Click"/>
                     <MenuItem Header="_Export current frame" Click="ExportSingle_Click" />
                     <MenuItem Header="_Export animation" Click="ExportFull_Click" />
