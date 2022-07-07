@@ -2,7 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -49,6 +52,110 @@ namespace BakalarskaPrace
 
                 }
             }
+        }
+
+        public List<List<WriteableBitmap>> LoadFile()
+        {
+            List<List<WriteableBitmap>> newLayers = new List<List<WriteableBitmap>>();
+            System.Windows.Forms.OpenFileDialog dialog = new System.Windows.Forms.OpenFileDialog();
+            dialog.Filter = ".pixela|*.pixela;";
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                try
+                {
+                    using (StreamReader readtext = new StreamReader(dialog.FileName))
+                    {
+                        string[] lines = File.ReadAllLines(dialog.FileName);
+                        int width = int.Parse(lines[0]);
+                        int height = int.Parse(lines[1]);
+                        int layersCount = Convert.ToInt32(lines[2]);
+                        int framesCount = Convert.ToInt32(lines[3]);
+                        List<WriteableBitmap> bitmaps = new List<WriteableBitmap>();
+
+                        for (int i = 4; i < lines.Count(); i++)
+                        {
+                            if (lines[i] != "")
+                            {
+                                byte[] buffer = Encoding.Unicode.GetBytes(lines[i]);
+                                WriteableBitmap bitmap = BitmapFactory.New(width, height);
+                                bitmap.FromByteArray(buffer);
+                                bitmaps.Add(bitmap);
+                            }
+                        }
+
+                        for (int i = 0; i < layersCount; i++)
+                        {
+                            List<WriteableBitmap> newLayer = new List<WriteableBitmap>();
+                            newLayers.Add(newLayer);
+                            for (int j = 0; j < framesCount; j++)
+                            {
+                                newLayers[i].Add(bitmaps[j + framesCount * i]);
+                            }
+                        }
+                        return newLayers;
+                    }
+
+                }
+                catch
+                {
+
+                }
+            }
+            return null;
+        }
+
+        public List<List<WriteableBitmap>> ImportFile()
+        {
+            List<List<WriteableBitmap>> newLayers = new List<List<WriteableBitmap>>();
+            System.Windows.Forms.OpenFileDialog dialog = new System.Windows.Forms.OpenFileDialog();
+            dialog.Filter = "png images *(.png)|*.png;";
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                try
+                {
+                    var filePath = dialog.FileName;
+                    BitmapImage bitmapImage = new BitmapImage(new Uri(filePath));
+                    WriteableBitmap newBitmap = new WriteableBitmap(bitmapImage);
+                    WindowLoadImage subwindow = new WindowLoadImage();
+                    subwindow.ShowDialog();
+                    List<WriteableBitmap> layer = new List<WriteableBitmap>();
+                    newLayers.Add(layer);
+
+                    if (subwindow.importImage || subwindow.importSpritesheet)
+                    {
+                        if (subwindow.importImage == true)
+                        {
+                            newLayers[0].Add(newBitmap);
+                        }
+                        else
+                        {
+                            //Vydělení strany animace velikostí snímku
+                            int rows = newBitmap.PixelWidth / subwindow.imageWidth;
+                            int columns = newBitmap.PixelHeight / subwindow.imageHeight;
+                            int offsetWidth = subwindow.offsetWidth;
+                            int offsetHeight = subwindow.offsetWidth;
+
+                            //Získání jednotlivých snímků 
+                            for (int j = 0; j < rows; j++)
+                            {
+                                for (int i = 0; i < columns; i++)
+                                {
+                                    Int32Rect rect = new Int32Rect(i * subwindow.imageWidth, j * subwindow.imageHeight, subwindow.imageWidth, subwindow.imageHeight);
+                                    CroppedBitmap croppedBitmap = new CroppedBitmap(newBitmap, rect);
+                                    WriteableBitmap writeableBitmap = new WriteableBitmap(croppedBitmap);
+                                    newLayers[0].Add(writeableBitmap);
+                                }
+                            }
+                        }
+                        return newLayers;
+                    }
+                }
+                catch
+                {
+
+                }
+            }
+            return null;
         }
 
         public void ExportPNG(WriteableBitmap bitmap)
@@ -152,6 +259,40 @@ namespace BakalarskaPrace
 
                 }
             }
+        }
+
+        public List<Color> ImportColorPalette()
+        {
+            System.Windows.Forms.OpenFileDialog dialog = new System.Windows.Forms.OpenFileDialog();
+            dialog.Filter = "png images *(.png)|*.png;";
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                try
+                {
+                    List<Color> colorPalette = new List<Color>();
+                    var filePath = dialog.FileName;
+                    BitmapImage bitmapImage = new BitmapImage(new Uri(filePath));
+                    WriteableBitmap newBitmap = new WriteableBitmap(bitmapImage);
+                    if (newBitmap.PixelHeight < 2 && newBitmap.PixelWidth < 257)
+                    {
+                        using (newBitmap.GetBitmapContext())
+                        {
+                            ImageManipulation imageManipulation = new ImageManipulation();
+                            for (int i = 0; i < newBitmap.PixelWidth; i++)
+                            {
+                                Color color = imageManipulation.GetPixelColor(i, 0, newBitmap);
+                                colorPalette.Add(color);
+                            }
+                            return colorPalette;
+                        }
+                    }
+                }
+                catch
+                {
+
+                }
+            }
+            return null;
         }
 
         public static byte[] ImageToByte(WriteableBitmap imageSource)
