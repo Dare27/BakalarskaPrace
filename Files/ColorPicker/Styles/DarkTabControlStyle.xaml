@@ -6,7 +6,7 @@
     </ResourceDictionary.MergedDictionaries>
     <Style TargetType="TabItem">
         <Setter Property="Foreground" Value="Snow" />
-        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Background" Value="#FF131313" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TabItem}">
@@ -26,7 +26,9 @@
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter Property="Panel.ZIndex" Value="100" />
+                            <Setter TargetName="Border" Property="Background" Value="#FF131313" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="False">
                             <Setter TargetName="Border" Property="Background" Value="#202020" />
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -35,7 +37,7 @@
         </Setter>
     </Style>
     <Style TargetType="TabControl">
-        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Background" Value="#FF131313" />
         <Setter Property="BorderThickness" Value="0" />
     </Style>
 </ResourceDictionary>

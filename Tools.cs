@@ -20,6 +20,65 @@ namespace BakalarskaPrace
             colorSpaceConvertor = new ColorSpaceConvertor();
         }
 
+        public List<Point> StrokeThicknessSetter(WriteableBitmap bitmap, WriteableBitmap previewBitmap, int x, int y, Color color, bool AlphaBlend, int thickness, List<Point> visitedPoints, List<Color> undoColors, List<Point> undoPoints)
+        {
+            int width = bitmap.PixelWidth;
+            int height = bitmap.PixelHeight;
+
+            //Při kreslení přímek se musí již navštívené pixely přeskočit, aby nedošlo k nerovnoměrně vybarveným přímkám při velikostech > 1 a alpha < 255
+            List<Point> points = new List<Point>();
+
+            int size = thickness / 2;
+            int isOdd = 0;
+
+            if (thickness % 2 != 0) isOdd = 1;
+
+            for (int i = -size; i < size + isOdd; i++)
+            {
+                for (int j = -size; j < size + isOdd; j++)
+                {
+                    //Zkontrolovat jestli se pixel vejde do bitmapy
+                    if (x + i < width && x + i > -1 && y + j < height && y + j > -1)
+                    {
+                        Point point = new Point(x + i, y + j);
+
+                        //Pokud se zapisuje do preview bitmapy tak kontrola navštívených bodů vede k smazání bodů 
+                        if (bitmap == previewBitmap)
+                        {
+                            points.Add(point);
+                        }
+                        else
+                        {
+                            if (!visitedPoints.Contains(point))
+                            {
+                                visitedPoints.Add(point);
+                                points.Add(point);
+                            }
+                        }
+                    }
+                }
+            }
+
+            using (bitmap.GetBitmapContext())
+            {
+                foreach (var point in points)
+                {
+                    if (bitmap != previewBitmap)
+                    {
+                        Color currentColor = imageManipulation.GetPixelColor((int)point.X, (int)point.Y, bitmap);
+                        undoColors.Add(currentColor);
+                        undoPoints.Add(point);
+                    }
+
+                    Color finalColor = color;
+                    Color currentPixelColor = imageManipulation.GetPixelColor((int)point.X, (int)point.Y, bitmap);
+                    if (AlphaBlend == true) finalColor = imageManipulation.ColorMix(color, currentPixelColor);
+                    imageManipulation.AddPixel((int)point.X, (int)point.Y, finalColor, bitmap);
+                }
+            }
+            return points;
+        }
+
         public void Dithering(List<Point> points, Color color01, Color color02, WriteableBitmap bitmap, int strokeThickness, bool alphaBlending, List<Point> visitedPoints, List<Point> undoPoints, List<Color> undoColors)
         {
             if (visitedPoints == null) visitedPoints = new List<Point>();

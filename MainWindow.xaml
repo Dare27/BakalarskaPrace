@@ -39,7 +39,7 @@
                 </MenuItem>
             </Menu>
             <Grid>
-                <Grid Margin="212,0,204,0" Background="#808080">
+                <Grid Margin="210,0,210,0" Background="#808080">
                     <Border>
                         <Grid x:Name="grid" MouseDown="Grid_MouseDown" MouseMove="Grid_MouseMove" MouseUp="Grid_MouseUp" Margin="0,0,0,0">
                             <Grid.RenderTransform>
@@ -97,7 +97,7 @@
                 <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalAlignment="Left" CanContentScroll="True" RenderTransformOrigin="0.5,0.5" Width="212" Background="#2b2b2b">
                     <WrapPanel HorizontalAlignment="Left" Width="212" VerticalAlignment="Stretch">
                         <WrapPanel Width="200" >
-                            <colorpicker:StandardColorPicker x:Name="colorSelector" Height="334" ColorChanged="ColorChanged" Style="{StaticResource DefaultColorPickerStyle}" Width="202" Margin="-1,0,0,0" />
+                            <colorpicker:StandardColorPicker x:Name="colorSelector" Height="334" ColorChanged="ColorChanged" Style="{StaticResource DefaultColorPickerStyle}" Width="182" />
                         </WrapPanel>
                         <WrapPanel x:Name="wrapPanel" HorizontalAlignment="Center" Width="200">
                             <StackPanel Width="{Binding Width, ElementName=wrapPanel}"  Margin="0,2,0,2">
@@ -259,7 +259,7 @@
                     </WrapPanel>
                     <!--<Button Name="ToolMove" Content="Move" Canvas.Left="82" Canvas.Top="611" Width="66" Click="Move_Click"/>-->
                 </ScrollViewer>
-                <Grid HorizontalAlignment="Right" Width="204" >
+                <Grid HorizontalAlignment="Right" Width="210" >
                     <DockPanel Width="190" Margin="0,0,0,5" >
                         <Canvas x:Name="PreviewCanvas" DockPanel.Dock="Top" SnapsToDevicePixels="False"  Width="190" Height="190" HorizontalAlignment="Center" RenderTransformOrigin="0.5,0.5" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased">
                             <!--<Image x:Name="animationPreview" Panel.ZIndex="10" MouseMove="Image_MouseMove"  Width="190" Height="190"/>-->
@@ -345,21 +345,36 @@
                                                     <Image Source="/Files/Images/Dark-theme/dark-plus.png" Height="24"/>
                                                 </StackPanel>
                                             </Button>
-                                            <Button Padding="0" Margin="2"  Click="DuplicateLayer_Click" ToolTip="Duplicate Layer">
+                                            <Button x:Name="MoveLayerDownButton" Padding="0" Margin="2"  Click="MoveLayerDown_Click" ToolTip="Move layer down" IsEnabled="False">
+                                                <StackPanel>
+                                                    <Image Source="/Files/Images/Dark-theme/arrow-down.png" Height="24"/>
+                                                </StackPanel>
+                                            </Button>
+                                            <Button x:Name="MoveLayerUpButton" Padding="0" Margin="2"  Click="MoveLayerUp_Click" ToolTip="Move layer up" IsEnabled="False">
+                                                <StackPanel>
+                                                    <Image Source="/Files/Images/Dark-theme/arrow-up.png" Height="24"/>
+                                                </StackPanel>
+                                            </Button>
+                                            <Button x:Name="MergeLayersButton" Padding="0" Margin="2"  Click="MergeLayers_Click" ToolTip="Move layer up" IsEnabled="False">
+                                                <StackPanel>
+                                                    <Image Source="/Files/Images/Dark-theme/merge.png" Height="24"/>
+                                                </StackPanel>
+                                            </Button>
+                                            <!--<Button Padding="0" Margin="2"  Click="DuplicateLayer_Click" ToolTip="Duplicate Layer">
                                                 <StackPanel>
                                                     <Image Source="/Files/Images/Dark-theme/duplicate.png"  Height="24"/>
                                                 </StackPanel>
                                             </Button>
                                             <Button Padding="0" Margin="2"  Click="MergeImage_Click" ToolTip="Merge Frames" IsEnabled="false">
                                                 <StackPanel>
-                                                    <!--<Image Source="/Files/Images/Dark-theme/merge.png"  Height="24"/>-->
+                                                    <Image Source="/Files/Images/Dark-theme/merge.png"  Height="24"/>
                                                 </StackPanel>
                                             </Button>
                                             <Button Padding="0" Margin="2"  Click="IntersectImage_Click" ToolTip="Intersect Frames" IsEnabled="false">
                                                 <StackPanel>
-                                                    <!--<Image Source="/Files/Images/Dark-theme/intersect.png"  Height="24"/>-->
+                                                    <Image Source="/Files/Images/Dark-theme/intersect.png"  Height="24"/>
                                                 </StackPanel>
-                                            </Button>
+                                            </Button>-->
                                             <Button x:Name="DeleteLayerButton" Padding="0" Margin="2" Click="DeleteLayer_Click" ToolTip="Delete Layer" IsEnabled="False">
                                                 <StackPanel>
                                                     <Image Source="/Files/Images/Dark-theme/delete.png" Height="24"/>

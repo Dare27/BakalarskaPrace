@@ -23,7 +23,7 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <TabControl Canvas.Top="290" Margin="10" MaxHeight="130" VerticalAlignment="Top" BorderThickness="0,0,0,0" Background="#FF1D1D1D" >
+    <TabControl Canvas.Top="290" Margin="9" MaxHeight="130" VerticalAlignment="Top" BorderThickness="0,0,0,0" Background="#FF131313" >
         <TabControl.Resources>
             <Style TargetType="TabPanel">
                 <Setter Property="HorizontalAlignment" Value="Right" />

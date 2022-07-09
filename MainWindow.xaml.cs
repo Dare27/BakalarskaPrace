@@ -97,29 +97,14 @@ namespace BakalarskaPrace
             currentColors[3] = Color.FromArgb(0, 0, 0, 0);
 
             paintSurface.Visibility = Visibility.Visible;
-            width = windowStartup.newWidth;
-            height = windowStartup.newHeight;
-
-            previewBitmap = BitmapFactory.New(width, height);
-            previewImage.Source = previewBitmap;
-            previewImage.Width = width;
-            previewImage.Height = height;
-
-            currentBitmap = BitmapFactory.New(width, height);
+            currentBitmap = BitmapFactory.New(windowStartup.newWidth, windowStartup.newHeight);
             layers.Add(new List<WriteableBitmap>()); //Výchozí vrstva
             layers[0].Add(currentBitmap);
-            paintSurface.Width = width;
-            paintSurface.Height = height;
-            image.Width = width;
-            image.Height = height;
-            image.Source = layers[currentLayerIndex][currentBitmapIndex];
-            Action action = () => transform.Resize(layers, windowStartup.newWidth, windowStartup.newHeight, "middle");
-            //AddActionToUndo(action, false, false);
-            LabelPosition.Content = "[" + width + ":" + height + "] " + 0 + ":" + 0;
+            
             LabelScale.Content = "1.0";
-            LabelImages.Content = layers[currentLayerIndex].Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
             lastToolButton = brush;
 
+            UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
             UpdateLayerPreviewButtons();
             UpdateImagePreviewButtons();
             Center();
@@ -129,6 +114,43 @@ namespace BakalarskaPrace
             timer.Interval = timerInterval;
             timer.Enabled = true;
             timer.Tick += new System.EventHandler(OnTimedEvent);
+        }
+
+        //Aktualizace plátna
+        private void UpdateCurrentBitmap(int bitmapIndex, int layerIndex)
+        {
+            if (width != layers[0][0].PixelWidth && height != layers[0][0].PixelHeight) Center();
+            width = layers[0][0].PixelWidth;
+            height = layers[0][0].PixelHeight;
+            currentBitmapIndex = bitmapIndex;
+            currentLayerIndex = layerIndex;
+            currentBitmap = layers[currentLayerIndex][currentBitmapIndex];
+            paintSurface.Width = width;
+            paintSurface.Height = height;
+            image.Width = width;
+            image.Height = height;
+            image.Source = currentBitmap;
+
+            previewBitmap = BitmapFactory.New(width, height);
+            previewImage.Source = previewBitmap;
+            previewImage.Width = width;
+            previewImage.Height = height;
+
+            LabelImages.Content = layers[currentLayerIndex].Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
+            LabelPosition.Content = "[" + width + ":" + height + "] " + mousePosition.X + ":" + mousePosition.Y;
+            previewButtons = ImagePreviews.Children.OfType<System.Windows.Controls.Button>().ToList();
+            for (int i = 0; i < previewButtons.Count; i++)
+            {
+                if (currentBitmapIndex == i) previewButtons[i].IsEnabled = false;
+                else previewButtons[i].IsEnabled = true;
+            }
+            if (onionSkinning == true) UpdateOnionSkinning();
+            if (playAnimation == false || currentFPSTarget == 0)
+            {
+                currentAnimationIndex = currentBitmapIndex;
+                SetPreviewAnimationImages(currentAnimationIndex);
+            }
+            UpdateLayerViewing();
         }
 
         private void CreatePreviews() 
@@ -159,25 +181,7 @@ namespace BakalarskaPrace
             }
         }
 
-        private void OnTimedEvent(object sender, EventArgs e)
-        {
-            if (currentAnimationIndex + 1 < layers[currentLayerIndex].Count) currentAnimationIndex += 1;
-            else currentAnimationIndex = 0;
-
-            SetPreviewAnimationImages(currentAnimationIndex);
-        }
-
-        private void SetPreviewAnimationImages(int animationIndex) 
-        {
-            for (int i = 0; i < layersMax; i++)
-            {
-                layerPreviewImages[i].Source = null;
-                if (i < layers.Count)
-                {
-                    layerPreviewImages[i].Source = layers[i][animationIndex];
-                }
-            }
-        }
+        //Kreslení do plátna
 
         private unsafe void Image_MouseDown(object sender, System.Windows.Input.MouseEventArgs e)
         {
@@ -222,7 +226,11 @@ namespace BakalarskaPrace
                         }
                     case ToolSelection.colorPicker:
                         {
-                            ColorPicker(x, y, colorIndex);
+                            currentColors[colorIndex] = imageManipulation.GetPixelColor(x, y, currentBitmap);
+                            SolidColorBrush brush = new SolidColorBrush();
+                            brush.Color = currentColors[colorIndex];
+                            if (colorIndex == 0) colorSelector.SelectedColor = currentColors[0];
+                            else colorSelector.SecondaryColor = currentColors[1];
                             break;
                         }
                     case ToolSelection.bucket:
@@ -338,7 +346,11 @@ namespace BakalarskaPrace
                             }
                         case ToolSelection.colorPicker:
                             {
-                                ColorPicker(x, y, colorIndex);
+                                currentColors[colorIndex] = imageManipulation.GetPixelColor(x, y, currentBitmap);
+                                SolidColorBrush brush = new SolidColorBrush();
+                                brush.Color = currentColors[colorIndex];
+                                if (colorIndex == 0) colorSelector.SelectedColor = currentColors[0];
+                                else colorSelector.SecondaryColor = currentColors[1];
                                 break;
                             }
                         case ToolSelection.bucket:
@@ -393,18 +405,15 @@ namespace BakalarskaPrace
                     previewMousePosition = new Point(x, y);
                 }
 
+                //Vykreslení geometrických nástrojů
                 switch (currentTool)
                 {
                     case ToolSelection.line:
                         {
                             if ((e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed) && (int)mouseDownPosition.X != -1 && (int)mouseDownPosition.Y != -1)
-                            {
                                 previewMousePoints.AddRange(geometry.DrawLine(x, y, (int)mouseDownPosition.X, (int)mouseDownPosition.Y, width, height, ctrl));
-                            }
                             else
-                            {
                                 previewMousePoints.Add(previewMousePosition);
-                            }
                             break;
                         }
                     case ToolSelection.path:
@@ -426,25 +435,17 @@ namespace BakalarskaPrace
                     case ToolSelection.ellipse:
                         {
                             if ((e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed) && (int)mouseDownPosition.X != -1 && (int)mouseDownPosition.Y != -1)
-                            {
                                 previewMousePoints.AddRange(geometry.DrawEllipse(mouseDownPosition, e.GetPosition(image), shift, ctrl));
-                            }
                             else
-                            {
                                 previewMousePoints.Add(previewMousePosition);
-                            }
                             break;
                         }
                     case ToolSelection.rectangle:
                         {
                             if ((e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed) && (int)mouseDownPosition.X != -1 && (int)mouseDownPosition.Y != -1)
-                            {
                                 previewMousePoints.AddRange(geometry.DrawRectangle(mouseDownPosition, e.GetPosition(image), ctrl, shift));
-                            }
                             else
-                            {
                                 previewMousePoints.Add(previewMousePosition);
-                            }
                             break;
                         }
                     case ToolSelection.rectangleSelection:
@@ -465,7 +466,7 @@ namespace BakalarskaPrace
                     int previewStrokeThickness = (currentTool == ToolSelection.specialBucket || currentTool == ToolSelection.bucket || currentTool == ToolSelection.colorPicker) ? 1 : strokeThickness;
                     foreach (Point point in previewMousePoints)
                     {
-                        StrokeThicknessSetter((int)point.X, (int)point.Y, currentColors[2], false, previewBitmap, previewStrokeThickness);
+                        tools.StrokeThicknessSetter(previewBitmap, previewBitmap, (int)point.X, (int)point.Y, currentColors[2], false, previewStrokeThickness, visitedPoints, undoColors, undoPoints);
                     }
                 }
             }
@@ -540,7 +541,7 @@ namespace BakalarskaPrace
                     int previewStrokeThickness = (currentTool == ToolSelection.specialBucket || currentTool == ToolSelection.bucket || currentTool == ToolSelection.colorPicker) ? 1 : strokeThickness;
                     foreach (Point point in previewMousePoints) 
                     {
-                        StrokeThicknessSetter((int)point.X, (int)point.Y, currentColors[2], false, previewBitmap, previewStrokeThickness);
+                        tools.StrokeThicknessSetter(previewBitmap, previewBitmap, (int)point.X, (int)point.Y, currentColors[2], false, previewStrokeThickness, visitedPoints, undoColors, undoPoints);
                     }
                 }
             }
@@ -584,81 +585,16 @@ namespace BakalarskaPrace
             {
                 if (colors.Count != 1 && colors.Count == points.Count)
                 {
-                    StrokeThicknessSetter((int)points[i].X, (int)points[i].Y, colors[i], alphaBlend, bitmap, thickness);
+                    tools.StrokeThicknessSetter(currentBitmap, previewBitmap, (int)points[i].X, (int)points[i].Y, colors[i], alphaBlend, thickness, visitedPoints, undoColors, undoPoints);
                 }
                 else
                 {
-                    StrokeThicknessSetter((int)points[i].X, (int)points[i].Y, colors[0], alphaBlend, bitmap, thickness);
+                    tools.StrokeThicknessSetter(currentBitmap, previewBitmap, (int)points[i].X, (int)points[i].Y, colors[0], alphaBlend, thickness, visitedPoints, undoColors, undoPoints);
                 }
             }
         }
 
         //Brush settings
-        public List<Point> StrokeThicknessSetter(int x, int y, Color color, bool AlphaBlend, WriteableBitmap bitmap, int thickness)
-        {
-            //Při kreslení přímek se musí již navštívené pixely přeskočit, aby nedošlo k nerovnoměrně vybarveným přímkám při velikostech > 1 a alpha < 255
-            List<Point> points = new List<Point>();
-
-            int size = thickness / 2;
-            int isOdd = 0;
-
-            if (thickness % 2 != 0) isOdd = 1;
-
-            for (int i = -size; i < size + isOdd; i++)
-            {
-                for (int j = -size; j < size + isOdd; j++)
-                {
-                    // zkontrolovat jestli se pixel vejde do bitmapy
-                    if (x + i < width && x + i > -1 && y + j < height && y + j > -1)
-                    {
-                        Point point = new Point(x + i, y + j);
-
-                        //Pokud se zapisuje do preview bitmapy tak kontrola navštívených bodů vede k smazání bodů 
-                        if (bitmap == previewBitmap)
-                        {
-                            points.Add(point);
-                        }
-                        else
-                        {
-                            if (!visitedPoints.Contains(point))
-                            {
-                                visitedPoints.Add(point);
-                                points.Add(point);
-                            }
-                        }
-                    }
-                }
-            }
-
-            using (bitmap.GetBitmapContext())
-            {
-                foreach (var point in points)
-                {
-                    if (bitmap != previewBitmap)
-                    {
-                        Color colord = imageManipulation.GetPixelColor((int)point.X, (int)point.Y, bitmap);
-                        undoColors.Add(colord);
-                        undoPoints.Add(point);
-                    }
-
-                    Color finalColor = color;
-                    Color currentPixelColor = imageManipulation.GetPixelColor((int)point.X, (int)point.Y, bitmap);
-                    if (AlphaBlend == true) finalColor = imageManipulation.ColorMix(color, currentPixelColor);
-                    imageManipulation.AddPixel((int)point.X, (int)point.Y, finalColor, bitmap);
-                }
-            }
-            return points;
-        }
-
-        private void ColorPicker(int x, int y, int colorIndex)
-        {
-            currentColors[colorIndex] = imageManipulation.GetPixelColor(x, y, currentBitmap);
-            SolidColorBrush brush = new SolidColorBrush();
-            brush.Color = currentColors[colorIndex];
-            if (colorIndex == 0) colorSelector.SelectedColor = currentColors[0];
-            else colorSelector.SecondaryColor = currentColors[1];
-        }
-
         private void ColorChanged(object sender, RoutedEventArgs e)
         {
             currentColors[1] = colorSelector.SecondaryColor;
@@ -675,19 +611,134 @@ namespace BakalarskaPrace
             alphaBlending = !alphaBlending;
         }
 
+        //Canvas controls
+        private void Center_Click(object sender, RoutedEventArgs e)
+        {
+            Center();
+        }
+
+        private void Center()
+        {
+            MatrixTransform transform = new MatrixTransform();
+            Matrix matrix = transform.Matrix;
+            double scale = (height >= width) ? grid.ActualHeight / height : grid.ActualWidth / width;
+
+            matrix.ScaleAtPrepend(scale, scale, 0, 0);
+            transform.Matrix = matrix;
+
+            currentScale = scale;
+            if (currentScale.ToString().Length > 5 && currentScale.ToString().Contains(",")) LabelScale.Content = currentScale.ToString().Substring(0, 5);
+            else LabelScale.Content = currentScale.ToString();
+
+            paintSurface.RenderTransform = transform;
+            Grid_TranslateTransform.X = 0;
+            Grid_TranslateTransform.Y = 0;
+        }
+
+        private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            UIElement element = (UIElement)sender;
+            Point position = e.GetPosition(element);
+            MatrixTransform transform = (MatrixTransform)paintSurface.RenderTransform;
+            Matrix matrix = transform.Matrix;
+
+            // Pokud je e >= 0 dojde k přibližování
+            double scale = (e.Delta >= 0) ? 1.1 : 0.9;
+
+            matrix.ScaleAtPrepend(scale, scale, mousePosition.X - paintSurface.Width / 2, mousePosition.Y - paintSurface.Height / 2);
+            transform.Matrix = matrix;
+
+            currentScale *= scale;
+            if (currentScale.ToString().Length > 5 && currentScale.ToString().Contains(",")) LabelScale.Content = currentScale.ToString().Substring(0, 5);
+            else LabelScale.Content = currentScale.ToString();
+        }
+
+        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Middle)
+            {
+                gridDragStartPoint = e.GetPosition(window);
+                gridDragOffset = new System.Windows.Vector(Grid_TranslateTransform.X, Grid_TranslateTransform.Y);
+                grid.CaptureMouse();
+            }
+        }
+
+        private void Grid_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (grid.IsMouseCaptured)
+            {
+                System.Windows.Vector offset = Point.Subtract(e.GetPosition(window), gridDragStartPoint);
+                Grid_TranslateTransform.X = gridDragOffset.X + offset.X;
+                Grid_TranslateTransform.Y = gridDragOffset.Y + offset.Y;
+            }
+        }
+
+        private void Grid_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Middle) grid.ReleaseMouseCapture();
+        }
+
+        private void UpdateOnionSkinning()
+        {
+            RemoveOnionSkinning();
+            if (currentBitmapIndex > 0)
+            {
+                onionSkinningImages[0].Source = layers[currentLayerIndex][currentBitmapIndex - 1];
+            }
+
+            if (currentBitmapIndex < layers[currentLayerIndex].Count - 1)
+            {
+                onionSkinningImages[1].Source = layers[currentLayerIndex][currentBitmapIndex + 1];
+            }
+        }
+
+        private void RemoveOnionSkinning()
+        {
+            for (int i = 0; i < onionSkinningImages.Count; i++)
+            {
+                onionSkinningImages[i].Source = null;
+            }
+        }
+
+        private void OnionSkinning_Checked(object sender, RoutedEventArgs e)
+        {
+            onionSkinning = true;
+            UpdateOnionSkinning();
+        }
+
+        private void OnionSkinning_Unchecked(object sender, RoutedEventArgs e)
+        {
+            onionSkinning = false;
+            RemoveOnionSkinning();
+        }
+
+        private void OnionSkinning_Click(object sender, RoutedEventArgs e)
+        {
+            if (onionSkinning)
+            {
+                onionSkinning = false;
+                RemoveOnionSkinning();
+            }
+            else
+            {
+                onionSkinning = true;
+                UpdateOnionSkinning();
+            }
+        }
+
         //Tool buttons
         private void ToolButton_Click(object sender, RoutedEventArgs e)
         {
-            System.Windows.Controls.Button button = new System.Windows.Controls.Button();
-            string text = ((System.Windows.Controls.Button)sender).Name;
+            Button button = new Button();
+            string text = ((Button)sender).Name;
             currentTool = (ToolSelection)Enum.Parse(typeof(ToolSelection), text);
-            button = (System.Windows.Controls.Button)sender;
+            button = (Button)sender;
             button.IsEnabled = false;
             if (lastToolButton != null) lastToolButton.IsEnabled = true;
             lastToolButton = button;
         }
 
-        //Transform buttons
+        //Transform
         private void Flip_Click(object sender, RoutedEventArgs e)
         {
             List<int> selectedBitmapIndexes;
@@ -920,24 +971,12 @@ namespace BakalarskaPrace
 
         private void AddColorPaletteButton(Color color)
         {
-            System.Windows.Controls.Button newButton = new System.Windows.Controls.Button();
-            newButton.Width = 40;
-            newButton.Height = 40;
-            newButton.Margin = new Thickness(2);
             WriteableBitmap bitmap = BitmapFactory.New(1, 1);
             imageManipulation.AddPixel(0, 0, color, bitmap);
-            newButton.Content = new Image
-            {
-                Source = bitmap,
-                VerticalAlignment = VerticalAlignment.Center,
-                Stretch = Stretch.Uniform,
-                Height = 40,
-                Width = 40,
-                ToolTip = color
-            };
-            newButton.Name = "_" + color.ToString().Substring(1);
-            newButton.PreviewMouseDown += new MouseButtonEventHandler(ColorPaletteButton_Click);
+            ControlCreator controlCreator = new ControlCreator();
+            Button newButton = controlCreator.ColorPaletteButton(bitmap, color, new MouseButtonEventHandler(ColorPaletteButton_Click));
             colorList.Children.Add(newButton);
+            currentColorLeftButton = newButton;
         }
 
         private void ColorPaletteButton_Click(object sender, MouseButtonEventArgs e)
@@ -993,71 +1032,63 @@ namespace BakalarskaPrace
             }
         }
 
-        //Canvas controls
-        private void Center_Click(object sender, RoutedEventArgs e)
+        //Zobrazení výsledné animace
+        private void OnTimedEvent(object sender, EventArgs e)
         {
-            Center();
+            if (currentAnimationIndex + 1 < layers[currentLayerIndex].Count) currentAnimationIndex += 1;
+            else currentAnimationIndex = 0;
+
+            SetPreviewAnimationImages(currentAnimationIndex);
         }
 
-        private void Center()
+        private void SetPreviewAnimationImages(int animationIndex)
         {
-            MatrixTransform transform = new MatrixTransform();
-            Matrix matrix = transform.Matrix;
-            double scale = (height >= width) ? grid.ActualHeight / height : grid.ActualWidth / width;
-
-            matrix.ScaleAtPrepend(scale, scale, 0, 0);
-            transform.Matrix = matrix;
-
-            currentScale = scale;
-            if (currentScale.ToString().Length > 5 && currentScale.ToString().Contains(",")) LabelScale.Content = currentScale.ToString().Substring(0, 5);
-            else LabelScale.Content = currentScale.ToString();
-
-            paintSurface.RenderTransform = transform;
-            Grid_TranslateTransform.X = 0;
-            Grid_TranslateTransform.Y = 0;
-        }
-
-        private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)
-        {
-            UIElement element = (UIElement)sender;
-            Point position = e.GetPosition(element);
-            MatrixTransform transform = (MatrixTransform)paintSurface.RenderTransform;
-            Matrix matrix = transform.Matrix;
-
-            // Pokud je e >= 0 dojde k přibližování
-            double scale = (e.Delta >= 0) ? 1.1 : 0.9;
-
-            matrix.ScaleAtPrepend(scale, scale, mousePosition.X - paintSurface.Width / 2, mousePosition.Y - paintSurface.Height / 2);
-            transform.Matrix = matrix;
-
-            currentScale *= scale;
-            if (currentScale.ToString().Length > 5 && currentScale.ToString().Contains(",")) LabelScale.Content = currentScale.ToString().Substring(0, 5);
-            else LabelScale.Content = currentScale.ToString();
-        }
-
-        private void Grid_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ChangedButton == MouseButton.Middle)
+            for (int i = 0; i < layersMax; i++)
             {
-                gridDragStartPoint = e.GetPosition(window);
-                gridDragOffset = new System.Windows.Vector(Grid_TranslateTransform.X, Grid_TranslateTransform.Y);
-                grid.CaptureMouse();
+                if (i < layers.Count) layerPreviewImages[i].Source = layers[i][animationIndex];
+                else layerPreviewImages[i].Source = null;
             }
         }
 
-        private void Grid_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        private void FramesPerSecond_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (grid.IsMouseCaptured)
+            Slider slider = sender as Slider;
+            double value = slider.Value;
+            LabelFramesPerSecond.Content = value.ToString();
+            currentFPSTarget = (int)value;
+            if (currentFPSTarget != 0)
             {
-                System.Windows.Vector offset = Point.Subtract(e.GetPosition(window), gridDragStartPoint);
-                Grid_TranslateTransform.X = gridDragOffset.X + offset.X;
-                Grid_TranslateTransform.Y = gridDragOffset.Y + offset.Y;
+                timerInterval = 1000 / currentFPSTarget;
+                timer.Stop();
+                timer.Interval = timerInterval;
+                if (playAnimation == true) timer.Start();
+            }
+            else
+            {
+                timer.Stop();
+                currentAnimationIndex = currentBitmapIndex;
+                SetPreviewAnimationImages(currentAnimationIndex);
             }
         }
 
-        private void Grid_MouseUp(object sender, MouseButtonEventArgs e)
+        private void Play_Click(object sender, RoutedEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Middle) grid.ReleaseMouseCapture();
+            if (playAnimation == true)
+            {
+                BitmapImage image = new BitmapImage(new Uri("Files/Images/Dark-theme/play.png", UriKind.Relative));
+                playImage.Source = image;
+                playAnimation = false;
+                timer.Stop();
+                currentAnimationIndex = currentBitmapIndex;
+                SetPreviewAnimationImages(currentAnimationIndex);
+            }
+            else
+            {
+                BitmapImage image = new BitmapImage(new Uri("Files/Images/Dark-theme/pause.png", UriKind.Relative));
+                playImage.Source = image;
+                playAnimation = true;
+                timer.Start();
+            }
         }
 
         //Animation controls
@@ -1214,47 +1245,6 @@ namespace BakalarskaPrace
             UpdateImagePreviewButtons();
         }
 
-        private void FramesPerSecond_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            Slider slider = sender as Slider;
-            double value = slider.Value;
-            LabelFramesPerSecond.Content = value.ToString();
-            currentFPSTarget = (int)value;
-            if (currentFPSTarget != 0)
-            {
-                timerInterval = 1000 / currentFPSTarget;
-                timer.Stop();
-                timer.Interval = timerInterval;
-                if (playAnimation == true) timer.Start();
-            }
-            else
-            {
-                timer.Stop();
-                currentAnimationIndex = currentBitmapIndex;
-                SetPreviewAnimationImages(currentAnimationIndex);
-            }
-        }
-
-        private void Play_Click(object sender, RoutedEventArgs e)
-        {
-            if (playAnimation == true)
-            {
-                BitmapImage image = new BitmapImage(new Uri("Files/Images/Dark-theme/play.png", UriKind.Relative));
-                playImage.Source = image;
-                playAnimation = false;
-                timer.Stop();
-                currentAnimationIndex = currentBitmapIndex;
-                SetPreviewAnimationImages(currentAnimationIndex);
-            }
-            else
-            {
-                BitmapImage image = new BitmapImage(new Uri("Files/Images/Dark-theme/pause.png", UriKind.Relative));
-                playImage.Source = image;
-                playAnimation = true;
-                timer.Start();
-            }
-        }
-
         private void UpdateImagePreviewButtons()
         {
             previewButtons = ImagePreviews.Children.OfType<System.Windows.Controls.Button>().ToList();
@@ -1265,23 +1255,9 @@ namespace BakalarskaPrace
 
             for (int i = 0; i < layers[currentLayerIndex].Count; i++)
             {
-                System.Windows.Controls.Button newButton = new System.Windows.Controls.Button();
-                Image newImage = new Image
-                {
-                    Source = layers[currentLayerIndex][i],
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Stretch = Stretch.Uniform,
-                    Height = 120,
-                    Width = 120,
-                };
-                newButton.Content = newImage;
-                newButton.IsEnabled = (currentBitmapIndex == i) ? false : true;
-                newButton.Width = 180;
-                newButton.Height = 180;
-                newButton.Margin = new Thickness(2, 1, 2, 1);
-                newButton.Name = "ImagePreview" + i.ToString();
-                //newButton.SetResourceReference(System.Windows.Controls.Control.StyleProperty, "AnimationButton");
-                newButton.AddHandler(System.Windows.Controls.Button.ClickEvent, new RoutedEventHandler(PreviewButton_Click));
+                WriteableBitmap bitmap = layers[currentLayerIndex][i];
+                ControlCreator controlCreator = new ControlCreator();
+                Button newButton = controlCreator.ImagePreviewButton(bitmap, i, currentBitmapIndex, new RoutedEventHandler(PreviewButton_Click));
                 ImagePreviews.Children.Add(newButton);
             }
         }
@@ -1332,89 +1308,219 @@ namespace BakalarskaPrace
             }
         }
 
-        private void UpdateCurrentBitmap(int bitmapIndex, int layerIndex)
+        //Layer controls
+        private void CreateLayer_Click(object sender, RoutedEventArgs e)
         {
-            width = layers[0][0].PixelWidth;
-            height = layers[0][0].PixelHeight;
-            if (width != layers[0][0].PixelWidth && height != layers[0][0].PixelHeight) Center();
-            paintSurface.Width = width;
-            paintSurface.Height = height;
-            image.Width = width;
-            image.Height = height;
+            if (layers.Count + 1 <= layersMax)
+            {
+                if (layers.Count + 1 > 1) DeleteLayerButton.IsEnabled = true;
+                currentLayerIndex++;
+                int layerIndex = currentLayerIndex;
+                List<WriteableBitmap> newLayer = new List<WriteableBitmap>();
+                foreach (WriteableBitmap bitmap in layers[0])
+                {
+                    WriteableBitmap newBitamp = BitmapFactory.New(width, height);
+                    newLayer.Add(newBitamp);
+                }
+                CreateLayer(newLayer, currentLayerIndex);
+                Action action = () => DeleteLayer(layerIndex++, true, false);
+                AddActionToUndo(action, false, true);
+                MoveLayerUpButton.IsEnabled = true;
 
-            previewBitmap = BitmapFactory.New(width, height);
-            previewImage.Source = previewBitmap;
-            previewImage.Width = width;
-            previewImage.Height = height;
+            }
+            else
+            {
+                CreateLayerButton.IsEnabled = false;
+            }
+        }
 
-            currentBitmapIndex = bitmapIndex;
+        private void CreateLayer(List<WriteableBitmap> newLayer, int layerIndex, bool generateInverseAction = false, bool generateAction = false)
+        {
+            if (generateInverseAction == true)
+            {
+                int newLayerIndex = layerIndex;
+                Action inverseAction = () => DeleteLayer(newLayerIndex, false, true);
+                AddActionToRedo(inverseAction);
+            }
+            else if (generateAction == true)
+            {
+                int newLayerIndex = layerIndex;
+                Action action = () => DeleteLayer(newLayerIndex, true, false);
+                AddActionToUndo(action, false, false);
+            }
             currentLayerIndex = layerIndex;
-            currentBitmap = layers[currentLayerIndex][currentBitmapIndex];
-            image.Source = currentBitmap;
-
-            LabelImages.Content = layers[currentLayerIndex].Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
-            LabelPosition.Content = "[" + width + ":" + height + "] " + mousePosition.X + ":" + mousePosition.Y;
-            previewButtons = ImagePreviews.Children.OfType<System.Windows.Controls.Button>().ToList();
-            for (int i = 0; i < previewButtons.Count; i++)
-            {
-                if (currentBitmapIndex == i) previewButtons[i].IsEnabled = false;
-                else previewButtons[i].IsEnabled = true;
-            }
-            if (onionSkinning == true) UpdateOnionSkinning();
-            if (playAnimation == false || currentFPSTarget == 0)
-            {
-                currentAnimationIndex = currentBitmapIndex;
-                SetPreviewAnimationImages(currentAnimationIndex);
-            }
-            UpdateLayerViewing();
+            layers.Insert(currentLayerIndex, newLayer);
+            UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
+            UpdateImagePreviewButtons();
         }
 
-        private void UpdateOnionSkinning()
+        private void UpdateLayerPreviewButtons()
         {
-            RemoveOnionSkinning();
-            if (currentBitmapIndex > 0)
+            layerButtons = LayerPreviews.Children.OfType<System.Windows.Controls.Button>().ToList();
+            foreach (System.Windows.Controls.Button button in layerButtons)
             {
-                onionSkinningImages[0].Source = layers[currentLayerIndex][currentBitmapIndex - 1];
+                LayerPreviews.Children.Remove(button);
             }
 
-            if (currentBitmapIndex < layers[currentLayerIndex].Count - 1)
+            ControlCreator controlCreator = new ControlCreator();
+
+            for (int i = 0; i < layers.Count; i++)
             {
-                onionSkinningImages[1].Source = layers[currentLayerIndex][currentBitmapIndex + 1];
+                Button newButton = controlCreator.LayerPreviewButton(i, currentLayerIndex, new RoutedEventHandler(LayerButton_Click));
+                LayerPreviews.Children.Add(newButton);
             }
         }
 
-        private void RemoveOnionSkinning()
+        private void LayerButton_Click(object sender, RoutedEventArgs e)
         {
-            for(int i = 0;i < onionSkinningImages.Count;i++)
+            string buttonName = ((System.Windows.Controls.Button)sender).Name;
+            int index = int.Parse(buttonName.Replace("LayerPreview", ""));
+            currentLayerIndex = index;
+            UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
+            UpdateImagePreviewButtons();
+
+            if (currentLayerIndex == layers.Count - 1)
             {
-                onionSkinningImages[i].Source = null;
+                MoveLayerDownButton.IsEnabled = false;
+                MoveLayerUpButton.IsEnabled = true;
+            }
+
+            if (currentLayerIndex == 0)
+            {
+                MoveLayerDownButton.IsEnabled = true;
+                MoveLayerUpButton.IsEnabled = false;
             }
         }
 
-        private void OnionSkinning_Checked(object sender, RoutedEventArgs e)
+        private void MoveLayerUp_Click(object sender, RoutedEventArgs e)
         {
-            onionSkinning = true;
-            UpdateOnionSkinning();
+            int layerIndex = currentLayerIndex;
+            Action action = () => MoveLayerDown(layerIndex - 1, true, false);
+            AddActionToUndo(action, false, true);
+            MoveLayerUp(layerIndex);
         }
 
-        private void OnionSkinning_Unchecked(object sender, RoutedEventArgs e)
+        private void MoveLayerUp(int layerIndex, bool generateInverseAction = false, bool generateAction = false)
         {
-            onionSkinning = false;
-            RemoveOnionSkinning();
-        }
-
-        private void OnionSkinning_Click(object sender, RoutedEventArgs e) 
-        {
-            if (onionSkinning)
+            if (generateInverseAction == true)
             {
-                onionSkinning = false;
-                RemoveOnionSkinning();
+                int newLayerIndex = layerIndex - 1;
+                Action inverseAction = () => MoveLayerDown(newLayerIndex, false, true);
+                AddActionToRedo(inverseAction);
             }
-            else 
+            else if (generateAction == true)
             {
-                onionSkinning = true;
-                UpdateOnionSkinning();
-            } 
+                int newLayerIndex = layerIndex - 1;
+                Action action = () => MoveLayerDown(newLayerIndex, true, false);
+                AddActionToUndo(action, false, false);
+            }
+
+            List<WriteableBitmap> currentLayer = new List<WriteableBitmap>(layers[layerIndex]);
+            List<WriteableBitmap> previousLayer = new List<WriteableBitmap>(layers[layerIndex - 1]);
+            layers[layerIndex] = previousLayer;
+            layers[layerIndex - 1] = currentLayer;
+            UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
+            UpdateImagePreviewButtons();
+        }
+
+        private void MoveLayerDown_Click(object sender, RoutedEventArgs e)
+        {
+            int layerIndex = currentLayerIndex;
+            Action action = () => MoveLayerUp(layerIndex + 1, true, false);
+            AddActionToUndo(action, false, true);
+            MoveLayerDown(layerIndex);
+        }
+
+        private void MoveLayerDown(int layerIndex, bool generateInverseAction = false, bool generateAction = false)
+        {
+            if (generateInverseAction == true)
+            {
+                int newLayerIndex = layerIndex + 1;
+                Action inverseAction = () => MoveLayerUp(newLayerIndex, false, true);
+                AddActionToRedo(inverseAction);
+            }
+            else if (generateAction == true)
+            {
+                int newLayerIndex = layerIndex + 1;
+                Action action = () => MoveLayerUp(newLayerIndex, true, false);
+                AddActionToUndo(action, false, false);
+            }
+
+            List<WriteableBitmap> currentLayer = new List<WriteableBitmap>(layers[layerIndex]);
+            List<WriteableBitmap> nextLayer = new List<WriteableBitmap>(layers[layerIndex + 1]);
+            layers[layerIndex] = nextLayer;
+            layers[layerIndex + 1] = currentLayer;
+            UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
+            UpdateImagePreviewButtons();
+        }
+
+        private void UpdateLayerViewing()
+        {
+            for (int i = 0; i < layerCanvasImages.Count; i++)
+            {
+                layerCanvasImages[i].Source = null;
+                if (i < layers.Count)
+                {
+                    layerCanvasImages[i].Source = layers[i][currentBitmapIndex];
+                }
+            }
+            UpdateLayerPreviewButtons();
+        }
+
+        private void DeleteLayer_Click(object sender, RoutedEventArgs e)
+        {
+            int layerIndex = currentLayerIndex;
+            if (layers.Count - 2 <= layersMax) CreateLayerButton.IsEnabled = true;
+            if (layers.Count - 1 == 1)
+            {
+                MoveLayerDownButton.IsEnabled = false;
+                MoveLayerUpButton.IsEnabled = false;
+                DeleteLayerButton.IsEnabled = false;
+            }
+
+            if (layers.Count > 1)
+            {
+                List<WriteableBitmap> layer = new List<WriteableBitmap>(layers[layerIndex]);
+                DeleteLayer(layerIndex);
+                Action action = () => CreateLayer(layer, layerIndex, true, false);
+                AddActionToUndo(action, false, true);
+            }
+        }
+
+        private void DeleteLayer(int layerIndex, bool generateInverseAction = false, bool generateAction = false)
+        {
+            if (generateInverseAction == true)
+            {
+                List<WriteableBitmap> bitmaps = new List<WriteableBitmap>(layers[layerIndex]);
+                int newLayerIndex = layerIndex;
+                Action inverseAction = () => CreateLayer(bitmaps, newLayerIndex, false, true);
+                AddActionToRedo(inverseAction);
+            }
+            else if (generateAction == true)
+            {
+                List<WriteableBitmap> bitmaps = new List<WriteableBitmap>(layers[layerIndex]);
+                int newLayerIndex = layerIndex;
+                Action action = () => CreateLayer(bitmaps, newLayerIndex, true, false);
+                AddActionToUndo(action, false, false);
+            }
+
+            layers.RemoveAt(layerIndex);
+            if (layerIndex - 1 == -1) layerIndex = 0;
+            else layerIndex--;
+            currentLayerIndex = layerIndex;
+            UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
+            UpdateImagePreviewButtons();
+        }
+
+
+        private void MergeLayers_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void DuplicateLayer_Click(object sender, RoutedEventArgs e)
+        {
+
         }
 
         //Menu controls
@@ -1433,8 +1539,6 @@ namespace BakalarskaPrace
                 layers = new List<List<WriteableBitmap>>(newLayers);
                 currentBitmapIndex = 0;
                 currentLayerIndex = 0;
-                width = layers[0][0].PixelWidth;
-                height = layers[0][0].PixelHeight;
                 UpdateImagePreviewButtons();
                 UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
             }
@@ -1488,8 +1592,6 @@ namespace BakalarskaPrace
                 layers = new List<List<WriteableBitmap>>(newLayers);
                 currentBitmapIndex = 0;
                 currentLayerIndex = 0;
-                width = layers[0][0].PixelWidth;
-                height = layers[0][0].PixelHeight;
                 UpdateImagePreviewButtons();
                 UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
             }
@@ -1546,7 +1648,7 @@ namespace BakalarskaPrace
             }
         }
 
-        //Keyboard shortcuts
+        //Klávesové zkratky
         private void WindowKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             //Misc
@@ -1595,6 +1697,7 @@ namespace BakalarskaPrace
             }
         }
 
+        //Nastavení okna
         private void Window_StateChanged(object sender, EventArgs e)
         {
             Center();
@@ -1603,140 +1706,6 @@ namespace BakalarskaPrace
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             Center();
-        }
-
-        private void CreateLayer_Click(object sender, RoutedEventArgs e)
-        {
-            if (layers.Count + 1 <= layersMax)
-            {
-                if (layers.Count + 1 > 1) DeleteLayerButton.IsEnabled = true;
-                currentLayerIndex++;
-                int layerIndex = currentLayerIndex;
-                List<WriteableBitmap> newLayer = new List<WriteableBitmap>();
-                foreach (WriteableBitmap bitmap in layers[0])
-                {
-                    WriteableBitmap newBitamp = BitmapFactory.New(width, height);
-                    newLayer.Add(newBitamp);
-                }
-                CreateLayer(newLayer, currentLayerIndex);
-                Action action = () => DeleteLayer(layerIndex++, true, false);
-                AddActionToUndo(action, false, true);
-
-            }
-            else 
-            {
-                CreateLayerButton.IsEnabled = false;
-            }
-        }
-
-        private void CreateLayer(List<WriteableBitmap> newLayer, int layerIndex, bool generateInverseAction = false, bool generateAction = false) 
-        {
-            if (generateInverseAction == true)
-            {
-                int newLayerIndex = layerIndex;
-                Action inverseAction = () => DeleteLayer(newLayerIndex, false, true);
-                AddActionToRedo(inverseAction);
-            }
-            else if (generateAction == true)
-            {
-                int newLayerIndex = layerIndex;
-                Action action = () => DeleteLayer(newLayerIndex, true, false);
-                AddActionToUndo(action, false, false);
-            }
-            currentLayerIndex = layerIndex;
-            layers.Insert(currentLayerIndex, newLayer);
-            UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
-            UpdateImagePreviewButtons();
-        }
-
-        private void UpdateLayerPreviewButtons()
-        {
-            layerButtons = LayerPreviews.Children.OfType<System.Windows.Controls.Button>().ToList();
-            foreach (System.Windows.Controls.Button button in layerButtons)
-            {
-                LayerPreviews.Children.Remove(button);
-            }
-
-            for (int i = 0; i < layers.Count; i++)
-            {
-                Button newButton = new Button();
-                newButton.Content = i + 1;
-                newButton.IsEnabled = (currentLayerIndex == i) ? false : true;
-                newButton.Width = 200;
-                newButton.Height = 24;
-                newButton.Name = "LayerPreview" + i.ToString();
-                newButton.HorizontalContentAlignment = HorizontalAlignment.Left;
-                newButton.Margin = new Thickness(2, 1, 2, 1);
-                //newButton.SetResourceReference(System.Windows.Controls.Control.StyleProperty, "AnimationButton");
-                newButton.AddHandler(System.Windows.Controls.Button.ClickEvent, new RoutedEventHandler(LayerButton_Click));
-                LayerPreviews.Children.Add(newButton);
-            }
-        }
-
-        private void LayerButton_Click(object sender, RoutedEventArgs e)
-        {
-            string buttonName = ((System.Windows.Controls.Button)sender).Name;
-            int index = int.Parse(buttonName.Replace("LayerPreview", ""));
-            currentLayerIndex = index;
-            UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
-            UpdateImagePreviewButtons();
-        }
-
-        private void UpdateLayerViewing()
-        {
-            for (int i = 0; i < layerCanvasImages.Count; i++) 
-            {
-                layerCanvasImages[i].Source = null;
-                if (i < layers.Count)
-                {
-                    layerCanvasImages[i].Source = layers[i][currentBitmapIndex];
-                }
-            }
-            UpdateLayerPreviewButtons();
-        }
-
-        private void DeleteLayer_Click(object sender, RoutedEventArgs e)
-        {
-            int layerIndex = currentLayerIndex;
-            if (layers.Count - 2 <= layersMax) CreateLayerButton.IsEnabled = true;
-            if (layers.Count - 1 == 1) DeleteLayerButton.IsEnabled = false;
-            if(layers.Count > 1)
-            {
-                List<WriteableBitmap> layer = new List<WriteableBitmap>(layers[layerIndex]);
-                DeleteLayer(layerIndex);
-                Action action = () => CreateLayer(layer, layerIndex, true, false);
-                AddActionToUndo(action, false, true);
-            }
-        }
-
-        private void DeleteLayer(int layerIndex, bool generateInverseAction = false, bool generateAction = false) 
-        {
-            if (generateInverseAction == true)
-            {
-                List<WriteableBitmap> bitmaps = new List<WriteableBitmap>(layers[layerIndex]);
-                int newLayerIndex = layerIndex;
-                Action inverseAction = () => CreateLayer(bitmaps, newLayerIndex, false, true);
-                AddActionToRedo(inverseAction);
-            }
-            else if (generateAction == true)
-            {
-                List<WriteableBitmap> bitmaps = new List<WriteableBitmap>(layers[layerIndex]);
-                int newLayerIndex = layerIndex;
-                Action action = () => CreateLayer(bitmaps, newLayerIndex, true, false);
-                AddActionToUndo(action, false, false);
-            }
-
-            layers.RemoveAt(layerIndex);
-            if (layerIndex - 1 == -1) layerIndex = 0;
-            else layerIndex--;
-            currentLayerIndex = layerIndex;
-            UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
-            UpdateImagePreviewButtons();
-        }
-
-        private void DuplicateLayer_Click(object sender, RoutedEventArgs e)
-        {
-
         }
     }
 }
