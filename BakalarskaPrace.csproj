@@ -74,13 +74,24 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ToolsFolder\ToolSettings.cs" />
     <Compile Include="ControlCreator.cs" />
     <Compile Include="FileManagement.cs" />
     <Compile Include="Filters.cs" />
-    <Compile Include="Geometry.cs" />
-    <Compile Include="ImageManipulation.cs" />
-    <Compile Include="Tools.cs" />
+    <Compile Include="ToolsFolder\ColorReplacementTool.cs" />
+    <Compile Include="ToolsFolder\DitheringTool.cs" />
+    <Compile Include="ToolsFolder\EllipseTool.cs" />
+    <Compile Include="ToolsFolder\FloodFillTool.cs" />
+    <Compile Include="ToolsFolder\IBrush.cs" />
+    <Compile Include="ToolsFolder\IBucket.cs" />
+    <Compile Include="ToolsFolder\IGeometricTool.cs" />
+    <Compile Include="ToolsFolder\LineTool.cs" />
+    <Compile Include="ToolsFolder\RectangleTool.cs" />
+    <Compile Include="ToolsFolder\ShadingTool.cs" />
+    <Compile Include="ToolsFolder\SymmetricTool.cs" />
+    <Compile Include="ToolsFolder\Tools.cs" />
     <Compile Include="Transform.cs" />
+    <Compile Include="UndoRedoStack.cs" />
     <Compile Include="WindowLoadImage.xaml.cs">
       <DependentUpon>WindowLoadImage.xaml</DependentUpon>
     </Compile>

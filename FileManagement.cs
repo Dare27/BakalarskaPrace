@@ -35,13 +35,13 @@ namespace BakalarskaPrace
                             streamWriter.WriteLine(/*"Height=" + */height);
                             streamWriter.WriteLine(/*"Layers=" + */layers.Count);
                             streamWriter.WriteLine(/*"Frames=" + */layers[0].Count);
-                            for (int i = 0; i < layers.Count; i++) 
+                            for (int i = 0; i < layers.Count; i++)
                             {
-                                for (int j = 0; j < layers[i].Count; j++) 
+                                for (int j = 0; j < layers[i].Count; j++)
                                 {
                                     byte[] buffer = layers[i][j].ToByteArray();
                                     string line = Encoding.Unicode.GetString(buffer);
-                                    streamWriter.WriteLine(line); 
+                                    streamWriter.WriteLine(line);
                                 }
                             }
                         }
@@ -277,10 +277,9 @@ namespace BakalarskaPrace
                     {
                         using (newBitmap.GetBitmapContext())
                         {
-                            ImageManipulation imageManipulation = new ImageManipulation();
                             for (int i = 0; i < newBitmap.PixelWidth; i++)
                             {
-                                Color color = imageManipulation.GetPixelColor(i, 0, newBitmap);
+                                Color color = newBitmap.GetPixel(i, 0);
                                 colorPalette.Add(color);
                             }
                             return colorPalette;

@@ -21,10 +21,10 @@
                     <MenuItem Header="_Export animation as .gif" Click="ExportGif_CLick" />
                     <MenuItem Header="_Exit" Click="ExitApp_CLick" />
                 </MenuItem>
-                <MenuItem Header="_Edit"  VerticalAlignment="Center" Height="24" Foreground="Snow" Background="#FF1D1D1D" FontSize="12">
+                <!--<MenuItem Header="_Edit"  VerticalAlignment="Center" Height="24" Foreground="Snow" Background="#FF1D1D1D" FontSize="12">
                     <MenuItem Header="_Undo" Click="Undo_Click"/>
                     <MenuItem Header="_Redo" Click="Redo_Click"/>
-                </MenuItem>
+                </MenuItem>-->
                 <MenuItem Header="_View"  VerticalAlignment="Center" Height="24" Foreground="Snow" Background="#FF1D1D1D" FontSize="12">
                     <MenuItem Header="_Center" Click="Center_Click"/>
                     <MenuItem Header="_Previous Frame" Click="Previous_Click"/>
@@ -103,15 +103,15 @@
                             <StackPanel Width="{Binding Width, ElementName=wrapPanel}"  Margin="0,2,0,2">
                                 <WrapPanel Width="182" Background="#FF131313">
                                     <DockPanel Width="182" Margin="0,4,0,4">
-                                        <Label Content="Alpha Blending" Width="93" Foreground="#d2d2d2" HorizontalAlignment="Left"/>
+                                        <Label Content="Alpha Blending" Width="93" Foreground="White" HorizontalAlignment="Left" Margin="3,0,0,0"/>
                                         <CheckBox Width="23" Checked="AlphaBlending_Changed" Unchecked="AlphaBlending_Changed" IsChecked="True" HorizontalAlignment="Right" Margin="8,1,13,0"/>
                                     </DockPanel>
                                     <WrapPanel Width="176" Margin="0,4,0,4">
-                                        <Label Content="Brush size" Width="67" Foreground="#d2d2d2" VerticalAlignment="Center" />
-                                        <Slider ValueChanged="BrushSize_ValueChanged" Width="109" Minimum="1" Maximum="8" Value="1" IsSnapToTickEnabled="True" TickFrequency="1" VerticalAlignment="Center" Panel.ZIndex="20" Style="{DynamicResource MaterialDesignDiscreteSlider}" Margin="0,3,0,0"/>
+                                        <Label Content="Brush size" Width="67" Foreground="White" VerticalAlignment="Center" Margin="3,0,0,0"/>
+                                        <Slider ValueChanged="BrushSize_ValueChanged" Width="104" Minimum="1" Maximum="8" Value="1" IsSnapToTickEnabled="True" TickFrequency="1" VerticalAlignment="Top" Panel.ZIndex="20" Style="{DynamicResource MaterialDesignDiscreteSlider}" Margin="0,3,0,0"/>
                                     </WrapPanel>
                                 </WrapPanel>
-                                
+
                             </StackPanel>
                             <StackPanel Width="{Binding Width, ElementName=wrapPanel}">
                                 <Expander Name="toolsExpander" Width="182" HorizontalAlignment="Center" Header="Tools" ExpandDirection="Down"  IsExpanded="True" Margin="0,2,0,2" Background="#FF131313" Foreground="#FFFFC107" FontWeight="SemiBold" FontStyle="Normal">

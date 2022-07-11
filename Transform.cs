@@ -9,13 +9,6 @@ namespace BakalarskaPrace
 {
     internal class Transform
     {
-        ImageManipulation imageManipulation;
-
-        public Transform()
-        {
-            imageManipulation = new ImageManipulation();
-        }
-
         public void Flip(List<int> selectedBitmapIndexes, List<WriteableBitmap> bitmaps, bool horizontal)
         {
             int width = bitmaps[0].PixelWidth;
@@ -28,16 +21,16 @@ namespace BakalarskaPrace
                 {
                     for (int y = 0; y < height; y++)
                     {
-                        Color color = imageManipulation.GetPixelColor(x, y, bitmaps[i]);
+                        Color color = bitmaps[i].GetPixel(x, y);
                         if (horizontal == false)
                         {
                             int yp = bitmaps[i].PixelHeight - y - 1;
-                            imageManipulation.AddPixel(x, yp, color, newBitmap);
+                            newBitmap.SetPixel(x, yp, color);
                         }
                         else 
                         {
                             int xp = bitmaps[i].PixelWidth - x - 1;
-                            imageManipulation.AddPixel(xp, y, color, newBitmap);
+                            newBitmap.SetPixel(xp, y, color);
                         }
                     }
                 }
@@ -46,8 +39,8 @@ namespace BakalarskaPrace
                 {
                     for (int y = 0; y < height; y++)
                     {
-                        Color color = imageManipulation.GetPixelColor(x, y, newBitmap);
-                        imageManipulation.AddPixel(x, y, color, bitmaps[i]);
+                        Color color = newBitmap.GetPixel(x, y);
+                        bitmaps[i].SetPixel(x, y, color);
                     }
                 }
             }
@@ -61,8 +54,8 @@ namespace BakalarskaPrace
                 {
                     for (int y = 0; y < sourceBitmap.PixelHeight; y++)
                     {
-                        Color color = imageManipulation.GetPixelColor(x, y, sourceBitmap);
-                        imageManipulation.AddPixel(sourceBitmap.PixelHeight - y - 1, x, color, newBitmap);
+                        Color color = sourceBitmap.GetPixel(x, y);
+                        newBitmap.SetPixel(sourceBitmap.PixelHeight - y - 1, x, color);
                     }
                 }
             }
@@ -72,8 +65,8 @@ namespace BakalarskaPrace
                 {
                     for (int y = 0; y < sourceBitmap.PixelHeight; y++)
                     {
-                        Color color = imageManipulation.GetPixelColor(x, y, sourceBitmap);
-                        imageManipulation.AddPixel(y, sourceBitmap.PixelWidth - x - 1, color, newBitmap);
+                        Color color = sourceBitmap.GetPixel(x, y);
+                        newBitmap.SetPixel(y, sourceBitmap.PixelWidth - x - 1, color);
                     }
                 }
             }
@@ -116,12 +109,10 @@ namespace BakalarskaPrace
                 {
                     for (int y = 0; y < rotatedBitmap.PixelHeight; y++)
                     {
-                        Color color = imageManipulation.GetPixelColor(x, y, temporaryBitmap);
+                        Color color = temporaryBitmap.GetPixel(x, y);
                         //Směr rotace
-                        if (clockwise == true)
-                            imageManipulation.AddPixel(rotatedBitmap.PixelHeight - y - 1, x, color, rotatedBitmap);
-                        else
-                            imageManipulation.AddPixel(y, rotatedBitmap.PixelWidth - x - 1, color, rotatedBitmap);
+                        if (clockwise == true) rotatedBitmap.SetPixel(rotatedBitmap.PixelHeight - y - 1, x, color);
+                        else rotatedBitmap.SetPixel(y, rotatedBitmap.PixelWidth - x - 1, color);
                     }
                 }
 
@@ -130,8 +121,8 @@ namespace BakalarskaPrace
                 {
                     for (int y = 0; y < rotatedBitmap.PixelHeight; y++)
                     {
-                        Color color = imageManipulation.GetPixelColor(x, y, rotatedBitmap);
-                        imageManipulation.AddPixel(x + widthShift, y + heightShift, color, bitmaps[i]);
+                        Color color = rotatedBitmap.GetPixel(x, y);
+                        bitmaps[i].SetPixel(x + widthShift, y + heightShift, color);
                     }
                 }
             }
@@ -167,7 +158,7 @@ namespace BakalarskaPrace
                 {
                     for (int j = 0; j < height; j++)
                     {
-                        Color color = imageManipulation.GetPixelColor(i, j, bitmap);
+                        Color color = bitmap.GetPixel(i, j);
                         if (color.A != 0)
                         {
                             if (currentRightPixelX < i) currentRightPixelX = i;
@@ -181,7 +172,7 @@ namespace BakalarskaPrace
                 {
                     for (int j = height; j >= 0; j--)
                     {
-                        Color color = imageManipulation.GetPixelColor(i, j, bitmap);
+                        Color color = bitmap.GetPixel(i, j);
                         if (color.A != 0)
                         {
                             if (currentLeftPixelX > i) currentLeftPixelX = i;
@@ -213,11 +204,11 @@ namespace BakalarskaPrace
                             {
                                 for (int j = topPixelY; j <= downPixelY; j++)
                                 {
-                                    Color color = imageManipulation.GetPixelColor(i, j, layers[k][l]);
+                                    Color color = layers[k][l].GetPixel(i, j);
                                     if (color.A != 0)
                                     {
                                         //Vytvoření pixelu, který je posunutý v nové bitmapě 
-                                        imageManipulation.AddPixel(i - leftPixelX, j - topPixelY, color, newBitmap);
+                                        newBitmap.SetPixel(i - leftPixelX, j - topPixelY, color);
                                     }
                                 }
                             }
@@ -247,7 +238,7 @@ namespace BakalarskaPrace
                 {
                     for (int j = 0; j < bitmaps[0].PixelHeight; j++)
                     {
-                        Color color = imageManipulation.GetPixelColor(i, j, bitmaps[k]);
+                        Color color = bitmaps[k].GetPixel(i, j);
                         if (color.A != 0)
                         {
                             if (currentRightPixelX < i) currentRightPixelX = i;
@@ -261,7 +252,7 @@ namespace BakalarskaPrace
                 {
                     for (int j = bitmaps[0].PixelHeight; j >= 0; j--)
                     {
-                        Color color = imageManipulation.GetPixelColor(i, j, bitmaps[k]);
+                        Color color = bitmaps[k].GetPixel(i, j);
                         if (color.A != 0)
                         {
                             if (currentLeftPixelX > i) currentLeftPixelX = i;
@@ -295,8 +286,8 @@ namespace BakalarskaPrace
                     {
                         for (int j = 0; j < croppedHeight; j++)
                         {
-                            Color color = imageManipulation.GetPixelColor(i, j, newBitmap);
-                            imageManipulation.AddPixel(i + startPosX, j + startPosY, color, finalBitmap);
+                            Color color = newBitmap.GetPixel(i, j);
+                            finalBitmap.SetPixel(i + startPosX, j + startPosY, color);
                         }
                     }
                     bitmaps[k] = finalBitmap;
@@ -377,8 +368,8 @@ namespace BakalarskaPrace
                             {
                                 for (int j = 0; j < croppedHeight; j++)
                                 {
-                                    Color color = imageManipulation.GetPixelColor(i, j, newBitmap);
-                                    imageManipulation.AddPixel(i + endPosX, j + endPosY, color, finalBitmap);
+                                    Color color = newBitmap.GetPixel(i, j);
+                                    finalBitmap.SetPixel(i + endPosX, j + endPosY, color);
                                 }
                             }
                         }
@@ -405,8 +396,8 @@ namespace BakalarskaPrace
                     {
                         for (int j = 0; j < height; j++)
                         {
-                            Color color = imageManipulation.GetPixelColor(i, j, bitmaps[k]);
-                            imageManipulation.AddPixel(i, j + (k * height), color, finalBitmap);
+                            Color color = bitmaps[k].GetPixel(i, j);
+                            finalBitmap.SetPixel(i, j + (k * height), color);
                         }
                     }
                 }

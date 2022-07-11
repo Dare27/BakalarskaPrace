@@ -16,5 +16,5 @@ TRACE;DEBUG;NETCOREAPP;NETCOREAPP3_1;
 1931998638549
 AlphaSlider.xaml;ColorDisplay.xaml;ColorSliders.xaml;HexColorTextBox.xaml;PortableColorPicker.xaml;SquarePicker.xaml;StandardColorPicker.xaml;Styles\Colors.xaml;Styles\ColorSliderStyle.xaml;Styles\ColorToggleButtonStyle.xaml;Styles\DarkComboBoxStyle.xaml;Styles\DarkTabControlStyle.xaml;Styles\DarkTextBoxStyle.xaml;Styles\DefaultColorPickerStyle.xaml;Styles\ImageButtonStyle.xaml;Styles\RoundedColorDisplayStyle.xaml;UserControls\HueSlider.xaml;UserControls\SquareSlider.xaml;
 
-True
+False
 

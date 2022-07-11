@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using BakalarskaPrace.ToolsFolder;
 
 namespace BakalarskaPrace
 {
@@ -30,10 +31,8 @@ namespace BakalarskaPrace
         private List<Color> colorPalette = new List<Color>();
         private Color[] currentColors;
         private int currentColorIndex = 0;
-        private int strokeThickness = 1;
+        private int currentStrokeThickness = 1;
         private bool alphaBlending;
-        private Color seedColor;
-        private bool shadingValue;
 
         private enum ToolSelection { brush, eraser, symmetricBrush, colorPicker, bucket, specialBucket, line, ellipse, shading, rectangle, dithering, move, path, rectangleSelection, lassoSelection, shapeSelection };
         private ToolSelection currentTool = ToolSelection.brush;
@@ -42,16 +41,15 @@ namespace BakalarskaPrace
         private Vector gridDragOffset;
         private double currentScale = 1.0;
 
-        private Point mousePosition = new Point(0, 0);
-        private Point mouseDownPosition = new Point(-1, -1);
-        private Point previewMousePosition = new Point(0, 0);
-        private List<Point> visitedPoints = new List<Point>();
-        private List<Point> previewMousePoints = new List<Point>();
-        private List<Point> drawPoints = new List<Point>();
-        private List<Point> undoPoints = new List<Point>();
+        private System.Drawing.Point mousePosition = new System.Drawing.Point(0, 0);
+        private System.Drawing.Point mouseDownPosition = new System.Drawing.Point(-1, -1);
+        private System.Drawing.Point previewMousePosition = new System.Drawing.Point(0, 0);
+        private List<System.Drawing.Point> visitedPoints = new List<System.Drawing.Point>();
+        private List<System.Drawing.Point> previewMousePoints = new List<System.Drawing.Point>();
+        private List<System.Drawing.Point> undoPoints = new List<System.Drawing.Point>();
         private List<Color> undoColors = new List<Color>();
-        private List<Point> clipboardPoints = new List<Point>();
-        private Point previousMousePoint = new Point();
+        private List<System.Drawing.Point> clipboardPoints = new List<System.Drawing.Point>();
+        private System.Drawing.Point previousMousePoint = new System.Drawing.Point();
         private bool selection;
 
         private List<Image> onionSkinningImages = new List<Image>();
@@ -65,23 +63,14 @@ namespace BakalarskaPrace
         private int currentFPSTarget = 12;
         private bool playAnimation = true;
 
-        private ImageManipulation imageManipulation;
-        private Geometry geometry;
-        private Transform transform;
-        private Tools tools;
-        private Filters filters;
+        private Transform transform = new Transform();
+        private Filters filters = new Filters();
+        private UndoRedoStack undoRedoStack = new UndoRedoStack();
 
-        private Stack<Action> undoStack = new Stack<Action>();
-        private Stack<Action> redoStack = new Stack<Action>();
+        private ToolsFolder.Tools tools = new ToolsFolder.Tools();
 
         public MainWindow()
         {
-            imageManipulation = new ImageManipulation();
-            geometry = new Geometry();
-            transform = new Transform();
-            tools = new Tools();
-            filters = new Filters();
-
             InitializeComponent();
             this.Show();
             this.StateChanged += new EventHandler(Window_StateChanged);
@@ -90,11 +79,7 @@ namespace BakalarskaPrace
             WindowStartup windowStartup = new WindowStartup();
             windowStartup.ShowDialog();
 
-            currentColors = new Color[4];
-            currentColors[0] = colorSelector.SelectedColor;
-            currentColors[1] = colorSelector.SecondaryColor;
-            currentColors[2] = Color.FromArgb(255, 178, 213, 226);
-            currentColors[3] = Color.FromArgb(0, 0, 0, 0);
+            currentColors = new Color[4] { colorSelector.SelectedColor, colorSelector.SecondaryColor, Color.FromArgb(255, 178, 213, 226) , Color.FromArgb(0, 0, 0, 0) };
 
             paintSurface.Visibility = Visibility.Visible;
             currentBitmap = BitmapFactory.New(windowStartup.newWidth, windowStartup.newHeight);
@@ -113,7 +98,7 @@ namespace BakalarskaPrace
             timerInterval = 1000 / currentFPSTarget;
             timer.Interval = timerInterval;
             timer.Enabled = true;
-            timer.Tick += new System.EventHandler(OnTimedEvent);
+            timer.Tick += new EventHandler(OnTimedEvent);
         }
 
         //Aktualizace plátna
@@ -138,7 +123,7 @@ namespace BakalarskaPrace
 
             LabelImages.Content = layers[currentLayerIndex].Count.ToString() + ":" + (currentBitmapIndex + 1).ToString();
             LabelPosition.Content = "[" + width + ":" + height + "] " + mousePosition.X + ":" + mousePosition.Y;
-            previewButtons = ImagePreviews.Children.OfType<System.Windows.Controls.Button>().ToList();
+            previewButtons = ImagePreviews.Children.OfType<Button>().ToList();
             for (int i = 0; i < previewButtons.Count; i++)
             {
                 if (currentBitmapIndex == i) previewButtons[i].IsEnabled = false;
@@ -181,52 +166,52 @@ namespace BakalarskaPrace
             }
         }
 
-        //Kreslení do plátna
-
-        private unsafe void Image_MouseDown(object sender, System.Windows.Input.MouseEventArgs e)
+        //Nástro pro kreslení
+        private unsafe void Image_MouseDown(object sender, MouseEventArgs e)
         {
             currentColors[1] = colorSelector.SecondaryColor;
             currentColors[0] = colorSelector.SelectedColor;
+            int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
+            bool ctrl = ((Keyboard.Modifiers & ModifierKeys.Control) != 0) ? true : false;
             int x = (int)e.GetPosition(image).X;
             int y = (int)e.GetPosition(image).Y;
-            mousePosition = new Point(x, y);
+            List<System.Drawing.Point> drawPoints = new List<System.Drawing.Point>();
 
-            drawPoints = new List<Point>();
-            undoPoints = new List<Point>();
+            undoPoints = new List<System.Drawing.Point>();
             undoColors = new List<Color>();
-            visitedPoints = new List<Point>();
+            visitedPoints = new List<System.Drawing.Point>();
 
             if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
             {
-                int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
+                StopAnimation();
                 currentColorIndex = colorIndex;
 
                 switch (currentTool)
                 {
                     case ToolSelection.brush:
                         {
-                            drawPoints = new List<Point>() { new Point(x, y) };
-                            previousMousePoint = new Point(x, y);
-                            GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, currentLayerIndex, alphaBlending, strokeThickness);
+                            drawPoints = new List<System.Drawing.Point>() { mousePosition };
+                            previousMousePoint = mousePosition;
+                            GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, currentLayerIndex, alphaBlending, currentStrokeThickness);
                             break;
                         }
                     case ToolSelection.symmetricBrush:
                         {
-                            drawPoints = tools.SymmetricDrawing(x, y, currentBitmap);
-                            previousMousePoint = new Point(x, y);
-                            GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, currentLayerIndex, alphaBlending, strokeThickness);
+                            drawPoints = tools.DrawSymmetric(currentBitmap, mousePosition);
+                            previousMousePoint = mousePosition;
+                            GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, currentLayerIndex, alphaBlending, currentStrokeThickness);
                             break;
                         }
                     case ToolSelection.eraser:
                         {
-                            drawPoints = new List<Point>() { new Point(x, y) };
-                            previousMousePoint = new Point(x, y);
-                            GeneratePoints(drawPoints, new List<Color>() { currentColors[3] }, currentBitmapIndex, currentLayerIndex, false, strokeThickness);
+                            drawPoints = new List<System.Drawing.Point>() { mousePosition };
+                            previousMousePoint = mousePosition;
+                            GeneratePoints(drawPoints, new List<Color>() { currentColors[3] }, currentBitmapIndex, currentLayerIndex, false, currentStrokeThickness);
                             break;
                         }
                     case ToolSelection.colorPicker:
                         {
-                            currentColors[colorIndex] = imageManipulation.GetPixelColor(x, y, currentBitmap);
+                            currentColors[colorIndex] = currentBitmap.GetPixel(x, y);
                             SolidColorBrush brush = new SolidColorBrush();
                             brush.Color = currentColors[colorIndex];
                             if (colorIndex == 0) colorSelector.SelectedColor = currentColors[0];
@@ -235,56 +220,52 @@ namespace BakalarskaPrace
                         }
                     case ToolSelection.bucket:
                         {
-                            seedColor = imageManipulation.GetPixelColor(x, y, currentBitmap);
-                            undoColors.Add(seedColor);
-                            drawPoints = tools.FloodFill(currentBitmap, new Point(x, y), seedColor, currentColors[colorIndex], alphaBlending);
+                            undoColors.Add(currentBitmap.GetPixel(x, y));
+                            drawPoints = tools.DrawFloodFill(currentBitmap, mousePosition);
                             undoPoints = drawPoints;
                             GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, currentLayerIndex, alphaBlending, 1);
                             break;
                         }
                     case ToolSelection.specialBucket:
                         {
-                            seedColor = imageManipulation.GetPixelColor(x, y, currentBitmap);
-                            undoColors.Add(seedColor);
-                            drawPoints = tools.SpecialBucket(currentBitmap, currentColors[colorIndex], seedColor, alphaBlending);
+                            undoColors.Add(currentBitmap.GetPixel(x, y));
+                            drawPoints = tools.DrawColorReplacement(currentBitmap, mousePosition);
                             undoPoints = drawPoints;
                             GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, currentLayerIndex, false, 1);
                             break;
                         }
                     case ToolSelection.line:
                         {
-                            mouseDownPosition = new Point(x, y);
+                            mouseDownPosition = mousePosition;
                             break;
                         }
                     case ToolSelection.path:
                         {
-                            if (mouseDownPosition == new Point(-1, -1))
-                                mouseDownPosition = new Point(x, y);
+                            if (mouseDownPosition.X == -1 && mouseDownPosition.Y == -1) mouseDownPosition = mousePosition;
                             break;
                         }
                     case ToolSelection.ellipse:
                         {
-                            mouseDownPosition = new Point(x, y);
+                            mouseDownPosition = mousePosition;
                             break;
                         }
                     case ToolSelection.rectangle:
                         {
-                            mouseDownPosition = new Point(x, y);
+                            mouseDownPosition = mousePosition;
                             break;
                         }
                     case ToolSelection.dithering:
                         {
-                            drawPoints = new List<Point>() { new Point(x, y) };
-                            previousMousePoint = new Point(x, y);
-                            tools.Dithering(new List<Point>() { new Point(x, y) }, currentColors[0], currentColors[1], currentBitmap, strokeThickness, alphaBlending, visitedPoints, undoPoints, undoColors);
+                            drawPoints.Add(mousePosition);
+                            previousMousePoint = mousePosition;
+                            tools.DrawDithering(drawPoints, currentColors[0], currentColors[1], currentBitmap, currentStrokeThickness, alphaBlending, visitedPoints, undoPoints, undoColors);
                             break;
                         }
                     case ToolSelection.shading:
                         {
-                            shadingValue = ((Keyboard.Modifiers & ModifierKeys.Control) != 0) ? false : true;
-                            drawPoints = new List<Point>() { new Point(x, y) };
-                            previousMousePoint = new Point(x, y);
-                            tools.Shading(new List<Point>() { new Point(x, y) }, currentBitmap, shadingValue, strokeThickness, visitedPoints, undoPoints, undoColors);
+                            drawPoints.Add(mousePosition);
+                            previousMousePoint = mousePosition;
+                            tools.DrawShading(drawPoints, currentBitmap, ctrl, currentStrokeThickness, visitedPoints, undoPoints, undoColors);
                             break;
                         }
                     case ToolSelection.rectangleSelection:
@@ -292,10 +273,10 @@ namespace BakalarskaPrace
                             selection = !selection;
                             if (selection == true)
                             {
-                                mouseDownPosition = new Point(x, y);
+                                mouseDownPosition = mousePosition;
                                 previewBitmap.Clear();
                                 previewMousePoints.Clear();
-                                previewMousePosition = new Point(x, y);
+                                previewMousePosition = mousePosition;
                             }
                             break;
                         }
@@ -304,49 +285,57 @@ namespace BakalarskaPrace
             }
         }
 
-        private unsafe void Image_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        private unsafe void Image_MouseMove(object sender, MouseEventArgs e)
         {
-            int x = (int)e.GetPosition(image).X;
-            int y = (int)e.GetPosition(image).Y;
-            mousePosition = new Point(x, y);
+            int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
             bool shift = ((Keyboard.Modifiers & ModifierKeys.Shift) != 0) ? true : false;
             bool ctrl = ((Keyboard.Modifiers & ModifierKeys.Control) != 0) ? true : false;
-            int colorIndex = e.LeftButton == MouseButtonState.Pressed ? 0 : 1;
-            LabelPosition.Content = "[" + width + ":" + height + "] " + x + ":" + y;
+            int x = (int)e.GetPosition(image).X;
+            int y = (int)e.GetPosition(image).Y;
+            mousePosition = new System.Drawing.Point(x, y);
+            List<System.Drawing.Point> drawPoints = new List<System.Drawing.Point>();
 
+            LabelPosition.Content = "[" + width + ":" + height + "] " + x + ":" + y;
+            
             if (x >= 0 && y >= 0 && x < width && y < height && (previewMousePosition.X != x || previewMousePosition.Y != y))
             {
                 if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
                 {
+                    StopAnimation();
                     switch (currentTool)
                     {
                         case ToolSelection.brush:
                             {
                                 drawPoints.Add(mousePosition);
-                                drawPoints.AddRange(geometry.Interpolate(x, y, (int)previousMousePoint.X, (int)previousMousePoint.Y, width, height));
+                                drawPoints.AddRange(Interpolate(mousePosition, previousMousePoint, width, height));
                                 previousMousePoint = mousePosition;
-                                GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, currentLayerIndex, alphaBlending, strokeThickness);
+                                GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, currentLayerIndex, alphaBlending, currentStrokeThickness);
                                 break;
                             }
                         case ToolSelection.symmetricBrush:
                             {
-                                drawPoints.AddRange(tools.SymmetricDrawing(x, y, currentBitmap));
-                                drawPoints.AddRange(geometry.Interpolate(x, y, (int)previousMousePoint.X, (int)previousMousePoint.Y, width, height));
+                                drawPoints.AddRange(tools.DrawSymmetric(currentBitmap, mousePosition));
+                                List<System.Drawing.Point> interpolatedPoints = Interpolate(mousePosition, previousMousePoint, width, height);
+                                drawPoints.AddRange(interpolatedPoints);
+                                foreach (System.Drawing.Point point in interpolatedPoints) 
+                                {
+                                    drawPoints.AddRange(tools.DrawSymmetric(currentBitmap, mousePosition));
+                                }
                                 previousMousePoint = mousePosition;
-                                GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, currentLayerIndex, alphaBlending, strokeThickness);
+                                GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, currentLayerIndex, alphaBlending, currentStrokeThickness);
                                 break;
                             }
                         case ToolSelection.eraser:
                             {
-                                drawPoints.Add(new Point(x, y));
-                                drawPoints.AddRange(geometry.Interpolate(x, y, (int)previousMousePoint.X, (int)previousMousePoint.Y, width, height));
+                                drawPoints.Add(mousePosition);
+                                drawPoints.AddRange(Interpolate(mousePosition, previousMousePoint, width, height));
                                 previousMousePoint = mousePosition;
-                                GeneratePoints(drawPoints, new List<Color>() { currentColors[3] }, currentBitmapIndex, currentLayerIndex, false, strokeThickness);
+                                GeneratePoints(drawPoints, new List<Color>() { currentColors[3] }, currentBitmapIndex, currentLayerIndex, false, currentStrokeThickness);
                                 break;
                             }
                         case ToolSelection.colorPicker:
                             {
-                                currentColors[colorIndex] = imageManipulation.GetPixelColor(x, y, currentBitmap);
+                                currentColors[colorIndex] = currentBitmap.GetPixel(x, y);
                                 SolidColorBrush brush = new SolidColorBrush();
                                 brush.Color = currentColors[colorIndex];
                                 if (colorIndex == 0) colorSelector.SelectedColor = currentColors[0];
@@ -355,38 +344,33 @@ namespace BakalarskaPrace
                             }
                         case ToolSelection.bucket:
                             {
-                                seedColor = imageManipulation.GetPixelColor(x, y, currentBitmap);
-                                undoColors.Add(seedColor);
-                                drawPoints = new List<Point>();
-                                drawPoints = tools.FloodFill(currentBitmap, new Point(x, y), seedColor, currentColors[colorIndex], alphaBlending);
+                                undoColors.Add(currentBitmap.GetPixel(x, y));
+                                drawPoints = tools.DrawFloodFill(currentBitmap, mousePosition);
                                 undoPoints = drawPoints;
                                 GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, currentLayerIndex, alphaBlending, 1);
                                 break;
                             }
                         case ToolSelection.specialBucket:
                             {
-                                seedColor = imageManipulation.GetPixelColor(x, y, currentBitmap);
-                                drawPoints = new List<Point>();
-                                drawPoints = tools.SpecialBucket(currentBitmap, currentColors[colorIndex], seedColor, alphaBlending);
+                                drawPoints = tools.DrawColorReplacement(currentBitmap, mousePosition);
                                 undoPoints = drawPoints;
                                 GeneratePoints(drawPoints, new List<Color>() { currentColors[colorIndex] }, currentBitmapIndex, currentLayerIndex, false, 1);
                                 break;
                             }
                         case ToolSelection.dithering:
                             {
-                                drawPoints.Add(new Point(x, y));
-                                drawPoints.AddRange(geometry.Interpolate(x, y, (int)previousMousePoint.X, (int)previousMousePoint.Y, width, height));
+                                drawPoints.Add(mousePosition);
+                                drawPoints.AddRange(Interpolate(mousePosition, previousMousePoint, width, height));
                                 previousMousePoint = mousePosition;
-                                tools.Dithering(drawPoints, currentColors[0], currentColors[1], currentBitmap, strokeThickness, alphaBlending, visitedPoints, undoPoints, undoColors);
+                                tools.DrawDithering(drawPoints, currentColors[0], currentColors[1], currentBitmap, currentStrokeThickness, alphaBlending, visitedPoints, undoPoints, undoColors);
                                 break;
                             }
                         case ToolSelection.shading:
                             {
-                                shadingValue = ((Keyboard.Modifiers & ModifierKeys.Control) != 0) ? false : true;
-                                drawPoints.Add(new Point(x, y));
-                                drawPoints.AddRange(geometry.Interpolate(x, y, (int)previousMousePoint.X, (int)previousMousePoint.Y, width, height));
+                                drawPoints.Add(mousePosition);
+                                drawPoints.AddRange(Interpolate(mousePosition, previousMousePoint, width, height));
                                 previousMousePoint = mousePosition;
-                                tools.Shading(drawPoints, currentBitmap, shadingValue, strokeThickness, visitedPoints, undoPoints, undoColors);
+                                tools.DrawShading(drawPoints, currentBitmap, ctrl, currentStrokeThickness, visitedPoints, undoPoints, undoColors);
                                 break;
                             }
                         case ToolSelection.rectangleSelection:
@@ -402,7 +386,7 @@ namespace BakalarskaPrace
                 {
                     previewBitmap.Clear();
                     previewMousePoints.Clear();
-                    previewMousePosition = new Point(x, y);
+                    previewMousePosition = mousePosition;
                 }
 
                 //Vykreslení geometrických nástrojů
@@ -410,21 +394,21 @@ namespace BakalarskaPrace
                 {
                     case ToolSelection.line:
                         {
-                            if ((e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed) && (int)mouseDownPosition.X != -1 && (int)mouseDownPosition.Y != -1)
-                                previewMousePoints.AddRange(geometry.DrawLine(x, y, (int)mouseDownPosition.X, (int)mouseDownPosition.Y, width, height, ctrl));
+                            if ((e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed) && mouseDownPosition.X != -1 && mouseDownPosition.Y != -1)
+                                previewMousePoints.AddRange(tools.DrawLine(mousePosition, mouseDownPosition, ctrl, false, width, height));
                             else
                                 previewMousePoints.Add(previewMousePosition);
                             break;
                         }
                     case ToolSelection.path:
                         {
-                            if ((int)mouseDownPosition.X != -1 && (int)mouseDownPosition.Y != -1)
+                            if (mouseDownPosition.X != -1 && mouseDownPosition.Y != -1)
                             {
                                 //Pokud uživatel drží ctrl začne se nová cesta
                                 if (ctrl)
                                     previewMousePoints.Add(previewMousePosition);
                                 else
-                                    previewMousePoints.AddRange(geometry.DrawLine(x, y, (int)mouseDownPosition.X, (int)mouseDownPosition.Y, width, height, false));
+                                    previewMousePoints.AddRange(tools.DrawLine(mousePosition, mouseDownPosition, false, false, width, height));
                             }
                             else
                             {
@@ -434,24 +418,24 @@ namespace BakalarskaPrace
                         }
                     case ToolSelection.ellipse:
                         {
-                            if ((e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed) && (int)mouseDownPosition.X != -1 && (int)mouseDownPosition.Y != -1)
-                                previewMousePoints.AddRange(geometry.DrawEllipse(mouseDownPosition, e.GetPosition(image), shift, ctrl));
+                            if ((e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed) && mouseDownPosition.X != -1 && mouseDownPosition.Y != -1)
+                                previewMousePoints.AddRange(tools.DrawEllipse(mouseDownPosition, mousePosition, shift, ctrl, width, height));
                             else
                                 previewMousePoints.Add(previewMousePosition);
                             break;
                         }
                     case ToolSelection.rectangle:
                         {
-                            if ((e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed) && (int)mouseDownPosition.X != -1 && (int)mouseDownPosition.Y != -1)
-                                previewMousePoints.AddRange(geometry.DrawRectangle(mouseDownPosition, e.GetPosition(image), ctrl, shift));
+                            if ((e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed) && mouseDownPosition.X != -1 && mouseDownPosition.Y != -1)
+                                previewMousePoints.AddRange(tools.DrawRectangle(mouseDownPosition, mousePosition, ctrl, shift, width, height));
                             else
                                 previewMousePoints.Add(previewMousePosition);
                             break;
                         }
                     case ToolSelection.rectangleSelection:
                         {
-                            if ((e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed) && (int)mouseDownPosition.X != -1 && (int)mouseDownPosition.Y != -1)
-                                previewMousePoints.AddRange(geometry.DrawRectangle(mouseDownPosition, e.GetPosition(image), false, true));
+                            if ((e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed) && mouseDownPosition.X != -1 && mouseDownPosition.Y != -1)
+                                previewMousePoints.AddRange(tools.DrawRectangle(mouseDownPosition, mousePosition, false, true, width, height));
                             else
                                 if (selection == false) previewMousePoints.Add(previewMousePosition);
                             break;
@@ -461,52 +445,48 @@ namespace BakalarskaPrace
                         break;
                 }
 
-                using (previewBitmap.GetBitmapContext())
+                int previewStrokeThickness = (currentTool == ToolSelection.specialBucket || currentTool == ToolSelection.bucket || currentTool == ToolSelection.colorPicker) ? 1 : currentStrokeThickness;
+                foreach (System.Drawing.Point point in previewMousePoints)
                 {
-                    int previewStrokeThickness = (currentTool == ToolSelection.specialBucket || currentTool == ToolSelection.bucket || currentTool == ToolSelection.colorPicker) ? 1 : strokeThickness;
-                    foreach (Point point in previewMousePoints)
-                    {
-                        tools.StrokeThicknessSetter(previewBitmap, previewBitmap, (int)point.X, (int)point.Y, currentColors[2], false, previewStrokeThickness, visitedPoints, undoColors, undoPoints);
-                    }
+                    tools.StrokeThicknessSetter(previewBitmap, previewBitmap, point.X, point.Y, currentColors[2], false, previewStrokeThickness, visitedPoints, undoColors, undoPoints);
                 }
             }
         }
 
-        private unsafe void Image_MouseUp(object sender, System.Windows.Input.MouseEventArgs e)
+        private unsafe void Image_MouseUp(object sender, MouseEventArgs e)
         {
             int x = (int)e.GetPosition(image).X;
             int y = (int)e.GetPosition(image).Y;
-            mousePosition = new Point(x, y);
+            mousePosition = new System.Drawing.Point(x, y);
 
             visitedPoints.Clear();
 
-            //Musí být definována nová proměnná jinak delegát předá odkaz na aktuální 
-            int thickness = strokeThickness;
-            Color color = new Color();
-            color = Color.FromArgb(currentColors[currentColorIndex].A, currentColors[currentColorIndex].R, currentColors[currentColorIndex].G, currentColors[currentColorIndex].B);
-            int index = currentBitmapIndex;
-            int index02 = currentLayerIndex;
+            int strokeThickness = currentStrokeThickness;
+            Color color = Color.FromArgb(currentColors[currentColorIndex].A, currentColors[currentColorIndex].R, currentColors[currentColorIndex].G, currentColors[currentColorIndex].B);
+            int bitmapIndex = currentBitmapIndex;
+            int layerIndex = currentLayerIndex;
+            PlayAnimation();
 
             switch (currentTool)
             {
                 case ToolSelection.line:
                     {
-                        GeneratePoints(previewMousePoints, new List<Color>() { color }, index, index02, alphaBlending, thickness);
+                        GeneratePoints(previewMousePoints, new List<Color>() { color }, bitmapIndex, layerIndex, alphaBlending, strokeThickness);
                         break;
                     }
                 case ToolSelection.path:
                     {
-                        GeneratePoints(previewMousePoints, new List<Color>() { color }, index, index02, alphaBlending, thickness);
+                        GeneratePoints(previewMousePoints, new List<Color>() { color }, bitmapIndex, layerIndex, alphaBlending, strokeThickness);
                         break;
                     }
                 case ToolSelection.ellipse:
                     {
-                        GeneratePoints(previewMousePoints, new List<Color>() { color }, index, index02, alphaBlending, thickness);
+                        GeneratePoints(previewMousePoints, new List<Color>() { color }, bitmapIndex, layerIndex, alphaBlending, strokeThickness);
                         break;
                     }
                 case ToolSelection.rectangle:
                     {
-                        GeneratePoints(previewMousePoints, new List<Color>() { color }, index, index02, alphaBlending, thickness);
+                        GeneratePoints(previewMousePoints, new List<Color>() { color }, bitmapIndex, layerIndex, alphaBlending, strokeThickness);
                         break;
                     }
                 case ToolSelection.rectangleSelection:
@@ -519,35 +499,35 @@ namespace BakalarskaPrace
 
             if (currentTool != ToolSelection.rectangleSelection)
             {
-                List<Point> points = new List<Point>(undoPoints);
+                List<System.Drawing.Point> points = new List<System.Drawing.Point>(undoPoints);
                 List<Color> colors = new List<Color>(undoColors);
-                List<WriteableBitmap> currentBitmaps = new List<WriteableBitmap>(layers[currentLayerIndex]);
-                Action action = () => GeneratePoints(points, colors, index, index02, false, 1, true);
-                AddActionToUndo(action, false, true);
+                Action action = () => GeneratePoints(points, colors, bitmapIndex, layerIndex, false, 1, true);
+                undoRedoStack.AddActionToUndo(action, true);
 
-                drawPoints.Clear();
                 undoPoints.Clear();
                 undoColors.Clear();
                 visitedPoints.Clear();
 
-                if (currentTool != ToolSelection.path) mouseDownPosition = new Point(-1, -1);
-                else mouseDownPosition = new Point(x, y);
+                if (currentTool != ToolSelection.path) 
+                {
+                    mouseDownPosition.X = -1;
+                    mouseDownPosition.Y = -1;
+                } 
+                else mouseDownPosition = mousePosition;
 
                 previewBitmap.Clear();
                 previewMousePoints.Clear();
                 previewMousePoints.Add(mousePosition);
-                using (previewBitmap.GetBitmapContext())
+
+                int previewStrokeThickness = (currentTool == ToolSelection.specialBucket || currentTool == ToolSelection.bucket || currentTool == ToolSelection.colorPicker) ? 1 : currentStrokeThickness;
+                foreach (System.Drawing.Point point in previewMousePoints) 
                 {
-                    int previewStrokeThickness = (currentTool == ToolSelection.specialBucket || currentTool == ToolSelection.bucket || currentTool == ToolSelection.colorPicker) ? 1 : strokeThickness;
-                    foreach (Point point in previewMousePoints) 
-                    {
-                        tools.StrokeThicknessSetter(previewBitmap, previewBitmap, (int)point.X, (int)point.Y, currentColors[2], false, previewStrokeThickness, visitedPoints, undoColors, undoPoints);
-                    }
+                    tools.StrokeThicknessSetter(previewBitmap, previewBitmap, point.X, point.Y, currentColors[2], false, previewStrokeThickness, visitedPoints, undoColors, undoPoints);
                 }
             }
         }
 
-        private void GeneratePoints(List<Point> points, List<Color> colors, int bitmapIndex, int layerIndex, bool alphaBlend, int thickness, bool generateInverseAction = false, bool generateAction = false)
+        private void GeneratePoints(List<System.Drawing.Point> points, List<Color> colors, int bitmapIndex, int layerIndex, bool alphaBlend, int thickness, bool generateInverseAction = false, bool generateAction = false)
         {
             //Pokud se nezobrazuje aktuální obrázek při undo/redo tak ho zobrazit
             if (bitmapIndex != currentBitmapIndex || layerIndex != currentLayerIndex) UpdateCurrentBitmap(bitmapIndex, layerIndex);
@@ -556,42 +536,48 @@ namespace BakalarskaPrace
 
             if (generateInverseAction == true)
             {
-                List<Point> redoPoints = new List<Point>(points);
+                List<System.Drawing.Point> redoPoints = new List<System.Drawing.Point>(points);
                 List<Color> redoColors = new List<Color>();
 
                 foreach (var point in redoPoints)
                 {
-                    Color redoColor = imageManipulation.GetPixelColor((int)point.X, (int)point.Y, bitmap);
+                    Color redoColor = bitmap.GetPixel(point.X, point.Y);
                     redoColors.Add(redoColor);
                 }
                 Action action = () => GeneratePoints(redoPoints, redoColors, bitmapIndex, layerIndex, false, 1, false, true);
-                AddActionToRedo(action);
+                undoRedoStack.AddActionToRedo(action);
             }
             else if (generateAction == true) 
             {
-                List<Point> undoPoints = new List<Point>(points);
+                List<System.Drawing.Point> undoPoints = new List<System.Drawing.Point>(points);
                 List<Color> undoColors = new List<Color>();
 
                 foreach (var point in undoPoints)
                 {
-                    Color undoColor = imageManipulation.GetPixelColor((int)point.X, (int)point.Y, bitmap);
+                    Color undoColor = bitmap.GetPixel(point.X, point.Y);
                     undoColors.Add(undoColor);
                 }
                 Action action = () => GeneratePoints(undoPoints, undoColors, bitmapIndex, layerIndex, false, 1, true, false);
-                AddActionToUndo(action, false, false);
+                undoRedoStack.AddActionToUndo(action, false);
             }
-            
+
             for (int i = 0; i < points.Count; i++)
             {
                 if (colors.Count != 1 && colors.Count == points.Count)
-                {
-                    tools.StrokeThicknessSetter(currentBitmap, previewBitmap, (int)points[i].X, (int)points[i].Y, colors[i], alphaBlend, thickness, visitedPoints, undoColors, undoPoints);
-                }
+                    tools.StrokeThicknessSetter(currentBitmap, previewBitmap, points[i].X, points[i].Y, colors[i], alphaBlend, thickness, visitedPoints, undoColors, undoPoints);
                 else
-                {
-                    tools.StrokeThicknessSetter(currentBitmap, previewBitmap, (int)points[i].X, (int)points[i].Y, colors[0], alphaBlend, thickness, visitedPoints, undoColors, undoPoints);
-                }
+                    tools.StrokeThicknessSetter(currentBitmap, previewBitmap, points[i].X, points[i].Y, colors[0], alphaBlend, thickness, visitedPoints, undoColors, undoPoints);
             }
+        }
+
+        public List<System.Drawing.Point> Interpolate(System.Drawing.Point currentPoint, System.Drawing.Point previousPoint, int width, int height)
+        {
+            List<System.Drawing.Point> points = new List<System.Drawing.Point>();
+            if ((Math.Abs(currentPoint.X - previousPoint.X) > 1) || (Math.Abs(currentPoint.Y - previousPoint.Y) > 1))
+            {
+                points.AddRange(tools.DrawLine(currentPoint, previousPoint, false, false, width, height));
+            }
+            return points;
         }
 
         //Brush settings
@@ -603,7 +589,7 @@ namespace BakalarskaPrace
 
         private void BrushSize_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            strokeThickness = (int)e.NewValue;
+            currentStrokeThickness = (int)e.NewValue;
         }
 
         private void AlphaBlending_Changed(object sender, RoutedEventArgs e)
@@ -637,13 +623,9 @@ namespace BakalarskaPrace
 
         private void Canvas_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            UIElement element = (UIElement)sender;
-            Point position = e.GetPosition(element);
             MatrixTransform transform = (MatrixTransform)paintSurface.RenderTransform;
             Matrix matrix = transform.Matrix;
-
-            // Pokud je e >= 0 dojde k přibližování
-            double scale = (e.Delta >= 0) ? 1.1 : 0.9;
+            double scale = (e.Delta >= 0) ? 1.1 : 0.9; // Pokud je e >= 0 dojde k přibližování
 
             matrix.ScaleAtPrepend(scale, scale, mousePosition.X - paintSurface.Width / 2, mousePosition.Y - paintSurface.Height / 2);
             transform.Matrix = matrix;
@@ -658,7 +640,7 @@ namespace BakalarskaPrace
             if (e.ChangedButton == MouseButton.Middle)
             {
                 gridDragStartPoint = e.GetPosition(window);
-                gridDragOffset = new System.Windows.Vector(Grid_TranslateTransform.X, Grid_TranslateTransform.Y);
+                gridDragOffset = new Vector(Grid_TranslateTransform.X, Grid_TranslateTransform.Y);
                 grid.CaptureMouse();
             }
         }
@@ -667,7 +649,7 @@ namespace BakalarskaPrace
         {
             if (grid.IsMouseCaptured)
             {
-                System.Windows.Vector offset = Point.Subtract(e.GetPosition(window), gridDragStartPoint);
+                Vector offset = Point.Subtract(e.GetPosition(window), gridDragStartPoint);
                 Grid_TranslateTransform.X = gridDragOffset.X + offset.X;
                 Grid_TranslateTransform.Y = gridDragOffset.Y + offset.Y;
             }
@@ -681,15 +663,8 @@ namespace BakalarskaPrace
         private void UpdateOnionSkinning()
         {
             RemoveOnionSkinning();
-            if (currentBitmapIndex > 0)
-            {
-                onionSkinningImages[0].Source = layers[currentLayerIndex][currentBitmapIndex - 1];
-            }
-
-            if (currentBitmapIndex < layers[currentLayerIndex].Count - 1)
-            {
-                onionSkinningImages[1].Source = layers[currentLayerIndex][currentBitmapIndex + 1];
-            }
+            if (currentBitmapIndex > 0) onionSkinningImages[0].Source = layers[currentLayerIndex][currentBitmapIndex - 1];
+            if (currentBitmapIndex < layers[currentLayerIndex].Count - 1) onionSkinningImages[1].Source = layers[currentLayerIndex][currentBitmapIndex + 1];
         }
 
         private void RemoveOnionSkinning()
@@ -729,10 +704,9 @@ namespace BakalarskaPrace
         //Tool buttons
         private void ToolButton_Click(object sender, RoutedEventArgs e)
         {
-            Button button = new Button();
             string text = ((Button)sender).Name;
             currentTool = (ToolSelection)Enum.Parse(typeof(ToolSelection), text);
-            button = (Button)sender;
+            Button button = (Button)sender;
             button.IsEnabled = false;
             if (lastToolButton != null) lastToolButton.IsEnabled = true;
             lastToolButton = button;
@@ -757,7 +731,7 @@ namespace BakalarskaPrace
 
             Flip(selectedBitmapIndexes, layerIndex, layers[layerIndex], horizontal);
             Action action = () => Flip(selectedBitmapIndexes, layerIndex, layers[layerIndex], horizontal, true);
-            AddActionToUndo(action, false, true);
+            undoRedoStack.AddActionToUndo(action, true);
         }
 
         private void Flip(List<int> selectedBitmapIndexes, int layerIndex, List<WriteableBitmap> bitmaps, bool horizontal, bool generateInverseAction = false, bool generateAction = false) 
@@ -765,12 +739,12 @@ namespace BakalarskaPrace
             if (generateInverseAction == true)
             {
                 Action inverseAction = () => Flip(selectedBitmapIndexes, layerIndex, bitmaps, horizontal, false, true);
-                AddActionToRedo(inverseAction);
+                undoRedoStack.AddActionToRedo(inverseAction);
             }
             else if (generateAction == true)
             {
                 Action action = () => Flip(selectedBitmapIndexes, layerIndex, bitmaps, horizontal, true, false);
-                AddActionToUndo(action, false, false);
+                undoRedoStack.AddActionToUndo(action, false);
             }
             
             transform.Flip(selectedBitmapIndexes, bitmaps, horizontal);
@@ -796,7 +770,7 @@ namespace BakalarskaPrace
 
             Rotate(selectedBitmapIndexes, layerIndex, layers[layerIndex], clockwise);
             Action action = () => Rotate(selectedBitmapIndexes, layerIndex, layers[layerIndex], !clockwise, true);
-            AddActionToUndo(action, false, true);
+            undoRedoStack.AddActionToUndo(action, true);
         }
 
         private void Rotate(List<int> selectedBitmapIndexes, int layerIndex, List<WriteableBitmap> bitmaps, bool clockwise, bool generateInverseAction = false, bool generateAction = false) 
@@ -804,12 +778,12 @@ namespace BakalarskaPrace
             if (generateInverseAction == true)
             {
                 Action inverseAction = () => Rotate(selectedBitmapIndexes, layerIndex, bitmaps, !clockwise, false, true);
-                AddActionToRedo(inverseAction);
+                undoRedoStack.AddActionToRedo(inverseAction);
             }
             else if (generateAction == true)
             {
                 Action action = () => Rotate(selectedBitmapIndexes, layerIndex, bitmaps, !clockwise, true, false);
-                AddActionToUndo(action, false, false);
+                undoRedoStack.AddActionToUndo(action, false);
             }
 
             transform.RotateImage(selectedBitmapIndexes, bitmaps, clockwise);
@@ -828,7 +802,7 @@ namespace BakalarskaPrace
             int bitmapIndex = currentBitmapIndex;
             Action originalAction = () => CropToFit(true);
             Action action = () => ReplaceBitmaps(oldBitmaps, layerIndex, bitmapIndex, originalAction, true);
-            AddActionToUndo(action, false, true);
+            undoRedoStack.AddActionToUndo(action, true);
             CropToFit();
         }
 
@@ -845,7 +819,7 @@ namespace BakalarskaPrace
                 int bitmapIndex = currentBitmapIndex;
                 Action originalAction = () => CropToFit(true);
                 Action action = () => ReplaceBitmaps(oldBitmaps, layerIndex, bitmapIndex, originalAction, true);
-                AddActionToUndo(action, false, false);
+                undoRedoStack.AddActionToUndo(action, false);
             }
             transform.CropToFit(layers);
             UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
@@ -873,7 +847,7 @@ namespace BakalarskaPrace
                 int bitmapIndex = currentBitmapIndex;
                 Action originalAction = () => Resize(newWidth, newHeight, position, true);
                 Action action = () => ReplaceBitmaps(oldBitmaps, layerIndex, bitmapIndex, originalAction, true);
-                AddActionToUndo(action, false, true);
+                undoRedoStack.AddActionToUndo(action, true);
                 Resize(newWidth, newHeight, position);
             }
         }
@@ -891,7 +865,7 @@ namespace BakalarskaPrace
                 int bitmapIndex = currentBitmapIndex;
                 Action originalAction = () => Resize(newWidth, newHeight, position, true);
                 Action action = () => ReplaceBitmaps(oldBitmaps, layerIndex, bitmapIndex, originalAction, true);
-                AddActionToUndo(action, false, false);
+                undoRedoStack.AddActionToUndo(action, false);
             }
             transform.Resize(layers, newWidth, newHeight, position);
             UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
@@ -922,7 +896,7 @@ namespace BakalarskaPrace
             int bitmapIndex = currentBitmapIndex;
             Action originalAction = () => CenterAlligment(selectedBitmapIndexes, layerIndex, true);
             Action action = () => ReplaceBitmaps(oldBitmaps, layerIndex, bitmapIndex, originalAction, true);
-            AddActionToUndo(action, false, true);
+            undoRedoStack.AddActionToUndo(action, true);
             CenterAlligment(selectedBitmapIndexes, layerIndex);
         }
 
@@ -938,7 +912,7 @@ namespace BakalarskaPrace
                 int bitmapIndex = currentBitmapIndex;
                 Action originalAction = () => CenterAlligment(selectedBitmapIndexes, layerIndex, true);
                 Action action = () => ReplaceBitmaps(oldBitmaps, layerIndex, bitmapIndex, originalAction, true);
-                AddActionToUndo(action, false, false);
+                undoRedoStack.AddActionToUndo(action, false);
             }
 
             transform.CenterAlligment(selectedBitmapIndexes, layers[layerIndex]);
@@ -950,7 +924,7 @@ namespace BakalarskaPrace
         {
             if (generateInverseAction == true) 
             {
-                AddActionToRedo(originalAction);
+                undoRedoStack.AddActionToRedo(originalAction);
             }
 
             layers = oldBitmaps;
@@ -972,7 +946,7 @@ namespace BakalarskaPrace
         private void AddColorPaletteButton(Color color)
         {
             WriteableBitmap bitmap = BitmapFactory.New(1, 1);
-            imageManipulation.AddPixel(0, 0, color, bitmap);
+            bitmap.SetPixel(0, 0, color);
             ControlCreator controlCreator = new ControlCreator();
             Button newButton = controlCreator.ColorPaletteButton(bitmap, color, new MouseButtonEventHandler(ColorPaletteButton_Click));
             colorList.Children.Add(newButton);
@@ -1008,7 +982,7 @@ namespace BakalarskaPrace
             {
                 for (int i = 0; i < colorPalette.Count; i++)
                 {
-                    imageManipulation.AddPixel(i, 0, colorPalette[i], newBitmap);
+                    newBitmap.SetPixel(i, 0, colorPalette[i]);
                 }
             }
 
@@ -1037,7 +1011,6 @@ namespace BakalarskaPrace
         {
             if (currentAnimationIndex + 1 < layers[currentLayerIndex].Count) currentAnimationIndex += 1;
             else currentAnimationIndex = 0;
-
             SetPreviewAnimationImages(currentAnimationIndex);
         }
 
@@ -1061,13 +1034,11 @@ namespace BakalarskaPrace
                 timerInterval = 1000 / currentFPSTarget;
                 timer.Stop();
                 timer.Interval = timerInterval;
-                if (playAnimation == true) timer.Start();
+                PlayAnimation();
             }
             else
             {
-                timer.Stop();
-                currentAnimationIndex = currentBitmapIndex;
-                SetPreviewAnimationImages(currentAnimationIndex);
+                StopAnimation();
             }
         }
 
@@ -1078,9 +1049,7 @@ namespace BakalarskaPrace
                 BitmapImage image = new BitmapImage(new Uri("Files/Images/Dark-theme/play.png", UriKind.Relative));
                 playImage.Source = image;
                 playAnimation = false;
-                timer.Stop();
-                currentAnimationIndex = currentBitmapIndex;
-                SetPreviewAnimationImages(currentAnimationIndex);
+                StopAnimation();
             }
             else
             {
@@ -1089,6 +1058,18 @@ namespace BakalarskaPrace
                 playAnimation = true;
                 timer.Start();
             }
+        }
+
+        private void StopAnimation() 
+        {
+            timer.Stop();
+            currentAnimationIndex = currentBitmapIndex;
+            SetPreviewAnimationImages(currentAnimationIndex);
+        }
+
+        private void PlayAnimation() 
+        {
+            if (playAnimation == true) timer.Start();
         }
 
         //Animation controls
@@ -1103,7 +1084,7 @@ namespace BakalarskaPrace
             }
             CreateNewFrame(layer, bitmapIndex);
             Action action = () => DeleteImage(bitmapIndex, true, false, layer);
-            AddActionToUndo(action, false, true);
+            undoRedoStack.AddActionToUndo(action, true);
         }
 
         private void DuplicateImage_Click(object sender, RoutedEventArgs e)
@@ -1117,7 +1098,7 @@ namespace BakalarskaPrace
             }
             CreateNewFrame(layer, bitmapIndex);
             Action action = () => DeleteImage(bitmapIndex, true, false, layer);
-            AddActionToUndo(action, false, true);
+            undoRedoStack.AddActionToUndo(action, true);
         }
 
         private void MergeImage_Click(object sender, RoutedEventArgs e)
@@ -1133,7 +1114,7 @@ namespace BakalarskaPrace
                 }
                 CreateNewFrame(layer, bitmapIndex);
                 Action action = () => DeleteImage(bitmapIndex, true, false, layer);
-                AddActionToUndo(action, false, true);
+                undoRedoStack.AddActionToUndo(action, true);
             }
         }
 
@@ -1150,7 +1131,7 @@ namespace BakalarskaPrace
                 }
                 CreateNewFrame(layer, bitmapIndex);
                 Action action = () => DeleteImage(bitmapIndex, true, false, layer);
-                AddActionToUndo(action, false, true);
+                undoRedoStack.AddActionToUndo(action, true);
             }
         }
 
@@ -1159,12 +1140,12 @@ namespace BakalarskaPrace
             if (generateInverseAction == true)
             {
                 Action inverseAction = () => DeleteImage(bitmapIndex, false, true, layer);
-                AddActionToRedo(inverseAction);
+                undoRedoStack.AddActionToRedo(inverseAction);
             }
             else if (generateAction == true)
             {
                 Action action = () => DeleteImage(bitmapIndex, true, false, layer);
-                AddActionToUndo(action, false, false);
+                undoRedoStack.AddActionToUndo(action, false);
             }
 
             IntersectButton.IsEnabled = true;
@@ -1214,7 +1195,7 @@ namespace BakalarskaPrace
                 DeleteImage(bitmapIndex);
 
                 Action action = () => CreateNewFrame(layer, bitmapIndex, true, false);
-                AddActionToUndo(action, false, true);
+                undoRedoStack.AddActionToUndo(action, true);
             }
         }
 
@@ -1223,12 +1204,12 @@ namespace BakalarskaPrace
             if (generateInverseAction == true)
             {
                 Action inverseAction = () => CreateNewFrame(layer, bitmapIndex, false, true);
-                AddActionToRedo(inverseAction);
+                undoRedoStack.AddActionToRedo(inverseAction);
             }
             else if (generateAction == true) 
             {
                 Action action = () => CreateNewFrame(layer, bitmapIndex, true, false);
-                AddActionToUndo(action, false, false);
+                undoRedoStack.AddActionToUndo(action, false);
             }
 
             for (int i = 0; i < layers.Count; i++) 
@@ -1247,8 +1228,8 @@ namespace BakalarskaPrace
 
         private void UpdateImagePreviewButtons()
         {
-            previewButtons = ImagePreviews.Children.OfType<System.Windows.Controls.Button>().ToList();
-            foreach (System.Windows.Controls.Button button in previewButtons)
+            previewButtons = ImagePreviews.Children.OfType<Button>().ToList();
+            foreach (Button button in previewButtons)
             {
                 ImagePreviews.Children.Remove(button);
             }
@@ -1264,7 +1245,7 @@ namespace BakalarskaPrace
 
         private void PreviewButton_Click(object sender, RoutedEventArgs e)
         {
-            string buttonName = ((System.Windows.Controls.Button)sender).Name;
+            string buttonName = ((Button)sender).Name;
             int index = int.Parse(buttonName.Replace("ImagePreview", ""));
             currentBitmapIndex = index;
             UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
@@ -1324,9 +1305,8 @@ namespace BakalarskaPrace
                 }
                 CreateLayer(newLayer, currentLayerIndex);
                 Action action = () => DeleteLayer(layerIndex++, true, false);
-                AddActionToUndo(action, false, true);
+                undoRedoStack.AddActionToUndo(action, true);
                 MoveLayerUpButton.IsEnabled = true;
-
             }
             else
             {
@@ -1340,13 +1320,13 @@ namespace BakalarskaPrace
             {
                 int newLayerIndex = layerIndex;
                 Action inverseAction = () => DeleteLayer(newLayerIndex, false, true);
-                AddActionToRedo(inverseAction);
+                undoRedoStack.AddActionToRedo(inverseAction);
             }
             else if (generateAction == true)
             {
                 int newLayerIndex = layerIndex;
                 Action action = () => DeleteLayer(newLayerIndex, true, false);
-                AddActionToUndo(action, false, false);
+                undoRedoStack.AddActionToUndo(action, false);
             }
             currentLayerIndex = layerIndex;
             layers.Insert(currentLayerIndex, newLayer);
@@ -1356,8 +1336,8 @@ namespace BakalarskaPrace
 
         private void UpdateLayerPreviewButtons()
         {
-            layerButtons = LayerPreviews.Children.OfType<System.Windows.Controls.Button>().ToList();
-            foreach (System.Windows.Controls.Button button in layerButtons)
+            layerButtons = LayerPreviews.Children.OfType<Button>().ToList();
+            foreach (Button button in layerButtons)
             {
                 LayerPreviews.Children.Remove(button);
             }
@@ -1373,7 +1353,7 @@ namespace BakalarskaPrace
 
         private void LayerButton_Click(object sender, RoutedEventArgs e)
         {
-            string buttonName = ((System.Windows.Controls.Button)sender).Name;
+            string buttonName = ((Button)sender).Name;
             int index = int.Parse(buttonName.Replace("LayerPreview", ""));
             currentLayerIndex = index;
             UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
@@ -1396,7 +1376,7 @@ namespace BakalarskaPrace
         {
             int layerIndex = currentLayerIndex;
             Action action = () => MoveLayerDown(layerIndex - 1, true, false);
-            AddActionToUndo(action, false, true);
+            undoRedoStack.AddActionToUndo(action, true);
             MoveLayerUp(layerIndex);
         }
 
@@ -1406,13 +1386,13 @@ namespace BakalarskaPrace
             {
                 int newLayerIndex = layerIndex - 1;
                 Action inverseAction = () => MoveLayerDown(newLayerIndex, false, true);
-                AddActionToRedo(inverseAction);
+                undoRedoStack.AddActionToRedo(inverseAction);
             }
             else if (generateAction == true)
             {
                 int newLayerIndex = layerIndex - 1;
                 Action action = () => MoveLayerDown(newLayerIndex, true, false);
-                AddActionToUndo(action, false, false);
+                undoRedoStack.AddActionToUndo(action, false);
             }
 
             List<WriteableBitmap> currentLayer = new List<WriteableBitmap>(layers[layerIndex]);
@@ -1427,7 +1407,7 @@ namespace BakalarskaPrace
         {
             int layerIndex = currentLayerIndex;
             Action action = () => MoveLayerUp(layerIndex + 1, true, false);
-            AddActionToUndo(action, false, true);
+            undoRedoStack.AddActionToUndo(action, true);
             MoveLayerDown(layerIndex);
         }
 
@@ -1437,13 +1417,13 @@ namespace BakalarskaPrace
             {
                 int newLayerIndex = layerIndex + 1;
                 Action inverseAction = () => MoveLayerUp(newLayerIndex, false, true);
-                AddActionToRedo(inverseAction);
+                undoRedoStack.AddActionToRedo(inverseAction);
             }
             else if (generateAction == true)
             {
                 int newLayerIndex = layerIndex + 1;
                 Action action = () => MoveLayerUp(newLayerIndex, true, false);
-                AddActionToUndo(action, false, false);
+                undoRedoStack.AddActionToUndo(action, false);
             }
 
             List<WriteableBitmap> currentLayer = new List<WriteableBitmap>(layers[layerIndex]);
@@ -1483,7 +1463,7 @@ namespace BakalarskaPrace
                 List<WriteableBitmap> layer = new List<WriteableBitmap>(layers[layerIndex]);
                 DeleteLayer(layerIndex);
                 Action action = () => CreateLayer(layer, layerIndex, true, false);
-                AddActionToUndo(action, false, true);
+                undoRedoStack.AddActionToUndo(action, true);
             }
         }
 
@@ -1494,14 +1474,14 @@ namespace BakalarskaPrace
                 List<WriteableBitmap> bitmaps = new List<WriteableBitmap>(layers[layerIndex]);
                 int newLayerIndex = layerIndex;
                 Action inverseAction = () => CreateLayer(bitmaps, newLayerIndex, false, true);
-                AddActionToRedo(inverseAction);
+                undoRedoStack.AddActionToRedo(inverseAction);
             }
             else if (generateAction == true)
             {
                 List<WriteableBitmap> bitmaps = new List<WriteableBitmap>(layers[layerIndex]);
                 int newLayerIndex = layerIndex;
                 Action action = () => CreateLayer(bitmaps, newLayerIndex, true, false);
-                AddActionToUndo(action, false, false);
+                undoRedoStack.AddActionToUndo(action, false);
             }
 
             layers.RemoveAt(layerIndex);
@@ -1541,6 +1521,7 @@ namespace BakalarskaPrace
                 currentLayerIndex = 0;
                 UpdateImagePreviewButtons();
                 UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
+                undoRedoStack.ClearStacks();
             }
         }
 
@@ -1594,6 +1575,7 @@ namespace BakalarskaPrace
                 currentLayerIndex = 0;
                 UpdateImagePreviewButtons();
                 UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
+                undoRedoStack.ClearStacks();
             }
         }
 
@@ -1603,57 +1585,27 @@ namespace BakalarskaPrace
             System.Windows.Application.Current.Shutdown();
         }
 
-        //Undo/redo
-        private void AddActionToUndo(Action action, bool performAction, bool clearRedoStack)
-        {
-            if (performAction == true) action();
-            undoStack.Push(action);
-            if(clearRedoStack == true) redoStack.Clear();
-        }
-
-        private void AddActionToRedo(Action action)
-        {
-            redoStack.Push(action);
-        }
-
-        private void Undo_Click(object sender, RoutedEventArgs e)
-        {
-            Undo();
-        }
-
-        private void Undo()
-        {
-            if (undoStack.Count > 0)
-            {
-                if (visitedPoints.Count != 0) visitedPoints.Clear();
-                undoStack.Pop().Invoke();
-                UpdateImagePreviewButtons();
-                UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
-            }
-        }
-
-        private void Redo_Click(object sender, RoutedEventArgs e)
-        {
-            Redo();
-        }
-
-        private void Redo()
-        {
-            if (redoStack.Count > 0)
-            {
-                if (visitedPoints.Count != 0) visitedPoints.Clear();
-                redoStack.Pop().Invoke();
-                UpdateImagePreviewButtons();
-                UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
-            }
-        }
-
         //Klávesové zkratky
         private void WindowKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             //Misc
-            if (e.Key == Key.Z && Keyboard.Modifiers == ModifierKeys.Control) Undo();
-            if (e.Key == Key.Y && Keyboard.Modifiers == ModifierKeys.Control) Redo();
+            if (e.Key == Key.Z && Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                if (undoRedoStack.Undo(visitedPoints) == true)
+                {
+                    UpdateImagePreviewButtons();
+                    UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
+                }
+            }
+
+            if (e.Key == Key.Y && Keyboard.Modifiers == ModifierKeys.Control) 
+            {
+                if (undoRedoStack.Redo(visitedPoints) == true) 
+                {
+                    UpdateImagePreviewButtons();
+                    UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
+                }
+            }
             if (e.Key == Key.Tab) Center();
             if (e.Key == Key.Down) NextImage();
             if (e.Key == Key.Up) PreviousImage();
@@ -1685,8 +1637,8 @@ namespace BakalarskaPrace
         {
             currentTool = newTool;
             string buttonName = currentTool.ToString();
-            List<System.Windows.Controls.Button> children = toolButtons.Children.OfType<System.Windows.Controls.Button>().ToList();
-            foreach (System.Windows.Controls.Button child in children)
+            List<Button> children = toolButtons.Children.OfType<Button>().ToList();
+            foreach (Button child in children)
             {
                 if (child.Name == buttonName)
                 {
