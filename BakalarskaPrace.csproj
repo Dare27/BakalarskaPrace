@@ -74,10 +74,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="FiltersFolder\IntersectFramesFilter.cs" />
+    <Compile Include="FiltersFolder\ITwoFrameFilter.cs" />
+    <Compile Include="FiltersFolder\MergeFramesFilter.cs" />
+    <Compile Include="ToolsFolder\DefaultBrush.cs" />
     <Compile Include="ToolsFolder\ToolSettings.cs" />
     <Compile Include="ControlCreator.cs" />
     <Compile Include="FileManagement.cs" />
-    <Compile Include="Filters.cs" />
+    <Compile Include="FiltersFolder\Filters.cs" />
     <Compile Include="ToolsFolder\ColorReplacementTool.cs" />
     <Compile Include="ToolsFolder\DitheringTool.cs" />
     <Compile Include="ToolsFolder\EllipseTool.cs" />
@@ -90,7 +94,13 @@
     <Compile Include="ToolsFolder\ShadingTool.cs" />
     <Compile Include="ToolsFolder\SymmetricTool.cs" />
     <Compile Include="ToolsFolder\Tools.cs" />
-    <Compile Include="Transform.cs" />
+    <Compile Include="TransformsFolder\CenterAlligmentTransform.cs" />
+    <Compile Include="TransformsFolder\CropToFitTransform.cs" />
+    <Compile Include="TransformsFolder\FlipTransform.cs" />
+    <Compile Include="TransformsFolder\ITransform.cs" />
+    <Compile Include="TransformsFolder\ResizeTransform.cs" />
+    <Compile Include="TransformsFolder\RotateTransform.cs" />
+    <Compile Include="TransformsFolder\Transforms.cs" />
     <Compile Include="UndoRedoStack.cs" />
     <Compile Include="WindowLoadImage.xaml.cs">
       <DependentUpon>WindowLoadImage.xaml</DependentUpon>
@@ -114,7 +124,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ColorSpaceConvertor.cs" />
+    <Compile Include="ToolsFolder\ColorSpaceConvertor.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

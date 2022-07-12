@@ -19,44 +19,97 @@ namespace BakalarskaPrace.ToolsFolder
         DitheringTool dithering = new DitheringTool();
         ShadingTool shading = new ShadingTool();
 
-        public List<System.Drawing.Point> DrawLine(System.Drawing.Point startPoint, System.Drawing.Point endPoint, bool alternativeFunction01, bool alternativeFunction02, int width, int height)
+        public void DefualtBrush(WriteableBitmap bitmap, System.Drawing.Point currentPoint, Color color, bool alphaBlending, int thickness, List<Color> undoColors, List<System.Drawing.Point> undoPoints, System.Drawing.Point previousPoint = new System.Drawing.Point()) 
+        {
+            List<System.Drawing.Point> generatedPoints = new List<System.Drawing.Point>() { currentPoint };
+            if (!previousPoint.IsEmpty) 
+            {
+                generatedPoints.AddRange(Interpolate(currentPoint, previousPoint, bitmap.PixelWidth, bitmap.PixelHeight));
+            }
+            foreach (System.Drawing.Point point in generatedPoints) 
+            {
+                StrokeThicknessSetter(bitmap, point, color, alphaBlending, thickness, undoColors, undoPoints);
+            }
+        }
+
+        public void Symmetric(WriteableBitmap bitmap, System.Drawing.Point currentPoint, Color color, bool alphaBlending, int thickness, List<Color> undoColors, List<System.Drawing.Point> undoPoints, System.Drawing.Point previousPoint = new System.Drawing.Point())
+        {
+            List<System.Drawing.Point> generatedPoints = symmetric.GeneratePoints(bitmap, currentPoint);
+            List<System.Drawing.Point> interpolatedPoints = new List<System.Drawing.Point>();
+            if (!previousPoint.IsEmpty)
+            {
+                interpolatedPoints.AddRange(Interpolate(currentPoint, previousPoint, bitmap.PixelWidth, bitmap.PixelHeight));
+                generatedPoints.AddRange(interpolatedPoints);
+            }
+
+            foreach (System.Drawing.Point point in interpolatedPoints)
+            {
+                generatedPoints.AddRange(symmetric.GeneratePoints(bitmap, point));
+            }
+
+            foreach (System.Drawing.Point point in generatedPoints)
+            {
+                StrokeThicknessSetter(bitmap, point, color, alphaBlending, thickness, undoColors, undoPoints);
+            }
+        }
+
+        public List<System.Drawing.Point> Line(System.Drawing.Point startPoint, System.Drawing.Point endPoint, bool alternativeFunction01, bool alternativeFunction02, int width, int height)
         {
             return line.GeneratePoints(startPoint, endPoint, alternativeFunction01, alternativeFunction02, width, height);
         }
 
-        public List<System.Drawing.Point> DrawEllipse(System.Drawing.Point startPoint, System.Drawing.Point endPoint, bool alternativeFunction01, bool alternativeFunction02, int width, int height)
+        public List<System.Drawing.Point> Ellipse(System.Drawing.Point startPoint, System.Drawing.Point endPoint, bool alternativeFunction01, bool alternativeFunction02, int width, int height)
         {
             return ellipse.GeneratePoints(startPoint, endPoint, alternativeFunction01, alternativeFunction02, width, height);
         }
 
-        public List<System.Drawing.Point> DrawRectangle(System.Drawing.Point startPoint, System.Drawing.Point endPoint, bool alternativeFunction01, bool alternativeFunction02, int width, int height)
+        public List<System.Drawing.Point> Rectangle(System.Drawing.Point startPoint, System.Drawing.Point endPoint, bool alternativeFunction01, bool alternativeFunction02, int width, int height)
         {
             return rectangle.GeneratePoints(startPoint, endPoint, alternativeFunction01, alternativeFunction02, width, height);
         }
 
-        public List<System.Drawing.Point> DrawFloodFill(WriteableBitmap bitmap, System.Drawing.Point point)
+        public void FloodFill(WriteableBitmap bitmap, System.Drawing.Point point, Color color, List<System.Drawing.Point> undoPoints, List<Color> undoColors)
         {
-            return floodFill.GeneratePoints(bitmap, point);
+            floodFill.GeneratePoints(bitmap, point, color, undoPoints, undoColors);
         }
 
-        public List<System.Drawing.Point> DrawColorReplacement(WriteableBitmap bitmap, System.Drawing.Point point)
+        public void ColorReplacement(WriteableBitmap bitmap, System.Drawing.Point point, Color color, List<System.Drawing.Point> undoPoints, List<Color> undoColors)
         {
-            return colorReplacement.GeneratePoints(bitmap, point);
+            colorReplacement.GeneratePoints(bitmap, point, color, undoPoints, undoColors);
         }
 
-        public List<System.Drawing.Point> DrawSymmetric(WriteableBitmap bitmap, System.Drawing.Point point)
+        public void Dithering(WriteableBitmap bitmap, System.Drawing.Point currentPoint, Color color01, Color color02, int strokeThickness, bool alphaBlending, List<System.Drawing.Point> undoPoints, List<Color> undoColors, System.Drawing.Point previousPoint = new System.Drawing.Point())
         {
-            return symmetric.GeneratePoints(bitmap, point);
+            List<System.Drawing.Point> generatedPoints = new List<System.Drawing.Point>() { currentPoint };
+            List<System.Drawing.Point> interpolatedPoints = new List<System.Drawing.Point>();
+            if (!previousPoint.IsEmpty)
+            {
+                interpolatedPoints.AddRange(Interpolate(currentPoint, previousPoint, bitmap.PixelWidth, bitmap.PixelHeight));
+            }
+            generatedPoints.AddRange(interpolatedPoints);
+            dithering.GeneratePoints(generatedPoints, color01, color02, bitmap, strokeThickness, alphaBlending, undoPoints, undoColors);
         }
 
-        public void DrawDithering(List<System.Drawing.Point> points, Color color01, Color color02, WriteableBitmap bitmap, int strokeThickness, bool alphaBlending, List<System.Drawing.Point> visitedPoints, List<System.Drawing.Point> undoPoints, List<Color> undoColors)
+        public void Shading(WriteableBitmap bitmap, System.Drawing.Point currentPoint, bool darken, int strokeThickness, List<System.Drawing.Point> undoPoints, List<Color> undoColors, System.Drawing.Point previousPoint = new System.Drawing.Point())
         {
-            dithering.GeneratePoints(points, color01, color02, bitmap, strokeThickness, alphaBlending, visitedPoints, undoPoints, undoColors);
+            List<System.Drawing.Point> generatedPoints = new List<System.Drawing.Point>() { currentPoint };
+            List<System.Drawing.Point> interpolatedPoints = new List<System.Drawing.Point>();
+            if (!previousPoint.IsEmpty)
+            {
+                interpolatedPoints.AddRange(Interpolate(currentPoint, previousPoint, bitmap.PixelWidth, bitmap.PixelHeight));
+            }
+            generatedPoints.AddRange(interpolatedPoints);
+            shading.GeneratePoints(generatedPoints, bitmap, darken, strokeThickness, undoPoints, undoColors);
         }
 
-        public void DrawShading(List<System.Drawing.Point> points, WriteableBitmap bitmap, bool darken, int strokeThickness, List<System.Drawing.Point> visitedPoints, List<System.Drawing.Point> undoPoints, List<Color> undoColors)
+        public List<System.Drawing.Point> Interpolate(System.Drawing.Point currentPoint, System.Drawing.Point previousPoint, int width, int height)
         {
-            shading.GeneratePoints(points, bitmap, darken, strokeThickness, visitedPoints, undoPoints, undoColors);
+            List<System.Drawing.Point> points = new List<System.Drawing.Point>();
+            if ((Math.Abs(currentPoint.X - previousPoint.X) > 1) || (Math.Abs(currentPoint.Y - previousPoint.Y) > 1))
+            {
+                points.AddRange(Line(currentPoint, previousPoint, false, false, width, height));
+            }
+            return points;
         }
     }
 }

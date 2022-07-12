@@ -10,9 +10,8 @@ namespace BakalarskaPrace.ToolsFolder
 {
     internal class DitheringTool : ToolSettings
     {
-        public void GeneratePoints(List<System.Drawing.Point> points, Color color01, Color color02, WriteableBitmap bitmap, int strokeThickness, bool alphaBlending, List<System.Drawing.Point> visitedPoints, List<System.Drawing.Point> undoPoints, List<Color> undoColors)
+        public void GeneratePoints(List<System.Drawing.Point> points, Color color01, Color color02, WriteableBitmap bitmap, int strokeThickness, bool alphaBlending, List<System.Drawing.Point> undoPoints, List<Color> undoColors)
         {
-            if (visitedPoints == null) visitedPoints = new List<System.Drawing.Point>();
             foreach (System.Drawing.Point point in points)
             {
                 int size = strokeThickness / 2;
@@ -32,9 +31,9 @@ namespace BakalarskaPrace.ToolsFolder
                         if (x + i < bitmap.PixelWidth && x + i > -1 && y + j < bitmap.PixelHeight && y + j > -1)
                         {
                             System.Drawing.Point newPoint = new System.Drawing.Point(x + i, y + j);
-                            if (!visitedPoints.Contains(newPoint))
+                            if (!undoPoints.Contains(newPoint))
                             {
-                                visitedPoints.Add(newPoint);
+                                undoPoints.Add(newPoint);
                                 if ((x + i + y + j) % 2 == 0)
                                 {
                                     color = color01;
@@ -47,7 +46,6 @@ namespace BakalarskaPrace.ToolsFolder
                                 backgroundColor = bitmap.GetPixel(x + i, y + j);
                                 color = AlphaBlending(alphaBlending, color, backgroundColor);
                                 bitmap.SetPixel(x + i, y + j, color);
-                                undoPoints.Add(newPoint);
                                 undoColors.Add(backgroundColor);
                             }
                         }

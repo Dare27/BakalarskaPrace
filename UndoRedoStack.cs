@@ -22,24 +22,22 @@ namespace BakalarskaPrace
             redoStack.Push(action);
         }
 
-        public bool Undo(List<System.Drawing.Point> visitedPoints)
+        public bool Undo()
         {
             bool invoke = false;
             if (undoStack.Count > 0)
             {
-                if (visitedPoints.Count != 0) visitedPoints.Clear();
                 undoStack.Pop().Invoke();
                 invoke = true;
             }
             return invoke;
         }
 
-        public bool Redo(List<System.Drawing.Point> visitedPoints)
+        public bool Redo()
         {
             bool invoke = false;
             if (redoStack.Count > 0)
             {
-                if (visitedPoints.Count != 0) visitedPoints.Clear();
                 redoStack.Pop().Invoke();
                 invoke = true;
             }

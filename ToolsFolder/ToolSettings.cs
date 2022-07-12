@@ -40,7 +40,7 @@ namespace BakalarskaPrace
             }
         }
 
-        public virtual List<System.Drawing.Point> StrokeThicknessSetter(WriteableBitmap bitmap, WriteableBitmap previewBitmap, int x, int y, Color color, bool alphaBlending, int thickness, List<System.Drawing.Point> visitedPoints, List<Color> undoColors, List<System.Drawing.Point> undoPoints)
+        public virtual List<System.Drawing.Point> StrokeThicknessSetter(WriteableBitmap bitmap, System.Drawing.Point point, Color color, bool alphaBlending, int thickness, List<Color> undoColors, List<System.Drawing.Point> undoPoints, bool previewBitmap = false)
         {
             int width = bitmap.PixelWidth;
             int height = bitmap.PixelHeight;
@@ -58,21 +58,21 @@ namespace BakalarskaPrace
                 for (int j = -size; j < size + isOdd; j++)
                 {
                     //Zkontrolovat jestli se pixel vejde do bitmapy
-                    if (x + i < width && x + i > -1 && y + j < height && y + j > -1)
+                    if (point.X + i < width && point.X + i > -1 && point.Y + j < height && point.Y + j > -1)
                     {
-                        System.Drawing.Point point = new System.Drawing.Point(x + i, y + j);
+                        System.Drawing.Point newPoint = new System.Drawing.Point(point.X + i, point.Y + j);
 
                         //Pokud se zapisuje do preview bitmapy tak kontrola navštívených bodů vede k smazání bodů 
-                        if (bitmap == previewBitmap)
+                        if (previewBitmap == true)
                         {
-                            points.Add(point);
+                            points.Add(newPoint);
                         }
                         else
                         {
-                            if (!visitedPoints.Contains(point))
+                            if (!undoPoints.Contains(newPoint))
                             {
-                                visitedPoints.Add(point);
-                                points.Add(point);
+                                undoPoints.Add(newPoint);
+                                points.Add(newPoint);
                             }
                         }
                     }
@@ -81,17 +81,15 @@ namespace BakalarskaPrace
 
             using (bitmap.GetBitmapContext())
             {
-                foreach (System.Drawing.Point point in points)
+                foreach (System.Drawing.Point generatedPoint in points)
                 {
-                    Color currentColor = bitmap.GetPixel(point.X, point.Y);
-                    if (bitmap != previewBitmap)
+                    Color currentColor = bitmap.GetPixel(generatedPoint.X, generatedPoint.Y);
+                    if (previewBitmap == false)
                     {
-                        
                         undoColors.Add(currentColor);
-                        undoPoints.Add(point);
                     }
                     Color finalColor = AlphaBlending(alphaBlending, color, currentColor);
-                    bitmap.SetPixel(point.X, point.Y, finalColor);
+                    bitmap.SetPixel(generatedPoint.X, generatedPoint.Y, finalColor);
                 }
             }
             return points;

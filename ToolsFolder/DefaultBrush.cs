@@ -8,8 +8,11 @@ using System.Windows.Media.Imaging;
 
 namespace BakalarskaPrace.ToolsFolder
 {
-    internal interface IBucket
+    internal class DefaultBrush : IBrush
     {
-        void GeneratePoints(WriteableBitmap bitmap, System.Drawing.Point point, Color color, List<System.Drawing.Point> undoPoints, List<Color> undoColors);
+        public List<System.Drawing.Point> GeneratePoints(WriteableBitmap bitmap, System.Drawing.Point point) 
+        {
+            return new List<System.Drawing.Point> { point };
+        }
     }
 }

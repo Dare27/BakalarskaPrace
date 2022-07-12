@@ -12,9 +12,8 @@ namespace BakalarskaPrace.ToolsFolder
     {
         ColorSpaceConvertor colorSpaceConvertor = new ColorSpaceConvertor();
 
-        public void GeneratePoints(List<System.Drawing.Point> points, WriteableBitmap bitmap, bool darken, int strokeThickness, List<System.Drawing.Point> visitedPoints, List<System.Drawing.Point> undoPoints, List<Color> undoColors)
+        public void GeneratePoints(List<System.Drawing.Point> points, WriteableBitmap bitmap, bool darken, int strokeThickness, List<System.Drawing.Point> undoPoints, List<Color> undoColors)
         {
-            if (visitedPoints == null) visitedPoints = new List<System.Drawing.Point>();
             foreach (System.Drawing.Point point in points)
             {
                 int size = strokeThickness / 2;
@@ -36,9 +35,9 @@ namespace BakalarskaPrace.ToolsFolder
                         if (x + i < bitmap.PixelWidth && x + i > -1 && y + j < bitmap.PixelHeight && y + j > -1)
                         {
                             System.Drawing.Point newPoint = new System.Drawing.Point(x + i, y + j);
-                            if (!visitedPoints.Contains(newPoint))
+                            if (!undoPoints.Contains(newPoint))
                             {
-                                visitedPoints.Add(newPoint);
+                                undoPoints.Add(newPoint);
                                 currentPixelColor = bitmap.GetPixel(x + i, y + j);
                                 colorSpaceConvertor.RGBToHLS(currentPixelColor.R, currentPixelColor.G, currentPixelColor.B, out h, out l, out s);
 
@@ -62,7 +61,6 @@ namespace BakalarskaPrace.ToolsFolder
                                 colorSpaceConvertor.HLSToRGB(h, l, s, out r, out g, out b);
                                 color = Color.FromArgb(currentPixelColor.A, (byte)r, (byte)g, (byte)b);
                                 bitmap.SetPixel(x + i, y + j, color);
-                                undoPoints.Add(newPoint);
                                 undoColors.Add(currentPixelColor);
                             }
                         }

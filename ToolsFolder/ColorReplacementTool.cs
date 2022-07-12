@@ -10,9 +10,8 @@ namespace BakalarskaPrace.ToolsFolder
 {
     internal class ColorReplacementTool : IBucket
     {
-        public List<System.Drawing.Point> GeneratePoints(WriteableBitmap bitmap, System.Drawing.Point point)
+        public void GeneratePoints(WriteableBitmap bitmap, System.Drawing.Point point, Color color, List<System.Drawing.Point> undoPoints, List<Color> undoColors)
         {
-            List<System.Drawing.Point> points = new List<System.Drawing.Point>();
             Color seedColor = bitmap.GetPixel(point.X, point.Y);
             for (int i = 0; i < bitmap.PixelWidth; i++)
             {
@@ -21,11 +20,13 @@ namespace BakalarskaPrace.ToolsFolder
                     Color currentColor = bitmap.GetPixel(i, j);
                     if (currentColor == seedColor)
                     {
-                        points.Add(new System.Drawing.Point(i, j));
+                        System.Drawing.Point currentPoint = new System.Drawing.Point(i, j);
+                        undoPoints.Add(currentPoint);
+                        undoColors.Add(currentColor);
+                        bitmap.SetPixel(i, j, color);
                     }
                 }
             }
-            return points;
         }
     }
 }

@@ -12,10 +12,9 @@ namespace BakalarskaPrace.ToolsFolder
     {
         //V případě této aplikace musí být použit 4-straná verze tohoto algoritmu aby se zábránilo únikům v rozích
         //Rekurzivní verze může způsobit StackOverflowException při větších velikostech, proto musí být použíta nerekurzivní verzi tohoto alg.
-        public List<System.Drawing.Point> GeneratePoints(WriteableBitmap bitmap, System.Drawing.Point point)
+        public void GeneratePoints(WriteableBitmap bitmap, System.Drawing.Point point, Color color, List<System.Drawing.Point> undoPoints, List<Color> undoColors)
         {
             Stack<System.Drawing.Point> points = new Stack<System.Drawing.Point>();
-            List<System.Drawing.Point> visitedPoints = new List<System.Drawing.Point>();
             Color seedColor = bitmap.GetPixel(point.X, point.Y);
             points.Push(point);
 
@@ -27,31 +26,16 @@ namespace BakalarskaPrace.ToolsFolder
                     Color currentColor = bitmap.GetPixel(currentPoint.X, currentPoint.Y);
                     if (currentColor == seedColor)
                     {
-                        visitedPoints.Add(currentPoint);
-                        if (!visitedPoints.Contains(new System.Drawing.Point(currentPoint.X + 1, currentPoint.Y)))
-                        {
-                            points.Push(new System.Drawing.Point(currentPoint.X + 1, currentPoint.Y));
-                        }
-
-                        if (!visitedPoints.Contains(new System.Drawing.Point(currentPoint.X - 1, currentPoint.Y)))
-                        {
-                            points.Push(new System.Drawing.Point(currentPoint.X - 1, currentPoint.Y));
-                        }
-
-                        if (!visitedPoints.Contains(new System.Drawing.Point(currentPoint.X, currentPoint.Y + 1)))
-                        {
-                            points.Push(new System.Drawing.Point(currentPoint.X, currentPoint.Y + 1));
-                        }
-
-                        if (!visitedPoints.Contains(new System.Drawing.Point(currentPoint.X, currentPoint.Y - 1)))
-                        {
-                            points.Push(new System.Drawing.Point(currentPoint.X, currentPoint.Y - 1));
-                        }
+                        undoPoints.Add(currentPoint);
+                        undoColors.Add(bitmap.GetPixel(currentPoint.X, currentPoint.Y));
+                        bitmap.SetPixel(currentPoint.X, currentPoint.Y, color);
+                        points.Push(new System.Drawing.Point(currentPoint.X + 1, currentPoint.Y));
+                        points.Push(new System.Drawing.Point(currentPoint.X - 1, currentPoint.Y));
+                        points.Push(new System.Drawing.Point(currentPoint.X, currentPoint.Y + 1));
+                        points.Push(new System.Drawing.Point(currentPoint.X, currentPoint.Y - 1));
                     }
                 }
             }
-
-            return visitedPoints;
         }
     }
 }

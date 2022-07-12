@@ -14,15 +14,20 @@ namespace BakalarskaPrace
 {
     internal class FileManagement
     {
-        public void SaveFile(List<List<WriteableBitmap>> layers, int width, int height)
+        private string NewFileName() 
         {
-            SaveFileDialog dialog = new SaveFileDialog();
-            dialog.Filter = ".pixela|*.pixela";
             DateTime localDate = DateTime.Now;
             string format = "H-mm-d-M-yyyy";
             string result = localDate.ToString(format);
             string name = "New Animation " + result;
-            dialog.FileName = name;
+            return name;
+        }
+
+        public void SaveFile(List<List<WriteableBitmap>> layers, int width, int height)
+        {
+            SaveFileDialog dialog = new SaveFileDialog();
+            dialog.Filter = ".pixela|*.pixela";
+            dialog.FileName = NewFileName();
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 try
@@ -162,6 +167,7 @@ namespace BakalarskaPrace
         {
             SaveFileDialog dialog = new SaveFileDialog();
             dialog.Filter = ".png|*.png|.bmp|*.bmp|.jpeg|*.jpeg";
+            dialog.FileName = NewFileName();
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 try
@@ -189,6 +195,7 @@ namespace BakalarskaPrace
         {
             SaveFileDialog dialog = new SaveFileDialog();
             dialog.Filter = ".psd|*.psd";
+            dialog.FileName = NewFileName();
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 try
@@ -223,6 +230,7 @@ namespace BakalarskaPrace
         {
             SaveFileDialog dialog = new SaveFileDialog();
             dialog.Filter = ".gif|*.gif";
+            dialog.FileName = NewFileName();
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 try
