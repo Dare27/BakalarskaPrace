@@ -5,7 +5,7 @@ namespace BakalarskaPrace
     internal class ColorSpaceConvertor
     {
         // Convert an RGB value into an HLS value.
-        public void RGBToHLS(int r, int g, int b, out double h, out double l, out double s)
+        public void RGBToHSL(int r, int g, int b, out double h, out double l, out double s)
         {
             // Convert RGB to a 0.0 to 1.0 range.
             double double_r = r / 255.0;
@@ -47,7 +47,7 @@ namespace BakalarskaPrace
         }
 
         // Convert an HLS value into an RGB value.
-        public void HLSToRGB(double h, double l, double s, out int r, out int g, out int b)
+        public void HSLToRGB(double h, double l, double s, out int r, out int g, out int b)
         {
             double p2;
             if (l <= 0.5) p2 = l * (1 + s);

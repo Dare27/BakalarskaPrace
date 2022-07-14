@@ -24,7 +24,7 @@ namespace BakalarskaPrace.ToolsFolder
             List<System.Drawing.Point> generatedPoints = new List<System.Drawing.Point>() { currentPoint };
             if (!previousPoint.IsEmpty) 
             {
-                generatedPoints.AddRange(Interpolate(currentPoint, previousPoint, bitmap.PixelWidth, bitmap.PixelHeight));
+                generatedPoints.AddRange(Interpolate(bitmap, currentPoint, previousPoint));
             }
             foreach (System.Drawing.Point point in generatedPoints) 
             {
@@ -38,7 +38,7 @@ namespace BakalarskaPrace.ToolsFolder
             List<System.Drawing.Point> interpolatedPoints = new List<System.Drawing.Point>();
             if (!previousPoint.IsEmpty)
             {
-                interpolatedPoints.AddRange(Interpolate(currentPoint, previousPoint, bitmap.PixelWidth, bitmap.PixelHeight));
+                interpolatedPoints.AddRange(Interpolate(bitmap, currentPoint, previousPoint));
                 generatedPoints.AddRange(interpolatedPoints);
             }
 
@@ -53,19 +53,31 @@ namespace BakalarskaPrace.ToolsFolder
             }
         }
 
-        public List<System.Drawing.Point> Line(System.Drawing.Point startPoint, System.Drawing.Point endPoint, bool alternativeFunction01, bool alternativeFunction02, int width, int height)
+        public void Line(WriteableBitmap bitmap, System.Drawing.Point startPoint, System.Drawing.Point endPoint, Color color, bool alphaBlending, int thickness, List<Color> undoColors, List<System.Drawing.Point> undoPoints, bool alternativeFunction01, bool alternativeFunction02, bool previewBitmap = false)
         {
-            return line.GeneratePoints(startPoint, endPoint, alternativeFunction01, alternativeFunction02, width, height);
+            List<System.Drawing.Point> generatedPoints = line.GeneratePoints(bitmap, startPoint, endPoint, alternativeFunction01, alternativeFunction02);
+            foreach (System.Drawing.Point point in generatedPoints)
+            {
+                StrokeThicknessSetter(bitmap, point, color, alphaBlending, thickness, undoColors, undoPoints, previewBitmap);
+            }
         }
 
-        public List<System.Drawing.Point> Ellipse(System.Drawing.Point startPoint, System.Drawing.Point endPoint, bool alternativeFunction01, bool alternativeFunction02, int width, int height)
+        public void Ellipse(WriteableBitmap bitmap, System.Drawing.Point startPoint, System.Drawing.Point endPoint, Color color, bool alphaBlending, int thickness, List<Color> undoColors, List<System.Drawing.Point> undoPoints, bool alternativeFunction01, bool alternativeFunction02, bool previewBitmap = false)
         {
-            return ellipse.GeneratePoints(startPoint, endPoint, alternativeFunction01, alternativeFunction02, width, height);
+            List<System.Drawing.Point> generatedPoints = ellipse.GeneratePoints(bitmap, startPoint, endPoint, alternativeFunction01, alternativeFunction02);
+            foreach (System.Drawing.Point point in generatedPoints)
+            {
+                StrokeThicknessSetter(bitmap, point, color, alphaBlending, thickness, undoColors, undoPoints, previewBitmap);
+            }
         }
 
-        public List<System.Drawing.Point> Rectangle(System.Drawing.Point startPoint, System.Drawing.Point endPoint, bool alternativeFunction01, bool alternativeFunction02, int width, int height)
+        public void Rectangle(WriteableBitmap bitmap, System.Drawing.Point startPoint, System.Drawing.Point endPoint, Color color, bool alphaBlending, int thickness, List<Color> undoColors, List<System.Drawing.Point> undoPoints, bool alternativeFunction01, bool alternativeFunction02, bool previewBitmap = false)
         {
-            return rectangle.GeneratePoints(startPoint, endPoint, alternativeFunction01, alternativeFunction02, width, height);
+            List<System.Drawing.Point> generatedPoints = rectangle.GeneratePoints(bitmap, startPoint, endPoint, alternativeFunction01, alternativeFunction02);
+            foreach (System.Drawing.Point point in generatedPoints)
+            {
+                StrokeThicknessSetter(bitmap, point, color, alphaBlending, thickness, undoColors, undoPoints, previewBitmap);
+            }
         }
 
         public void FloodFill(WriteableBitmap bitmap, System.Drawing.Point point, Color color, List<System.Drawing.Point> undoPoints, List<Color> undoColors)
@@ -84,7 +96,7 @@ namespace BakalarskaPrace.ToolsFolder
             List<System.Drawing.Point> interpolatedPoints = new List<System.Drawing.Point>();
             if (!previousPoint.IsEmpty)
             {
-                interpolatedPoints.AddRange(Interpolate(currentPoint, previousPoint, bitmap.PixelWidth, bitmap.PixelHeight));
+                interpolatedPoints.AddRange(Interpolate(bitmap, currentPoint, previousPoint));
             }
             generatedPoints.AddRange(interpolatedPoints);
             dithering.GeneratePoints(generatedPoints, color01, color02, bitmap, strokeThickness, alphaBlending, undoPoints, undoColors);
@@ -96,18 +108,18 @@ namespace BakalarskaPrace.ToolsFolder
             List<System.Drawing.Point> interpolatedPoints = new List<System.Drawing.Point>();
             if (!previousPoint.IsEmpty)
             {
-                interpolatedPoints.AddRange(Interpolate(currentPoint, previousPoint, bitmap.PixelWidth, bitmap.PixelHeight));
+                interpolatedPoints.AddRange(Interpolate(bitmap, currentPoint, previousPoint));
             }
             generatedPoints.AddRange(interpolatedPoints);
             shading.GeneratePoints(generatedPoints, bitmap, darken, strokeThickness, undoPoints, undoColors);
         }
 
-        public List<System.Drawing.Point> Interpolate(System.Drawing.Point currentPoint, System.Drawing.Point previousPoint, int width, int height)
+        public List<System.Drawing.Point> Interpolate(WriteableBitmap bitmap, System.Drawing.Point currentPoint, System.Drawing.Point previousPoint)
         {
             List<System.Drawing.Point> points = new List<System.Drawing.Point>();
             if ((Math.Abs(currentPoint.X - previousPoint.X) > 1) || (Math.Abs(currentPoint.Y - previousPoint.Y) > 1))
             {
-                points.AddRange(Line(currentPoint, previousPoint, false, false, width, height));
+                points.AddRange(line.GeneratePoints(bitmap, currentPoint, previousPoint, false, false));
             }
             return points;
         }

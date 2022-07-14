@@ -39,7 +39,7 @@ namespace BakalarskaPrace.ToolsFolder
                             {
                                 undoPoints.Add(newPoint);
                                 currentPixelColor = bitmap.GetPixel(x + i, y + j);
-                                colorSpaceConvertor.RGBToHLS(currentPixelColor.R, currentPixelColor.G, currentPixelColor.B, out h, out l, out s);
+                                colorSpaceConvertor.RGBToHSL(currentPixelColor.R, currentPixelColor.G, currentPixelColor.B, out h, out l, out s);
 
                                 if (darken == true) //else lighten
                                 {
@@ -58,7 +58,7 @@ namespace BakalarskaPrace.ToolsFolder
                                     }
                                 }
 
-                                colorSpaceConvertor.HLSToRGB(h, l, s, out r, out g, out b);
+                                colorSpaceConvertor.HSLToRGB(h, l, s, out r, out g, out b);
                                 color = Color.FromArgb(currentPixelColor.A, (byte)r, (byte)g, (byte)b);
                                 bitmap.SetPixel(x + i, y + j, color);
                                 undoColors.Add(currentPixelColor);

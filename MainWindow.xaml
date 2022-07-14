@@ -6,7 +6,8 @@
         Title="Pixela" Height="1080" Width="1920" Background="#2b2b2b"
         WindowStartupLocation="CenterScreen"
         WindowState="Maximized"
-        KeyUp="WindowKeyDown"
+        KeyDown="Window_KeyDown"
+        KeyUp="Window_KeyUp"
         >
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
         <DockPanel>
@@ -47,7 +48,7 @@
                             </Grid.RenderTransform>
                             <Canvas Name="paintSurface" MouseWheel="Canvas_MouseWheel" SnapsToDevicePixels="False"  Width="64" Height="64" HorizontalAlignment="Center" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderTransformOrigin="0.5,0.5">
                                 <Image x:Name="previewImage" Panel.ZIndex="20" MouseMove="Image_MouseMove" MouseDown="Image_MouseDown" MouseUp="Image_MouseUp" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" Width="64" Height="64" Opacity="0.75"/>
-                                <Image x:Name="clipboardImage" Panel.ZIndex="15" MouseMove="Image_MouseMove" MouseDown="Image_MouseDown" MouseUp="Image_MouseUp" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" Width="64" Height="64" Opacity="0.75"/>
+                                <!--<Image x:Name="clipboardImage" Panel.ZIndex="15" MouseMove="Image_MouseMove" MouseDown="Image_MouseDown" MouseUp="Image_MouseUp" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" Width="64" Height="64" Opacity="0.75"/>-->
                                 <Image x:Name="image" Panel.ZIndex="10" MouseMove="Image_MouseMove" MouseDown="Image_MouseDown" MouseUp="Image_MouseUp" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased" Width="64" Height="64" />
                                 <Canvas.Background>
                                     <DrawingBrush TileMode="Tile" Viewport="0,0,2,2" ViewportUnits="Absolute">
@@ -259,7 +260,7 @@
                     </WrapPanel>
                     <!--<Button Name="ToolMove" Content="Move" Canvas.Left="82" Canvas.Top="611" Width="66" Click="Move_Click"/>-->
                 </ScrollViewer>
-                <Grid HorizontalAlignment="Right" Width="210" >
+                <Grid HorizontalAlignment="Right" Width="210" Background="#2b2b2b">
                     <DockPanel Width="190" Margin="0,0,0,5" >
                         <Canvas x:Name="PreviewCanvas" DockPanel.Dock="Top" SnapsToDevicePixels="False"  Width="190" Height="190" HorizontalAlignment="Center" RenderTransformOrigin="0.5,0.5" RenderOptions.BitmapScalingMode="NearestNeighbor" RenderOptions.EdgeMode="Aliased">
                             <!--<Image x:Name="animationPreview" Panel.ZIndex="10" MouseMove="Image_MouseMove"  Width="190" Height="190"/>-->
