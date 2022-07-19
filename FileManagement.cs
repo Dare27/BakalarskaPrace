@@ -62,9 +62,9 @@ namespace BakalarskaPrace
         public List<List<WriteableBitmap>> LoadFile()
         {
             List<List<WriteableBitmap>> newLayers = new List<List<WriteableBitmap>>();
-            System.Windows.Forms.OpenFileDialog dialog = new System.Windows.Forms.OpenFileDialog();
+            OpenFileDialog dialog = new OpenFileDialog();
             dialog.Filter = ".pixela|*.pixela;";
-            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if (dialog.ShowDialog() == DialogResult.OK)
             {
                 try
                 {
@@ -163,10 +163,12 @@ namespace BakalarskaPrace
             return null;
         }
 
-        public void ExportPNG(WriteableBitmap bitmap)
+        //Proměnná onlyPNG je využitá pokude se jedná o exportování barevné palety
+        public void ExportImage(WriteableBitmap bitmap, List<WriteableBitmap> layers = null, List<WriteableBitmap> bitmaps = null, int timerInterval = 0, bool onlyPNG = false)
         {
             SaveFileDialog dialog = new SaveFileDialog();
-            dialog.Filter = ".png|*.png|.bmp|*.bmp|.jpeg|*.jpeg";
+            if (onlyPNG == false) dialog.Filter = ".png|*.png|.bmp|*.bmp|.jpeg|*.jpeg|.psd|*.psd|.gif|*.gif";
+            else dialog.Filter = ".png|*.png";
             dialog.FileName = NewFileName();
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
@@ -174,13 +176,60 @@ namespace BakalarskaPrace
                 {
                     if (dialog.FileName != string.Empty)
                     {
-                        using (FileStream fileStream = new FileStream(dialog.FileName, FileMode.Create))
+                        if (dialog.FilterIndex == 4)
                         {
-                            PngBitmapEncoder encoder = new PngBitmapEncoder();
-                            encoder.Frames.Add(BitmapFrame.Create(bitmap.Clone()));
-                            encoder.Save(fileStream);
-                            fileStream.Close();
-                            fileStream.Dispose();
+                            using (MagickImageCollection collection = new MagickImageCollection())
+                            {
+                                //Pro tento formát by měla být správně jako první obrázek kombinace všech vrstev
+                                WriteableBitmap emptyBitmap = BitmapFactory.New((int)layers[0].Width, (int)layers[0].Height);
+                                MagickImage imgBase = new MagickImage(ImageToByte(emptyBitmap));
+                                collection.Add(imgBase);
+                                for (int i = 0; i < layers.Count; i++)
+                                {
+                                    //Převedení WriteableBitmap na byte pole
+                                    byte[] bitmapData = ImageToByte(layers[i]);
+                                    MagickImage image = new MagickImage(bitmapData);
+                                    collection.Add(image);
+                                }
+                                collection.Write(System.IO.Path.GetFullPath(dialog.FileName));
+                            }
+                        }
+                        else if (dialog.FilterIndex == 5)
+                        {
+                            using (MagickImageCollection collection = new MagickImageCollection())
+                            {
+                                //Výpočet rozestupu mezi snímky
+                                int delay = timerInterval / 10;
+
+                                for (int i = 0; i < bitmaps.Count; i++)
+                                {
+                                    //Převedení WriteableBitmap na byte pole
+                                    byte[] bitmapData = ImageToByte(bitmaps[i]);
+                                    MagickImage image = new MagickImage(bitmapData);
+                                    collection.Add(image);
+                                    collection[i].AnimationDelay = delay;
+                                }
+
+                                //Snížení množství barev
+                                QuantizeSettings settings = new QuantizeSettings();
+                                settings.Colors = 256;
+                                collection.Quantize(settings);
+
+                                // Volitelné optimalizování obrázků, správně by obrázky měly mít stejnou velikost
+                                collection.Optimize();
+                                collection.Write(System.IO.Path.GetFullPath(dialog.FileName));
+                            }
+                        }
+                        else 
+                        {
+                            using (FileStream fileStream = new FileStream(dialog.FileName, FileMode.Create))
+                            {
+                                PngBitmapEncoder encoder = new PngBitmapEncoder();
+                                encoder.Frames.Add(BitmapFrame.Create(bitmap.Clone()));
+                                encoder.Save(fileStream);
+                                fileStream.Close();
+                                fileStream.Dispose();
+                            }
                         }
                     }
                 }

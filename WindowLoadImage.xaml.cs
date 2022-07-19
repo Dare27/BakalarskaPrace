@@ -37,28 +37,28 @@ namespace BakalarskaPrace
         {
             importImage = true;
             importSpritesheet = false;
-            //ImportSpritesheet.IsChecked = false;
+            ImportSpritesheetCheckBox.IsChecked = true;
         }
 
         private void ImportImage_Unchecked(object sender, RoutedEventArgs e)
         {
             importImage = false;
             importSpritesheet = true;
-            //ImportSpritesheet.IsChecked = true;
+            ImportSpritesheetCheckBox.IsChecked = true;
         }
 
         private void ImportSpritesheet_Checked(object sender, RoutedEventArgs e)
         {
             importSpritesheet = true;
             importImage = false;
-            //ImportImage.IsChecked = false;
+            ImportImageCheckBox.IsChecked = false;
         }
 
         private void ImportSpritesheet_Unchecked(object sender, RoutedEventArgs e)
         {
             importSpritesheet = false;
             importImage = true;
-            //ImportImage.IsChecked = true;
+            ImportImageCheckBox.IsChecked = true;
         }
 
         private void Width_TextChanged(object sender, TextChangedEventArgs e)
@@ -89,8 +89,8 @@ namespace BakalarskaPrace
 
         private void Import_Click(object sender, RoutedEventArgs e)
         {
-            importSpritesheet = ImportSpritesheet.IsChecked.GetValueOrDefault();
-            importImage = ImportImage.IsChecked.GetValueOrDefault();
+            importSpritesheet = ImportSpritesheetCheckBox.IsChecked.GetValueOrDefault();
+            importImage = ImportImageCheckBox.IsChecked.GetValueOrDefault();
             this.Close();
         }
 

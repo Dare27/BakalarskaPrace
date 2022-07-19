@@ -39,7 +39,7 @@ namespace BakalarskaPrace
             newWidth = int.Parse(widthTextBox.Text);
             newHeight = int.Parse(heightTextBox.Text);
             maintainAspectRatio = maintainAspectRatioCheckBox.IsChecked.GetValueOrDefault();
-            resizeContent = resizeContentCheckBox.IsChecked.GetValueOrDefault();
+            //resizeContent = resizeContentCheckBox.IsChecked.GetValueOrDefault();
             this.Close();
         }
 

@@ -8,36 +8,35 @@
         WindowState="Maximized"
         KeyDown="Window_KeyDown"
         KeyUp="Window_KeyUp"
-        >
+    >
     <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
         <DockPanel>
             <Menu DockPanel.Dock="Top" Panel.ZIndex="1000" Height="24px" Background="#FF1D1D1D" BorderThickness="0,0,0,1" BorderBrush="#FF1D1D1D">
                 <MenuItem Header="_File" VerticalAlignment="Center" Height="24" Foreground="Snow" Background="#FF1D1D1D" FontSize="12">
-                    <MenuItem Header="_Create new animation" Click="Load_Click"/>
-                    <MenuItem Header="_Load animation" Click="LoadFull_Click" />
-                    <MenuItem Header="_Save animation" Click="SaveFull_Click" />
-                    <MenuItem Header="_Import .png" Click="Load_Click"/>
+                    <MenuItem Header="_Create new animation" Click="NewAnimation_Click"/>
+                    <MenuItem Header="_Load animation" Click="LoadAnimation_Click" />
+                    <MenuItem Header="_Save animation" Click="SaveAnimation_Click" />
+                    <MenuItem Header="_Import animation" Click="Load_Click"/>
                     <MenuItem Header="_Export current frame" Click="ExportSingle_Click" />
                     <MenuItem Header="_Export animation" Click="ExportFull_Click" />
-                    <MenuItem Header="_Export animation as .gif" Click="ExportGif_CLick" />
                     <MenuItem Header="_Exit" Click="ExitApp_CLick" />
                 </MenuItem>
-                <!--<MenuItem Header="_Edit"  VerticalAlignment="Center" Height="24" Foreground="Snow" Background="#FF1D1D1D" FontSize="12">
+                <MenuItem Header="_Edit"  VerticalAlignment="Center" Height="24" Foreground="Snow" Background="#FF1D1D1D" FontSize="12">
                     <MenuItem Header="_Undo" Click="Undo_Click"/>
                     <MenuItem Header="_Redo" Click="Redo_Click"/>
-                </MenuItem>-->
+                </MenuItem>
                 <MenuItem Header="_View"  VerticalAlignment="Center" Height="24" Foreground="Snow" Background="#FF1D1D1D" FontSize="12">
                     <MenuItem Header="_Center" Click="Center_Click"/>
                     <MenuItem Header="_Previous Frame" Click="Previous_Click"/>
                     <MenuItem Header="_Next Frame" Click="Next_Click"/>
                     <MenuItem Header="_Onion Skinning" IsCheckable="True" Checked="OnionSkinning_Checked" Unchecked="OnionSkinning_Unchecked" IsChecked="False"/>
                 </MenuItem>
-                <MenuItem Header="_Filters"  VerticalAlignment="Center" Height="24" Foreground="Snow" Background="#FF1D1D1D" FontSize="12">
+                <!--<MenuItem Header="_Filters"  VerticalAlignment="Center" Height="24" Foreground="Snow" Background="#FF1D1D1D" FontSize="12">
                     <MenuItem Header="" />
                     <MenuItem Header="" />
                     <MenuItem Header="" />
                     <MenuItem Header="" />
-                </MenuItem>
+                </MenuItem>-->
             </Menu>
             <Grid>
                 <Grid Margin="210,0,210,0" Background="#808080">
@@ -231,7 +230,7 @@
                                 <Expander Name="colorPaletteExpander" Width="182" HorizontalAlignment="Center" Header="Color Palette" ExpandDirection="Down" IsExpanded="True" Margin="0,2,0,2" Background="#FF131313" Foreground="#FFFFC107" FontWeight="SemiBold">
                                     <WrapPanel Margin="3">
                                         <WrapPanel>
-                                            <Button Click="ColorPaletteAdd_Click" ToolTip="Add Color" Style="{StaticResource ButtonStyle1}">
+                                            <Button Name="ColorPaletteAdd" Click="ColorPaletteAdd_Click" ToolTip="Add Color" Style="{StaticResource ButtonStyle1}">
                                                 <StackPanel >
                                                     <Image Source="/Files/Images/Dark-theme/plus.png" Height="30"/>
                                                 </StackPanel>
@@ -279,7 +278,7 @@
                             </Canvas.RenderTransform>
                         </Canvas>
                         <DockPanel Margin="0,5,0,4" DockPanel.Dock="Top">
-                            <Label Name="LabelFramesPerSecond"  Content="12" Width="23" Foreground="White" Height="26"/>
+                            <Label Name="LabelFramesPerSecond"  Content="12" Width="23" Foreground="White" Height="26" Margin="3,0,2,0"/>
                             <Slider IsSnapToTickEnabled="True" TickFrequency="1" Maximum="32
                                         " ValueChanged="FramesPerSecond_ValueChanged" Value="12"  Margin="0,0,0,0" Width="133" Panel.ZIndex="20" Height="20"/>
                             <Button Style="{StaticResource MaterialDesignIconButton}" Click="Play_Click" Cursor="Hand" IsEnabled="{Binding DataContext.ControlsEnabled, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}" Width="24" Height="24" Background="#FF191919">
@@ -356,11 +355,11 @@
                                                     <Image Source="/Files/Images/Dark-theme/arrow-up.png" Height="24"/>
                                                 </StackPanel>
                                             </Button>
-                                            <Button x:Name="MergeLayersButton" Padding="0" Margin="2"  Click="MergeLayers_Click" ToolTip="Move layer up" IsEnabled="False">
+                                            <!--<Button x:Name="MergeLayersButton" Padding="0" Margin="2"  Click="MergeLayers_Click" ToolTip="Move layer up" IsEnabled="False">
                                                 <StackPanel>
                                                     <Image Source="/Files/Images/Dark-theme/merge.png" Height="24"/>
                                                 </StackPanel>
-                                            </Button>
+                                            </Button>-->
                                             <!--<Button Padding="0" Margin="2"  Click="DuplicateLayer_Click" ToolTip="Duplicate Layer">
                                                 <StackPanel>
                                                     <Image Source="/Files/Images/Dark-theme/duplicate.png"  Height="24"/>
@@ -397,3 +396,4 @@
         </DockPanel>
     </ScrollViewer>
 </Window>
+

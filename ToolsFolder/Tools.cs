@@ -80,14 +80,14 @@ namespace BakalarskaPrace.ToolsFolder
             }
         }
 
-        public void FloodFill(WriteableBitmap bitmap, System.Drawing.Point point, Color color, List<System.Drawing.Point> undoPoints, List<Color> undoColors)
+        public void FloodFill(WriteableBitmap bitmap, System.Drawing.Point point, Color color, bool alphaBlending, List<System.Drawing.Point> undoPoints, List<Color> undoColors)
         {
-            floodFill.GeneratePoints(bitmap, point, color, undoPoints, undoColors);
+            floodFill.GeneratePoints(bitmap, point, color, alphaBlending, undoPoints, undoColors);
         }
 
-        public void ColorReplacement(WriteableBitmap bitmap, System.Drawing.Point point, Color color, List<System.Drawing.Point> undoPoints, List<Color> undoColors)
+        public void ColorReplacement(WriteableBitmap bitmap, System.Drawing.Point point, Color color, bool alphaBlending, List<System.Drawing.Point> undoPoints, List<Color> undoColors)
         {
-            colorReplacement.GeneratePoints(bitmap, point, color, undoPoints, undoColors);
+            colorReplacement.GeneratePoints(bitmap, point, color, alphaBlending, undoPoints, undoColors);
         }
 
         public void Dithering(WriteableBitmap bitmap, System.Drawing.Point currentPoint, Color color01, Color color02, int strokeThickness, bool alphaBlending, List<System.Drawing.Point> undoPoints, List<Color> undoColors, System.Drawing.Point previousPoint = new System.Drawing.Point())

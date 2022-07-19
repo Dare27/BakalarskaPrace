@@ -12,6 +12,8 @@ namespace BakalarskaPrace
     {
         public int newWidth;
         public int newHeight;
+        private int maxWidth = 1024;
+        private int maxHeight = 1024;
         public bool maintainAspectRatio = false;
         public bool resizeContent = false;
         private int lastSizeValue;
@@ -35,10 +37,53 @@ namespace BakalarskaPrace
 
         private void Resize_Click(object sender, RoutedEventArgs e)
         {
-            int.TryParse(widthTextBox.Text, out newWidth);
-            int.TryParse(heightTextBox.Text, out newHeight);
-            maintainAspectRatio = maintainAspectRatioCheckBox.IsChecked.GetValueOrDefault();
-            this.Close();
+            bool widthParsed = int.TryParse(widthTextBox.Text, out newWidth);
+            bool heightParsed = int.TryParse(heightTextBox.Text, out newHeight);
+            if (newWidth < 1 || newHeight < 1)
+            {
+                if (newWidth < 1) 
+                {
+                    WidthWarning.Content = "Width has to be higher than 0";
+                    WidthWarning.Visibility = Visibility.Visible;
+                }
+                if (newHeight < 1)
+                {
+                    HeightWarning.Content = "Height has to be higher than 0";
+                    HeightWarning.Visibility = Visibility.Visible;
+                }
+            }
+            else if (newWidth >= maxWidth || newHeight >= maxHeight)
+            {
+                if (newWidth >= maxWidth)
+                {
+                    WidthWarning.Content = "Width has to be lower than 1024";
+                    WidthWarning.Visibility = Visibility.Visible;
+                }
+                if (newHeight >= maxHeight)
+                {
+                    HeightWarning.Content = "Height has to be lower than 1024";
+                    HeightWarning.Visibility = Visibility.Visible;
+                }
+            }
+            else if (widthParsed == false || heightParsed == false) 
+            {
+                if (widthParsed == false)
+                {
+                    WidthWarning.Content = "Width has to be number";
+                    WidthWarning.Visibility = Visibility.Visible;
+                }
+                if (heightParsed == false)
+                {
+                    HeightWarning.Content = "Height has to be number";
+                    HeightWarning.Visibility = Visibility.Visible;
+                }
+            }
+            else
+            {
+                maintainAspectRatio = maintainAspectRatioCheckBox.IsChecked.GetValueOrDefault();
+                this.Close();
+            }
+            
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)

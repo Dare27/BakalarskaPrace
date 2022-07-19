@@ -31,13 +31,13 @@ namespace BakalarskaPrace
         private List<Image> layerCanvasImages = new List<Image>();
 
         private List<Color> colorPalette = new List<Color>();
+        private int maxColors;
         private Color[] currentColors;
         private int currentColorIndex = 0;
         private int currentStrokeThickness = 1;
         private bool alphaBlending;
         private bool ctrl;
         private bool shift;
-
         private enum ToolSelection { brush, eraser, symmetricBrush, colorPicker, bucket, specialBucket, line, ellipse, shading, rectangle, dithering, move, path, rectangleSelection, lassoSelection, shapeSelection };
         private ToolSelection currentTool = ToolSelection.brush;
 
@@ -74,17 +74,11 @@ namespace BakalarskaPrace
             this.StateChanged += new EventHandler(Window_StateChanged);
             this.SizeChanged += new SizeChangedEventHandler(Window_SizeChanged);
 
-            paintSurface.Visibility = Visibility.Hidden;
-            WindowStartup windowStartup = new WindowStartup();
-            windowStartup.ShowDialog();
-
-            currentColors = new Color[4] { colorSelector.SelectedColor, colorSelector.SecondaryColor, Color.FromArgb(255, 178, 213, 226) , Color.FromArgb(0, 0, 0, 0) };
-
-            paintSurface.Visibility = Visibility.Visible;
-            currentBitmap = BitmapFactory.New(windowStartup.newWidth, windowStartup.newHeight);
+            currentColors = new Color[4] { colorSelector.SelectedColor, colorSelector.SecondaryColor, Color.FromArgb(255, 178, 213, 226), Color.FromArgb(0, 0, 0, 0) };
+            currentBitmap = BitmapFactory.New(64, 64);
             layers.Add(new List<WriteableBitmap>()); //Výchozí vrstva
             layers[0].Add(currentBitmap);
-            
+
             LabelScale.Content = "1.0";
             lastToolButton = brush;
 
@@ -137,7 +131,7 @@ namespace BakalarskaPrace
             UpdateLayerViewing();
         }
 
-        private void CreatePreviews() 
+        private void CreatePreviews()
         {
             Image previousImage = new Image();
             previousImage.Opacity = 0.25f;
@@ -219,12 +213,12 @@ namespace BakalarskaPrace
                         }
                     case ToolSelection.bucket:
                         {
-                            tools.FloodFill(currentBitmap, mousePosition, currentColors[currentColorIndex], undoPoints, undoColors);
+                            tools.FloodFill(currentBitmap, mousePosition, currentColors[currentColorIndex], alphaBlending, undoPoints, undoColors);
                             break;
                         }
                     case ToolSelection.specialBucket:
                         {
-                            tools.ColorReplacement(currentBitmap, mousePosition, currentColors[currentColorIndex], undoPoints, undoColors);
+                            tools.ColorReplacement(currentBitmap, mousePosition, currentColors[currentColorIndex], alphaBlending, undoPoints, undoColors);
                             break;
                         }
                     case ToolSelection.line:
@@ -256,11 +250,11 @@ namespace BakalarskaPrace
         {
             mousePosition = new System.Drawing.Point((int)e.GetPosition(image).X, (int)e.GetPosition(image).Y);
             LabelPosition.Content = "[" + width + ":" + height + "] " + mousePosition.X + ":" + mousePosition.Y;
-            
+
             if (mousePosition.X >= 0 && mousePosition.Y >= 0 && mousePosition.X < width && mousePosition.Y < height)
             {
                 previewBitmap.Clear();
-                
+
                 switch (currentTool)
                 {
                     case ToolSelection.brush:
@@ -335,7 +329,7 @@ namespace BakalarskaPrace
                         {
                             if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
                             {
-                                tools.FloodFill(currentBitmap, mousePosition, currentColors[currentColorIndex], undoPoints, undoColors);
+                                tools.FloodFill(currentBitmap, mousePosition, currentColors[currentColorIndex], alphaBlending, undoPoints, undoColors);
                                 StopAnimation();
                             }
                             tools.StrokeThicknessSetter(previewBitmap, mousePosition, currentColors[2], false, 1, undoColors, undoPoints, true);
@@ -345,7 +339,7 @@ namespace BakalarskaPrace
                         {
                             if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
                             {
-                                tools.ColorReplacement(currentBitmap, mousePosition, currentColors[currentColorIndex], undoPoints, undoColors);
+                                tools.ColorReplacement(currentBitmap, mousePosition, currentColors[currentColorIndex], alphaBlending, undoPoints, undoColors);
                                 StopAnimation();
                             }
                             tools.StrokeThicknessSetter(previewBitmap, mousePosition, currentColors[2], false, 1, undoColors, undoPoints, true);
@@ -357,7 +351,7 @@ namespace BakalarskaPrace
                             {
                                 tools.Line(previewBitmap, mouseDownPosition, mousePosition, currentColors[2], false, currentStrokeThickness, undoColors, undoPoints, shift, ctrl, true);
                             }
-                            else 
+                            else
                             {
                                 tools.StrokeThicknessSetter(previewBitmap, mousePosition, currentColors[2], false, currentStrokeThickness, undoColors, undoPoints, true);
                             }
@@ -384,7 +378,7 @@ namespace BakalarskaPrace
                             {
                                 tools.Ellipse(previewBitmap, mouseDownPosition, mousePosition, currentColors[2], false, currentStrokeThickness, undoColors, undoPoints, shift, ctrl, true);
                             }
-                            else 
+                            else
                             {
                                 tools.StrokeThicknessSetter(previewBitmap, mousePosition, currentColors[2], false, currentStrokeThickness, undoColors, undoPoints, true);
                             }
@@ -449,11 +443,11 @@ namespace BakalarskaPrace
             undoPoints.Clear();
             undoColors.Clear();
 
-            if (currentTool != ToolSelection.path) 
+            if (currentTool != ToolSelection.path)
             {
                 mouseDownPosition.X = -1;
                 mouseDownPosition.Y = -1;
-            } 
+            }
             else mouseDownPosition = mousePosition;
 
             previewBitmap.Clear();
@@ -465,7 +459,7 @@ namespace BakalarskaPrace
         {
             //Pokud se nezobrazuje aktuální obrázek při undo/redo tak ho zobrazit
             if (bitmapIndex != currentBitmapIndex || layerIndex != currentLayerIndex) UpdateCurrentBitmap(bitmapIndex, layerIndex);
-            
+
             WriteableBitmap bitmap = layers[layerIndex][bitmapIndex];
 
             if (generateInverseAction == true)
@@ -481,7 +475,7 @@ namespace BakalarskaPrace
                 Action action = () => GenerateInversePoints(redoPoints, redoColors, bitmapIndex, layerIndex, false, true);
                 undoRedoStack.AddActionToRedo(action);
             }
-            else if (generateAction == true) 
+            else if (generateAction == true)
             {
                 List<System.Drawing.Point> undoPoints = new List<System.Drawing.Point>(points);
                 List<Color> undoColors = new List<Color>();
@@ -909,7 +903,7 @@ namespace BakalarskaPrace
             }
 
             FileManagement fileManagement = new FileManagement();
-            fileManagement.ExportPNG(newBitmap);
+            fileManagement.ExportImage(newBitmap, null, null, 0, true);
         }
 
         private void ImportColorPalette_Click(object sender, RoutedEventArgs e)
@@ -1153,15 +1147,49 @@ namespace BakalarskaPrace
             previewButtons = ImagePreviews.Children.OfType<Button>().ToList();
             foreach (Button button in previewButtons)
             {
-                ImagePreviews.Children.Remove(button);
+                button.Content = null;
+            }
+
+            //Pokud se počet tlačítek nerovná počtu snímků musíme jej vyrovnat
+            if (previewButtons.Count < layers[currentLayerIndex].Count)
+            {
+                //Přidat tlačítka
+                ControlCreator controlCreator = new ControlCreator();
+                for (int i = previewButtons.Count; i < layers[currentLayerIndex].Count; i++) 
+                {
+                    Button newButton = controlCreator.ImagePreviewButton(i, new RoutedEventHandler(PreviewButton_Click));
+                    previewButtons.Add(newButton);
+                    ImagePreviews.Children.Add(newButton);
+                }
+            }
+            else if (previewButtons.Count > layers[currentLayerIndex].Count)
+            {
+                //Odstranit tlačítka
+                for (int i = previewButtons.Count - 1; i >= layers[currentLayerIndex].Count; i--) 
+                {
+                    Console.WriteLine(i);
+                    ImagePreviews.Children.Remove(previewButtons[i]);
+                }
             }
 
             for (int i = 0; i < layers[currentLayerIndex].Count; i++)
             {
-                WriteableBitmap bitmap = layers[currentLayerIndex][i];
-                ControlCreator controlCreator = new ControlCreator();
-                Button newButton = controlCreator.ImagePreviewButton(bitmap, i, currentBitmapIndex, new RoutedEventHandler(PreviewButton_Click));
-                ImagePreviews.Children.Add(newButton);
+                Image newImage = new Image
+                {
+                    Source = layers[currentLayerIndex][i],
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Stretch = Stretch.Uniform,
+                    Height = 120,
+                    Width = 120,
+                };
+                previewButtons[i].Content = newImage;
+                previewButtons[i].IsEnabled = (currentBitmapIndex == i) ? false : true;
+            }
+
+            if (layers[0].Count > 1) { 
+                IntersectButton.IsEnabled = true;
+                MergeButton.IsEnabled = true;
+                DeleteImageButton.IsEnabled = true;
             }
         }
 
@@ -1261,15 +1289,43 @@ namespace BakalarskaPrace
             layerButtons = LayerPreviews.Children.OfType<Button>().ToList();
             foreach (Button button in layerButtons)
             {
-                LayerPreviews.Children.Remove(button);
+                button.Content = null;
             }
 
-            ControlCreator controlCreator = new ControlCreator();
+            //Pokud se počet tlačítek nerovná počtu snímků musíme jej vyrovnat
+            if (layerButtons.Count < layers.Count)
+            {
+                //Přidat tlačítka
+                ControlCreator controlCreator = new ControlCreator();
+                for (int i = layerButtons.Count; i < layers.Count; i++)
+                {
+                    Button newButton = controlCreator.LayerPreviewButton(i, currentLayerIndex, new RoutedEventHandler(LayerButton_Click));
+                    layerButtons.Add(newButton);
+                    LayerPreviews.Children.Add(newButton);
+                }
+            }
+            else if (layerButtons.Count > layers.Count)
+            {
+                //Odstranit tlačítka
+                for (int i = layerButtons.Count - 1; i >= layers.Count; i--)
+                {
+                    LayerPreviews.Children.Remove(layerButtons[i]);
+                }
+            }
 
             for (int i = 0; i < layers.Count; i++)
             {
-                Button newButton = controlCreator.LayerPreviewButton(i, currentLayerIndex, new RoutedEventHandler(LayerButton_Click));
-                LayerPreviews.Children.Add(newButton);
+                layerButtons[i].Content = i + 1;
+                layerButtons[i].IsEnabled = (currentLayerIndex == i) ? false : true;
+            }
+
+            if (layers.Count > 1)
+            {
+                DeleteLayerButton.IsEnabled = true;
+                if (currentLayerIndex == 0) MoveLayerUpButton.IsEnabled = false;
+                else MoveLayerUpButton.IsEnabled = true;
+                if (currentLayerIndex == layers.Count - 1) MoveLayerDownButton.IsEnabled = false;
+                else MoveLayerDownButton.IsEnabled = true;
             }
         }
 
@@ -1426,17 +1482,44 @@ namespace BakalarskaPrace
         }
 
         //Menu controls
-        private void SaveFull_Click(object sender, RoutedEventArgs e) 
+        private void NewAnimation_Click(object sender, RoutedEventArgs e)
+        {
+            WindowStartup windowStartup = new WindowStartup();
+            windowStartup.ShowDialog();
+            List<List<WriteableBitmap>> newLayers = new List<List<WriteableBitmap>>();
+            newLayers.Add(new List<WriteableBitmap>());
+            newLayers[0].Add(BitmapFactory.New(windowStartup.newWidth, windowStartup.newWidth));
+            layers = new List<List<WriteableBitmap>>(newLayers);
+            currentBitmapIndex = 0;
+            currentLayerIndex = 0;
+            UpdateImagePreviewButtons();
+            UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
+            undoRedoStack.ClearStacks();
+            Center();
+            paintSurface.Visibility = Visibility.Visible;
+        }
+
+        private void SaveAnimation_Click(object sender, RoutedEventArgs e) 
+        {
+            SaveAnimation();
+        }
+
+        private void SaveAnimation() 
         {
             FileManagement fileManagement = new FileManagement();
             fileManagement.SaveFile(layers, width, height);
         }
 
-        private void LoadFull_Click(object sender, RoutedEventArgs e)
+        private void LoadAnimation_Click(object sender, RoutedEventArgs e)
+        {
+            LoadAnimation();
+        }
+
+        private void LoadAnimation() 
         {
             FileManagement fileManagement = new FileManagement();
             List<List<WriteableBitmap>> newLayers = fileManagement.LoadFile();
-            if (newLayers != null) 
+            if (newLayers != null)
             {
                 layers = new List<List<WriteableBitmap>>(newLayers);
                 currentBitmapIndex = 0;
@@ -1444,6 +1527,8 @@ namespace BakalarskaPrace
                 UpdateImagePreviewButtons();
                 UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
                 undoRedoStack.ClearStacks();
+                Center();
+                paintSurface.Visibility = Visibility.Visible;
             }
         }
 
@@ -1455,7 +1540,7 @@ namespace BakalarskaPrace
         private void ExportSingle()
         {
             FileManagement fileManagement = new FileManagement();
-            fileManagement.ExportPNG(currentBitmap);
+            fileManagement.ExportImage(currentBitmap, layers[0], layers[currentLayerIndex], timerInterval);
         }
 
         private void ExportFull_Click(object sender, RoutedEventArgs e)
@@ -1467,18 +1552,7 @@ namespace BakalarskaPrace
         {
             WriteableBitmap finalBitmap = filters.CreateCompositeBitmap(layers);
             FileManagement fileManagement = new FileManagement();
-            fileManagement.ExportPNG(finalBitmap);
-        }
-
-        private void ExportGif_CLick(object sender, RoutedEventArgs e)
-        {
-            ExportGif();
-        }
-
-        private void ExportGif()
-        {
-            FileManagement fileManagement = new FileManagement();
-            fileManagement.ExportGif(layers[currentLayerIndex], timerInterval);
+            fileManagement.ExportImage(finalBitmap, layers[0], layers[currentLayerIndex], timerInterval);
         }
 
         private void Load_Click(object sender, RoutedEventArgs e)
@@ -1498,6 +1572,7 @@ namespace BakalarskaPrace
                 UpdateImagePreviewButtons();
                 UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
                 undoRedoStack.ClearStacks();
+                paintSurface.Visibility = Visibility.Visible;
             }
         }
 
@@ -1505,6 +1580,26 @@ namespace BakalarskaPrace
         {
             //Přidat "are you sure?"
             System.Windows.Application.Current.Shutdown();
+        }
+
+        private void Undo_Click(object sender, RoutedEventArgs e)
+        {
+            undoPoints.Clear();
+            if (undoRedoStack.Redo() == true)
+            {
+                UpdateImagePreviewButtons();
+                UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
+            }
+        }
+
+        private void Redo_Click(object sender, RoutedEventArgs e)
+        {
+            undoPoints.Clear();
+            if (undoRedoStack.Undo() == true)
+            {
+                UpdateImagePreviewButtons();
+                UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
+            }
         }
 
 
@@ -1542,10 +1637,8 @@ namespace BakalarskaPrace
             //if (e.Key == Key.Add) CreateNewFrame(BitmapFactory.New(width, height), currentBitmapIndex + 1);
 
             //Storage
-            if (e.Key == Key.S && Keyboard.Modifiers == ModifierKeys.Control) ExportFull();
-            if (e.Key == Key.S && Keyboard.Modifiers == ModifierKeys.Control && Keyboard.Modifiers == ModifierKeys.Shift) ExportSingle();
-            if (e.Key == Key.O && Keyboard.Modifiers == ModifierKeys.Control) ExportGif();
-            if (e.Key == Key.E && Keyboard.Modifiers == ModifierKeys.Control) Import();
+            if (e.Key == Key.S && Keyboard.Modifiers == ModifierKeys.Control) SaveAnimation();
+            if (e.Key == Key.E && Keyboard.Modifiers == ModifierKeys.Control) ExportFull();
 
             //Tools
             if (e.Key == Key.P) DisableToolButton(ToolSelection.brush);
@@ -1560,6 +1653,16 @@ namespace BakalarskaPrace
             if (e.Key == Key.U) DisableToolButton(ToolSelection.shading);
             if (e.Key == Key.D) DisableToolButton(ToolSelection.dithering);
             if (e.Key == Key.V) DisableToolButton(ToolSelection.symmetricBrush);
+
+            if (e.Key == Key.NumPad1) currentStrokeThickness = 1;
+            if (e.Key == Key.NumPad2) currentStrokeThickness = 2;
+            if (e.Key == Key.NumPad3) currentStrokeThickness = 3;
+            if (e.Key == Key.NumPad4) currentStrokeThickness = 4;
+            if (e.Key == Key.NumPad5) currentStrokeThickness = 5;
+            if (e.Key == Key.NumPad6) currentStrokeThickness = 6;
+            if (e.Key == Key.NumPad7) currentStrokeThickness = 7;
+            if (e.Key == Key.NumPad8) currentStrokeThickness = 8;
+            if (e.Key == Key.NumPad9) currentStrokeThickness = 9;
         }
 
         private void Window_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)

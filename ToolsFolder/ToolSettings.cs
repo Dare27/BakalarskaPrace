@@ -11,7 +11,7 @@ namespace BakalarskaPrace
 {
     internal class ToolSettings
     {
-        public virtual Color AlphaBlending(bool alphaBleding, Color foregroundColor, Color backgroundColor)
+        public Color AlphaBlending(bool alphaBleding, Color foregroundColor, Color backgroundColor)
         {
             if (alphaBleding == true)
             {
@@ -22,9 +22,9 @@ namespace BakalarskaPrace
 
                 if (backgroundColor.A != 0)
                 {
-                    r = (byte)((backgroundColor.R * (255 - foregroundColor.A) + foregroundColor.R * foregroundColor.A) / 255);
-                    g = (byte)((backgroundColor.G * (255 - foregroundColor.A) + foregroundColor.G * foregroundColor.A) / 255);
-                    b = (byte)((backgroundColor.B * (255 - foregroundColor.A) + foregroundColor.B * foregroundColor.A) / 255);
+                    r = (byte)(((foregroundColor.A * foregroundColor.R) + ((255 - foregroundColor.A) * backgroundColor.R)) / 255);
+                    g = (byte)(((foregroundColor.A * foregroundColor.G) + ((255 - foregroundColor.A) * backgroundColor.G)) / 255);
+                    b = (byte)(((foregroundColor.A * foregroundColor.B) + ((255 - foregroundColor.A) * backgroundColor.B)) / 255);
                 }
                 else
                 {
@@ -40,7 +40,7 @@ namespace BakalarskaPrace
             }
         }
 
-        public virtual List<System.Drawing.Point> StrokeThicknessSetter(WriteableBitmap bitmap, System.Drawing.Point point, Color color, bool alphaBlending, int thickness, List<Color> undoColors, List<System.Drawing.Point> undoPoints, bool previewBitmap = false)
+        public List<System.Drawing.Point> StrokeThicknessSetter(WriteableBitmap bitmap, System.Drawing.Point point, Color color, bool alphaBlending, int thickness, List<Color> undoColors, List<System.Drawing.Point> undoPoints, bool previewBitmap = false)
         {
             int width = bitmap.PixelWidth;
             int height = bitmap.PixelHeight;
@@ -49,13 +49,13 @@ namespace BakalarskaPrace
             List<System.Drawing.Point> points = new List<System.Drawing.Point>();
 
             int size = thickness / 2;
-            int isOdd = 0;
+            int isEven = 0;
 
-            if (thickness % 2 != 0) isOdd = 1;
+            if (thickness % 2 != 0) isEven = 1;
 
-            for (int i = -size; i < size + isOdd; i++)
+            for (int i = -size; i < size + isEven; i++)
             {
-                for (int j = -size; j < size + isOdd; j++)
+                for (int j = -size; j < size + isEven; j++)
                 {
                     //Zkontrolovat jestli se pixel vejde do bitmapy
                     if (point.X + i < width && point.X + i > -1 && point.Y + j < height && point.Y + j > -1)

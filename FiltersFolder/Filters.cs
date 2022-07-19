@@ -26,15 +26,12 @@ namespace BakalarskaPrace.FiltersFolder
         public WriteableBitmap MergeAllLayers(List<List<WriteableBitmap>> layers, int index, int width, int height) 
         {
             WriteableBitmap combinedBitmap = BitmapFactory.New(width, height);
-
-            if (layers[0].Count != 1)
+            
+            if (layers.Count != 1)
             {
-                for (int i = 0; i < layers.Count - 1; i++)
+                for (int i = 0; i < layers.Count; i++)
                 {
-                    if (i + 1 < layers.Count - 1)
-                    {
-                        combinedBitmap = MergeFrames(layers[i][index], layers[i + 1][index], width, height);
-                    }
+                    combinedBitmap = MergeFrames(layers[i][index], layers[i + 1][index], width, height);
                 }
             }
             else 
@@ -42,7 +39,6 @@ namespace BakalarskaPrace.FiltersFolder
                 combinedBitmap = layers[0][index];
             }
             
-
             return combinedBitmap;
         }
 
@@ -63,7 +59,7 @@ namespace BakalarskaPrace.FiltersFolder
 
             using (finalBitmap.GetBitmapContext())
             {
-                for (int k = 0; k < combinedBitmaps.Count; k++)
+                for (int k = 0; k < layers[0].Count; k++)
                 {
                     for (int i = 0; i < width; i++)
                     {

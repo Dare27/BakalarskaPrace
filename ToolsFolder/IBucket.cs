@@ -10,6 +10,6 @@ namespace BakalarskaPrace.ToolsFolder
 {
     internal interface IBucket
     {
-        void GeneratePoints(WriteableBitmap bitmap, System.Drawing.Point point, Color color, List<System.Drawing.Point> undoPoints, List<Color> undoColors);
+        void GeneratePoints(WriteableBitmap bitmap, System.Drawing.Point point, Color color, bool alphaBlending, List<System.Drawing.Point> undoPoints, List<Color> undoColors);
     }
 }

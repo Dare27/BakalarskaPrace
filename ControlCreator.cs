@@ -31,17 +31,19 @@ namespace BakalarskaPrace
         public Button ColorPaletteButton(WriteableBitmap bitmap, Color color, MouseButtonEventHandler mouseButtonEventHandler)
         {
             Button newButton = new Button();
-            newButton.Width = 40;
-            newButton.Height = 40;
-            newButton.Margin = new Thickness(2);
-            newButton.Padding = new Thickness(2);
+            newButton.Width = 19;
+            newButton.Height = 19;
+            newButton.Margin = new Thickness(1,2,1,2);
+            newButton.Padding = new Thickness(0);
+            newButton.BorderThickness = new Thickness(0);
+            newButton.SetResourceReference(System.Windows.Controls.Control.StyleProperty, "ButtonStyle1");
             newButton.Content = new Image
             {
                 Source = bitmap,
                 VerticalAlignment = VerticalAlignment.Center,
-                Stretch = Stretch.Uniform,
-                Height = 40,
-                Width = 40,
+                Stretch = Stretch.Fill,
+                Height = 19,
+                Width = 19,
                 ToolTip = color
             };
             newButton.Name = "_" + color.ToString().Substring(1);
@@ -49,19 +51,10 @@ namespace BakalarskaPrace
             return newButton;
         }
 
-        public Button ImagePreviewButton(WriteableBitmap bitmap, int index, int currentBitmapIndex, RoutedEventHandler routedEventHandler)
+        public Button ImagePreviewButton(int index, RoutedEventHandler routedEventHandler)
         {
             Button newButton = new Button();
-            Image newImage = new Image
-            {
-                Source = bitmap,
-                VerticalAlignment = VerticalAlignment.Center,
-                Stretch = Stretch.Uniform,
-                Height = 120,
-                Width = 120,
-            };
-            newButton.Content = newImage;
-            newButton.IsEnabled = (currentBitmapIndex == index) ? false : true;
+            //newButton.IsEnabled = (currentBitmapIndex == index) ? false : true;
             newButton.Width = 180;
             newButton.Height = 180;
             newButton.Margin = new Thickness(2, 1, 2, 1);
