@@ -8,7 +8,7 @@ using System.Windows.Media.Imaging;
 
 namespace BakalarskaPrace.FiltersFolder
 {
-    internal class MergeFramesFilter: ToolSettings, ITwoFrameFilter
+    internal class MergeFramesFilter : ToolSettings, ITwoFrameFilter
     {
         public WriteableBitmap GenerateFilter(WriteableBitmap currentBitmap, WriteableBitmap nextBitmap, int width, int height)
         {

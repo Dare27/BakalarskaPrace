@@ -19,10 +19,13 @@
             <TextBox Name="heightTextBox" TextWrapping="Wrap" MinWidth="14" MaxWidth="28" Text="64" TextChanged="Height_TextChanged" PreviewTextInput="NumberValidationTextBox" Foreground="White" Cursor="Arrow"/>
             <Label Name="HeightWarning" Content="Height has to be higher than 0!" Width="241" Margin="10,0,0,0" Foreground="#DDD60000" Visibility="Hidden"/>
         </StackPanel>
-        <CheckBox Name="maintainAspectRatioCheckBox" IsChecked="true" FlowDirection="RightToLeft" HorizontalAlignment="Left" Height="25" Checked="MaintainAspectRatio_Checked" Unchecked="MaintainAspectRatio_Unchecked" Content="Maintain aspect ratio" Margin="0,2" Foreground="White"/>
+        <StackPanel Orientation="Horizontal" Margin="0,2" Height="25">
+            <Label Content="Maintain aspect ratio" Width="122"/>
+            <CheckBox Name="maintainAspectRatioCheckBox" IsChecked="true" FlowDirection="RightToLeft" Height="25" Checked="MaintainAspectRatio_Checked" Unchecked="MaintainAspectRatio_Unchecked" Foreground="White" Width="25"/>
+        </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0, 5" Width="154">
             <Button Content="Create" Click="Resize_Click" Margin="2" Height="24" Width="73" Cursor="Hand"/>
-            <Button Content="Exit" Click="Cancel_Click" Margin="2" Height="24" Width="73" Cursor="Hand"/>
+            <Button Content="Cancel" Click="Cancel_Click" Margin="2" Height="24" Width="73" Cursor="Hand"/>
         </StackPanel>
     </StackPanel>
 </Window>

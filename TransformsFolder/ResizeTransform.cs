@@ -77,7 +77,7 @@ namespace BakalarskaPrace.TransformsFolder
                         WriteableBitmap newBitmap = new WriteableBitmap(croppedBitmap);
                         WriteableBitmap finalBitmap = BitmapFactory.New(newWidth, newHeight);
 
-                        //Zapsání pixelů z staré bitmapy do nové
+                        //Zapsání pixelů ze staré bitmapy do nové
                         using (newBitmap.GetBitmapContext())
                         {
                             for (int i = 0; i < croppedWidth; i++)

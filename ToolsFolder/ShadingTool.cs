@@ -8,10 +8,8 @@ using System.Windows.Media.Imaging;
 
 namespace BakalarskaPrace.ToolsFolder
 {
-    internal class ShadingTool
+    internal class ShadingTool:ColorSpaceConvertor
     {
-        ColorSpaceConvertor colorSpaceConvertor = new ColorSpaceConvertor();
-
         public void GeneratePoints(List<System.Drawing.Point> points, WriteableBitmap bitmap, bool darken, int strokeThickness, List<System.Drawing.Point> undoPoints, List<Color> undoColors)
         {
             foreach (System.Drawing.Point point in points)
@@ -39,7 +37,7 @@ namespace BakalarskaPrace.ToolsFolder
                             {
                                 undoPoints.Add(newPoint);
                                 currentPixelColor = bitmap.GetPixel(x + i, y + j);
-                                colorSpaceConvertor.RGBToHSL(currentPixelColor.R, currentPixelColor.G, currentPixelColor.B, out h, out l, out s);
+                                RGBToHSL(currentPixelColor.R, currentPixelColor.G, currentPixelColor.B, out h, out l, out s);
 
                                 if (darken == true) //else lighten
                                 {
@@ -58,7 +56,7 @@ namespace BakalarskaPrace.ToolsFolder
                                     }
                                 }
 
-                                colorSpaceConvertor.HSLToRGB(h, l, s, out r, out g, out b);
+                                HSLToRGB(h, l, s, out r, out g, out b);
                                 color = Color.FromArgb(currentPixelColor.A, (byte)r, (byte)g, (byte)b);
                                 bitmap.SetPixel(x + i, y + j, color);
                                 undoColors.Add(currentPixelColor);

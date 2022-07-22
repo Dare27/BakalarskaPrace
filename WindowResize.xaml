@@ -10,11 +10,11 @@
         Background="#2b2b2b">
     <StackPanel HorizontalAlignment="Stretch"  Panel.ZIndex="10" Margin="10">
         <StackPanel Orientation="Horizontal" Margin="0,2">
-            <Label Content="Width" Width="45"/>
+            <Label Content="Width:" Width="50"/>
             <TextBox Name="widthTextBox" TextWrapping="Wrap" Text="128" TextChanged="Width_TextChanged" PreviewTextInput="NumberValidationTextBox" Foreground="White" Width="22" />
         </StackPanel>
         <StackPanel Orientation="Horizontal">
-            <Label Content="Height" Width="45" Margin="0,2"/>
+            <Label Content="Height:" Width="50" Margin="0,2"/>
             <TextBox Name="heightTextBox" TextWrapping="Wrap" Text="128" TextChanged="Height_TextChanged" PreviewTextInput="NumberValidationTextBox" Foreground="White" Width="22" />
         </StackPanel>
         <StackPanel Orientation="Horizontal"  Margin="0,2">

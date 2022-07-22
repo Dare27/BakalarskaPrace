@@ -1,0 +1,435 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="BakalarskaPrace.MainWindow" BaseTypeListCollapsed="true">
+    <Position X="21.5" Y="9" Width="2" />
+    <Members>
+      <Field Name="ctrl" Hidden="true" />
+    </Members>
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Enum Name="BakalarskaPrace.MainWindow.ToolSelection">
+        <TypeIdentifier>
+          <NewMemberFileName>MainWindow.xaml.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <AssociationLine Name="transforms" Type="BakalarskaPrace.TransformsFolder.Transforms" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="21.5" Y="10.25" />
+        <Point X="21.125" Y="10.25" />
+        <Point X="21.125" Y="4.436" />
+        <Point X="19.75" Y="4.436" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="filters" Type="BakalarskaPrace.FiltersFolder.Filters" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="21.5" Y="10.25" />
+        <Point X="21.125" Y="10.25" />
+        <Point X="21.125" Y="14.994" />
+        <Point X="20" Y="14.994" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="undoRedoStack" Type="BakalarskaPrace.UndoRedoStack" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="22.5" Y="9" />
+        <Point X="22.5" Y="7.313" />
+        <Point X="24.75" Y="7.313" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="tools" Type="BakalarskaPrace.ToolsFolder.Tools" ManuallyRouted="true" FixedToPoint="true">
+      <Path>
+        <Point X="21.5" Y="10.25" />
+        <Point X="21.125" Y="10.25" />
+        <Point X="21.125" Y="10.25" />
+        <Point X="20" Y="10.25" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AT8LaqEU/QFhAjaMaoGuABPlMPVXBkZMMhJkxoFYhIU=</HashCode>
+      <FileName>MainWindow.xaml.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="transforms" />
+      <Field Name="filters" />
+      <Field Name="undoRedoStack" />
+      <Field Name="tools" />
+      <Field Name="fileManagement" />
+      <Field Name="colorPalette" />
+      <Field Name="preview" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="BakalarskaPrace.ColorSpaceConvertor" Collapsed="true">
+    <Position X="11.75" Y="13.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAIAAAAAAAAAAACAAAAAAAAAAAAAAAABAAAAA=</HashCode>
+      <FileName>ToolsFolder\ColorSpaceConvertor.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BakalarskaPrace.ToolSettings">
+    <Position X="18.25" Y="7.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAABAAAAAAAAAAAAAAgAAAAAAAAAAAAA=</HashCode>
+      <FileName>ToolsFolder\ToolSettings.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BakalarskaPrace.UndoRedoStack">
+    <Position X="24.75" Y="6.25" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAABAAAAAAQCAADAAAgAAAAAAAAAAAAAAg=</HashCode>
+      <FileName>UndoRedoStack.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BakalarskaPrace.FiltersFolder.Filters">
+    <Position X="18.5" Y="14.25" Width="1.5" />
+    <AssociationLine Name="mergeFrames" Type="BakalarskaPrace.FiltersFolder.MergeFramesFilter" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="18.5" Y="14.562" />
+        <Point X="18.125" Y="14.562" />
+        <Point X="18.125" Y="16.596" />
+        <Point X="16.25" Y="16.596" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="intersectFrames" Type="BakalarskaPrace.FiltersFolder.IntersectFramesFilter" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="18.5" Y="14.562" />
+        <Point X="18.125" Y="14.562" />
+        <Point X="18.125" Y="15.634" />
+        <Point X="16.25" Y="15.634" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAABAAAAAAAAAIAACAAAAAgAAAAAAAE=</HashCode>
+      <FileName>FiltersFolder\Filters.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="mergeFrames" />
+      <Field Name="intersectFrames" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="BakalarskaPrace.FiltersFolder.IntersectFramesFilter" Collapsed="true" HideInheritanceLine="true">
+    <Position X="14.25" Y="15.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAA=</HashCode>
+      <FileName>FiltersFolder\IntersectFramesFilter.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="BakalarskaPrace.FiltersFolder.MergeFramesFilter" Collapsed="true" HideInheritanceLine="true">
+    <Position X="14.25" Y="16.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAA=</HashCode>
+      <FileName>FiltersFolder\MergeFramesFilter.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="BakalarskaPrace.ToolsFolder.ColorReplacementTool" Collapsed="true" HideInheritanceLine="true">
+    <Position X="14.25" Y="8.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ToolsFolder\ColorReplacementTool.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="BakalarskaPrace.ToolsFolder.DitheringTool" Collapsed="true" HideInheritanceLine="true">
+    <Position X="14.25" Y="12.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ToolsFolder\DitheringTool.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BakalarskaPrace.ToolsFolder.EllipseTool" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="14.25" Y="11.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAEIACAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ToolsFolder\EllipseTool.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="BakalarskaPrace.ToolsFolder.FloodFillTool" Collapsed="true" HideInheritanceLine="true">
+    <Position X="14.25" Y="7.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ToolsFolder\FloodFillTool.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="BakalarskaPrace.ToolsFolder.LineTool" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="14.25" Y="9.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ToolsFolder\LineTool.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="BakalarskaPrace.ToolsFolder.RectangleTool" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="14.25" Y="10.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIACAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ToolsFolder\RectangleTool.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="BakalarskaPrace.ToolsFolder.ShadingTool" Collapsed="true">
+    <Position X="14.25" Y="13.25" Width="2" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ToolsFolder\ShadingTool.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BakalarskaPrace.ToolsFolder.SymmetricTool" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="14.25" Y="6.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAIAAAQAAAIAAAAAAAAAAAAAAAAAAAAAAgA=</HashCode>
+      <FileName>ToolsFolder\SymmetricTool.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="BakalarskaPrace.ToolsFolder.Tools">
+    <Position X="18.25" Y="9.5" Width="1.75" />
+    <InheritanceLine Type="BakalarskaPrace.ToolSettings" ManuallyRouted="true" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="19.125" Y="8.796" />
+        <Point X="19.125" Y="9.148" />
+        <Point X="19.125" Y="9.148" />
+        <Point X="19.125" Y="9.5" />
+      </Path>
+    </InheritanceLine>
+    <AssociationLine Name="line" Type="BakalarskaPrace.ToolsFolder.LineTool" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="18.25" Y="10" />
+        <Point X="17.875" Y="10" />
+        <Point X="17.875" Y="9.75" />
+        <Point X="16.25" Y="9.75" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="rectangle" Type="BakalarskaPrace.ToolsFolder.RectangleTool" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="18.25" Y="10" />
+        <Point X="17.875" Y="10" />
+        <Point X="17.875" Y="10.781" />
+        <Point X="16.25" Y="10.781" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="ellipse" Type="BakalarskaPrace.ToolsFolder.EllipseTool" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="18.25" Y="10" />
+        <Point X="17.875" Y="10" />
+        <Point X="17.875" Y="11.781" />
+        <Point X="16.25" Y="11.781" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="floodFill" Type="BakalarskaPrace.ToolsFolder.FloodFillTool" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="18.25" Y="10" />
+        <Point X="17.875" Y="10" />
+        <Point X="17.875" Y="7.846" />
+        <Point X="16.25" Y="7.846" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="colorReplacement" Type="BakalarskaPrace.ToolsFolder.ColorReplacementTool" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="18.25" Y="10" />
+        <Point X="17.875" Y="10" />
+        <Point X="17.875" Y="8.846" />
+        <Point X="16.25" Y="8.846" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="symmetric" Type="BakalarskaPrace.ToolsFolder.SymmetricTool" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="18.25" Y="10" />
+        <Point X="17.875" Y="10" />
+        <Point X="17.875" Y="6.843" />
+        <Point X="16.25" Y="6.843" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="dithering" Type="BakalarskaPrace.ToolsFolder.DitheringTool" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="18.25" Y="10" />
+        <Point X="17.875" Y="10" />
+        <Point X="17.875" Y="12.596" />
+        <Point X="16.25" Y="12.596" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="shading" Type="BakalarskaPrace.ToolsFolder.ShadingTool" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="18.25" Y="10" />
+        <Point X="17.875" Y="10" />
+        <Point X="17.875" Y="13.596" />
+        <Point X="16.25" Y="13.596" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAMAAEgCAAAIAAAAAAAAACQAQAAgAEAEoAAAAIADAAA=</HashCode>
+      <FileName>ToolsFolder\Tools.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="line" />
+      <Field Name="rectangle" />
+      <Field Name="ellipse" />
+      <Field Name="floodFill" />
+      <Field Name="colorReplacement" />
+      <Field Name="symmetric" />
+      <Field Name="dithering" />
+      <Field Name="shading" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="BakalarskaPrace.TransformsFolder.CenterAlligmentTransform" Collapsed="true">
+    <Position X="14.25" Y="4" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAA=</HashCode>
+      <FileName>TransformsFolder\CenterAlligmentTransform.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BakalarskaPrace.TransformsFolder.CropToFitTransform" Collapsed="true">
+    <Position X="14.25" Y="3.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAA=</HashCode>
+      <FileName>TransformsFolder\CropToFitTransform.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BakalarskaPrace.TransformsFolder.FlipTransform" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="14.25" Y="2.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAA=</HashCode>
+      <FileName>TransformsFolder\FlipTransform.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="BakalarskaPrace.TransformsFolder.ResizeTransform" Collapsed="true">
+    <Position X="14.25" Y="4.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAA=</HashCode>
+      <FileName>TransformsFolder\ResizeTransform.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BakalarskaPrace.TransformsFolder.RotateTransform" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="14.25" Y="1.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAA=</HashCode>
+      <FileName>TransformsFolder\RotateTransform.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="BakalarskaPrace.TransformsFolder.Transforms">
+    <Position X="18.25" Y="3.5" Width="1.5" />
+    <AssociationLine Name="flip" Type="BakalarskaPrace.TransformsFolder.FlipTransform" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="18.25" Y="3.812" />
+        <Point X="17.875" Y="3.812" />
+        <Point X="17.875" Y="2.781" />
+        <Point X="16.5" Y="2.781" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="rotate" Type="BakalarskaPrace.TransformsFolder.RotateTransform" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="18.25" Y="3.812" />
+        <Point X="17.875" Y="3.812" />
+        <Point X="17.875" Y="1.781" />
+        <Point X="16.5" Y="1.781" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="resize" Type="BakalarskaPrace.TransformsFolder.ResizeTransform" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="18.25" Y="3.812" />
+        <Point X="17.875" Y="3.812" />
+        <Point X="17.875" Y="5.031" />
+        <Point X="16.5" Y="5.031" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="center" Type="BakalarskaPrace.TransformsFolder.CenterAlligmentTransform" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="18.25" Y="3.812" />
+        <Point X="17.875" Y="3.812" />
+        <Point X="17.875" Y="4.281" />
+        <Point X="16.5" Y="4.281" />
+      </Path>
+    </AssociationLine>
+    <AssociationLine Name="cropToFit" Type="BakalarskaPrace.TransformsFolder.CropToFitTransform" FixedFromPoint="true" FixedToPoint="true">
+      <Path>
+        <Point X="18.25" Y="3.812" />
+        <Point X="17.875" Y="3.812" />
+        <Point X="17.875" Y="3.406" />
+        <Point X="16.5" Y="3.406" />
+      </Path>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAgAAAAAAAAAAAAAAQAQQAEAEEAAAAAAAQAAAAEAAIA=</HashCode>
+      <FileName>TransformsFolder\Transforms.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="flip" />
+      <Field Name="rotate" />
+      <Field Name="resize" />
+      <Field Name="center" />
+      <Field Name="cropToFit" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="BakalarskaPrace.FileManagement">
+    <Position X="24.75" Y="3.75" Width="1.75" />
+    <Members>
+      <Method Name="CreateCompositeBitmap" Hidden="true" />
+    </Members>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEoAgAAAgAAAAAAAABAAAAAAABAA=</HashCode>
+      <FileName>FileManagement.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BakalarskaPrace.ColorPalette">
+    <Position X="24.75" Y="9.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAQAAAAIAAAAAAAAAAAAAAAAAAAAACAAgAAgQAAAAA=</HashCode>
+      <FileName>ColorPalette.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BakalarskaPrace.Preview">
+    <Position X="24.75" Y="12.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIQAIAAAAAAAAAAAAAQiAAAAAACoQAAAoAABAACAAAA=</HashCode>
+      <FileName>Preview.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="BakalarskaPrace.FiltersFolder.ITwoFrameFilter" Collapsed="true">
+    <Position X="12" Y="15.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAA=</HashCode>
+      <FileName>FiltersFolder\ITwoFrameFilter.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BakalarskaPrace.ToolsFolder.IBrush" Collapsed="true">
+    <Position X="12.25" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ToolsFolder\IBrush.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BakalarskaPrace.ToolsFolder.IBucket" Collapsed="true">
+    <Position X="12.25" Y="7.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ToolsFolder\IBucket.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BakalarskaPrace.ToolsFolder.IGeometricTool" Collapsed="true">
+    <Position X="12.25" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>ToolsFolder\IGeometricTool.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="BakalarskaPrace.TransformsFolder.ITransform" Collapsed="true">
+    <Position X="12.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAA=</HashCode>
+      <FileName>TransformsFolder\ITransform.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

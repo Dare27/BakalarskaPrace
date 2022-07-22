@@ -16,9 +16,9 @@
                     <MenuItem Header="_Create new animation" Click="NewAnimation_Click"/>
                     <MenuItem Header="_Load animation" Click="LoadAnimation_Click" />
                     <MenuItem Header="_Save animation" Click="SaveAnimation_Click" />
-                    <MenuItem Header="_Import animation" Click="Load_Click"/>
-                    <MenuItem Header="_Export current frame" Click="ExportSingle_Click" />
-                    <MenuItem Header="_Export animation" Click="ExportFull_Click" />
+                    <MenuItem Header="_Import animation" Click="ImportAnimation_Click"/>
+                    <!--<MenuItem Header="_Export current frame" Click="ExportSingle_Click" />-->
+                    <MenuItem Header="_Export animation" Click="ExportAnimation_Click" />
                     <MenuItem Header="_Exit" Click="ExitApp_CLick" />
                 </MenuItem>
                 <MenuItem Header="_Edit"  VerticalAlignment="Center" Height="24" Foreground="Snow" Background="#FF1D1D1D" FontSize="12">
@@ -29,7 +29,7 @@
                     <MenuItem Header="_Center" Click="Center_Click"/>
                     <MenuItem Header="_Previous Frame" Click="Previous_Click"/>
                     <MenuItem Header="_Next Frame" Click="Next_Click"/>
-                    <MenuItem Header="_Onion Skinning" IsCheckable="True" Checked="OnionSkinning_Checked" Unchecked="OnionSkinning_Unchecked" IsChecked="False"/>
+                    <MenuItem Header="_Onion Skinning" Click="OnionSkinning_Click"/>
                 </MenuItem>
                 <!--<MenuItem Header="_Filters"  VerticalAlignment="Center" Height="24" Foreground="Snow" Background="#FF1D1D1D" FontSize="12">
                     <MenuItem Header="" />

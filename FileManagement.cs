@@ -164,7 +164,7 @@ namespace BakalarskaPrace
         }
 
         //Proměnná onlyPNG je využitá pokude se jedná o exportování barevné palety
-        public void ExportImage(WriteableBitmap bitmap, List<WriteableBitmap> layers = null, List<WriteableBitmap> bitmaps = null, int timerInterval = 0, bool onlyPNG = false)
+        public void ExportImage(List<WriteableBitmap> mergedLayers, int timerInterval = 0, bool onlyPNG = false)
         {
             SaveFileDialog dialog = new SaveFileDialog();
             if (onlyPNG == false) dialog.Filter = ".png|*.png|.bmp|*.bmp|.jpeg|*.jpeg|.psd|*.psd|.gif|*.gif";
@@ -181,13 +181,13 @@ namespace BakalarskaPrace
                             using (MagickImageCollection collection = new MagickImageCollection())
                             {
                                 //Pro tento formát by měla být správně jako první obrázek kombinace všech vrstev
-                                WriteableBitmap emptyBitmap = BitmapFactory.New((int)layers[0].Width, (int)layers[0].Height);
-                                MagickImage imgBase = new MagickImage(ImageToByte(emptyBitmap));
+                                WriteableBitmap emptyBitmap = BitmapFactory.New((int)mergedLayers[0].Width, (int)mergedLayers[0].Height);
+                                MagickImage imgBase = new MagickImage(emptyBitmap.ToByteArray());
                                 collection.Add(imgBase);
-                                for (int i = 0; i < layers.Count; i++)
+                                for (int i = 0; i < mergedLayers.Count; i++)
                                 {
                                     //Převedení WriteableBitmap na byte pole
-                                    byte[] bitmapData = ImageToByte(layers[i]);
+                                    byte[] bitmapData = mergedLayers[i].ToByteArray();
                                     MagickImage image = new MagickImage(bitmapData);
                                     collection.Add(image);
                                 }
@@ -201,10 +201,10 @@ namespace BakalarskaPrace
                                 //Výpočet rozestupu mezi snímky
                                 int delay = timerInterval / 10;
 
-                                for (int i = 0; i < bitmaps.Count; i++)
+                                for (int i = 0; i < mergedLayers.Count; i++)
                                 {
                                     //Převedení WriteableBitmap na byte pole
-                                    byte[] bitmapData = ImageToByte(bitmaps[i]);
+                                    byte[] bitmapData = mergedLayers[i].ToByteArray();
                                     MagickImage image = new MagickImage(bitmapData);
                                     collection.Add(image);
                                     collection[i].AnimationDelay = delay;
@@ -225,7 +225,8 @@ namespace BakalarskaPrace
                             using (FileStream fileStream = new FileStream(dialog.FileName, FileMode.Create))
                             {
                                 PngBitmapEncoder encoder = new PngBitmapEncoder();
-                                encoder.Frames.Add(BitmapFrame.Create(bitmap.Clone()));
+                                WriteableBitmap composite = CreateCompositeBitmap(mergedLayers);
+                                encoder.Frames.Add(BitmapFrame.Create(composite.Clone()));
                                 encoder.Save(fileStream);
                                 fileStream.Close();
                                 fileStream.Dispose();
@@ -240,82 +241,43 @@ namespace BakalarskaPrace
             }
         }
 
-        public void ExportPSD(List<WriteableBitmap> layers/*, WriteableBitmap combinedBitmap*/)
+        public WriteableBitmap CreateCompositeBitmap(List<WriteableBitmap> layers)
         {
-            SaveFileDialog dialog = new SaveFileDialog();
-            dialog.Filter = ".psd|*.psd";
-            dialog.FileName = NewFileName();
-            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            int width = layers[0].PixelWidth;
+            int height = layers[0].PixelHeight;
+            int emptyRow;
+            int size = (int)Math.Ceiling(Math.Sqrt(layers.Count));
+
+            if (Math.Sqrt(layers.Count) > Math.Floor(Math.Sqrt(layers.Count)) + 0.5) emptyRow = 0;
+            else emptyRow = -1;
+
+            int finalWidth = width * size;
+            int finalHeight = height * (size + emptyRow);
+
+            WriteableBitmap finalBitmap = BitmapFactory.New(finalWidth, finalHeight);
+
+            using (finalBitmap.GetBitmapContext())
             {
-                try
+                for (int k = 0; k < size; k++) 
                 {
-                    if (dialog.FileName != string.Empty)
+                    for (int l = 0; l < size; l++)
                     {
-                        using (MagickImageCollection collection = new MagickImageCollection())
+                        if ((l * size) + k < layers.Count)
                         {
-                            //Pro tento formát by měla být správně jako první obrázek kombinace všech vrstev
-                            WriteableBitmap emptyBitmap = BitmapFactory.New((int)layers[0].Width, (int)layers[0].Height);
-                            MagickImage imgBase = new MagickImage(ImageToByte(emptyBitmap));
-                            collection.Add(imgBase);
-                            for (int i = 0; i < layers.Count; i++)
+                            //Procházení bitmapy
+                            for (int i = 0; i < width; i++)
                             {
-                                //Převedení WriteableBitmap na byte pole
-                                byte[] bitmapData = ImageToByte(layers[i]);
-                                MagickImage image = new MagickImage(bitmapData);
-                                collection.Add(image);
+                                for (int j = 0; j < height; j++)
+                                {
+                                    Color color = layers[(l * size) + k].GetPixel(i, j);
+                                    finalBitmap.SetPixel(i + (k * width), j + (l * height), color);
+                                }
                             }
-                            collection.Write(System.IO.Path.GetFullPath(dialog.FileName));
                         }
                     }
                 }
-                catch
-                {
-
-                }
             }
-        }
-
-        public void ExportGif(List<WriteableBitmap> bitmaps, int timerInterval)
-        {
-            SaveFileDialog dialog = new SaveFileDialog();
-            dialog.Filter = ".gif|*.gif";
-            dialog.FileName = NewFileName();
-            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            {
-                try
-                {
-                    if (dialog.FileName != string.Empty)
-                    {
-                        using (MagickImageCollection collection = new MagickImageCollection())
-                        {
-                            //Výpočet rozestupu mezi snímky
-                            int delay = timerInterval / 10;
-
-                            for (int i = 0; i < bitmaps.Count; i++)
-                            {
-                                //Převedení WriteableBitmap na byte pole
-                                byte[] bitmapData = ImageToByte(bitmaps[i]);
-                                MagickImage image = new MagickImage(bitmapData);
-                                collection.Add(image);
-                                collection[i].AnimationDelay = delay;
-                            }
-
-                            //Snížení množství barev
-                            QuantizeSettings settings = new QuantizeSettings();
-                            settings.Colors = 256;
-                            collection.Quantize(settings);
-
-                            // Volitelné optimalizování obrázků, správně by obrázky měly mít stejnou velikost
-                            collection.Optimize();
-                            collection.Write(System.IO.Path.GetFullPath(dialog.FileName));
-                        }
-                    }
-                }
-                catch
-                {
-
-                }
-            }
+            return finalBitmap;
         }
 
         public List<Color> ImportColorPalette()
@@ -349,18 +311,6 @@ namespace BakalarskaPrace
                 }
             }
             return null;
-        }
-
-        public static byte[] ImageToByte(WriteableBitmap imageSource)
-        {
-            var encoder = new BmpBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(imageSource));
-
-            using (var ms = new MemoryStream())
-            {
-                encoder.Save(ms);
-                return ms.ToArray();
-            }
         }
     }
 }

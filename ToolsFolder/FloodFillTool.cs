@@ -8,7 +8,7 @@ using System.Windows.Media.Imaging;
 
 namespace BakalarskaPrace.ToolsFolder
 {
-    internal class FloodFillTool: ToolSettings, IBucket
+    internal class FloodFillTool : ToolSettings, IBucket 
     {
         //V případě této aplikace musí být použit 4-straná verze tohoto algoritmu aby se zábránilo únikům v rozích
         //Rekurzivní verze může způsobit StackOverflowException při větších velikostech, proto musí být použíta nerekurzivní verzi tohoto alg.

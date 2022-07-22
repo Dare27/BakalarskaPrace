@@ -8,7 +8,7 @@ using System.Windows.Media.Imaging;
 
 namespace BakalarskaPrace.ToolsFolder
 {
-    internal class DitheringTool : ToolSettings
+    internal class DitheringTool: ToolSettings
     {
         public void GeneratePoints(List<System.Drawing.Point> points, Color color01, Color color02, WriteableBitmap bitmap, int strokeThickness, bool alphaBlending, List<System.Drawing.Point> undoPoints, List<Color> undoColors)
         {

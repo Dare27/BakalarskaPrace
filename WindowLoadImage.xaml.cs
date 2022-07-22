@@ -37,28 +37,28 @@ namespace BakalarskaPrace
         {
             importImage = true;
             importSpritesheet = false;
-            ImportSpritesheetCheckBox.IsChecked = true;
+            //ImportSpritesheetCheckBox.IsChecked = true;
         }
 
         private void ImportImage_Unchecked(object sender, RoutedEventArgs e)
         {
             importImage = false;
             importSpritesheet = true;
-            ImportSpritesheetCheckBox.IsChecked = true;
+            //ImportSpritesheetCheckBox.IsChecked = true;
         }
 
         private void ImportSpritesheet_Checked(object sender, RoutedEventArgs e)
         {
             importSpritesheet = true;
             importImage = false;
-            ImportImageCheckBox.IsChecked = false;
+            //ImportImageCheckBox.IsChecked = false;
         }
 
         private void ImportSpritesheet_Unchecked(object sender, RoutedEventArgs e)
         {
             importSpritesheet = false;
             importImage = true;
-            ImportImageCheckBox.IsChecked = true;
+            //ImportImageCheckBox.IsChecked = true;
         }
 
         private void Width_TextChanged(object sender, TextChangedEventArgs e)

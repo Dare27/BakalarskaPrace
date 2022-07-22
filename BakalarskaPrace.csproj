@@ -74,9 +74,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ColorPalette.cs" />
     <Compile Include="FiltersFolder\IntersectFramesFilter.cs" />
     <Compile Include="FiltersFolder\ITwoFrameFilter.cs" />
     <Compile Include="FiltersFolder\MergeFramesFilter.cs" />
+    <Compile Include="Preview.cs" />
     <Compile Include="ToolsFolder\DefaultBrush.cs" />
     <Compile Include="ToolsFolder\ToolSettings.cs" />
     <Compile Include="ControlCreator.cs" />
@@ -164,6 +166,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="ClassDiagram.cd" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
