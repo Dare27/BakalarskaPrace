@@ -91,7 +91,9 @@ namespace BakalarskaPrace
             if (width != layers[0][0].PixelWidth && height != layers[0][0].PixelHeight) Center();
             width = layers[0][0].PixelWidth;
             height = layers[0][0].PixelHeight;
+            if (bitmapIndex < 0) bitmapIndex = 0;
             currentBitmapIndex = bitmapIndex;
+            if (layerIndex < 0) layerIndex = 0;
             currentLayerIndex = layerIndex;
             currentBitmap = layers[currentLayerIndex][currentBitmapIndex];
             paintSurface.Width = width;
@@ -1397,16 +1399,19 @@ namespace BakalarskaPrace
         {
             WindowStartup windowStartup = new WindowStartup();
             windowStartup.ShowDialog();
-            List<List<WriteableBitmap>> newLayers = new List<List<WriteableBitmap>>();
-            newLayers.Add(new List<WriteableBitmap>());
-            newLayers[0].Add(BitmapFactory.New(windowStartup.newWidth, windowStartup.newWidth));
-            layers = new List<List<WriteableBitmap>>(newLayers);
-            currentBitmapIndex = 0;
-            currentLayerIndex = 0;
-            UpdateImagePreviewButtons();
-            UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
-            undoRedoStack.ClearStacks();
-            Center();
+            if (windowStartup.newHeight > 0 && windowStartup.newWidth > 0) 
+            {
+                List<List<WriteableBitmap>> newLayers = new List<List<WriteableBitmap>>();
+                newLayers.Add(new List<WriteableBitmap>());
+                newLayers[0].Add(BitmapFactory.New(windowStartup.newWidth, windowStartup.newWidth));
+                layers = new List<List<WriteableBitmap>>(newLayers);
+                currentBitmapIndex = 0;
+                currentLayerIndex = 0;
+                UpdateImagePreviewButtons();
+                UpdateCurrentBitmap(currentBitmapIndex, currentLayerIndex);
+                undoRedoStack.ClearStacks();
+                Center();
+            }
         }
 
         private void SaveAnimation_Click(object sender, RoutedEventArgs e) 

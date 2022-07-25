@@ -148,7 +148,7 @@ namespace BakalarskaPrace
                                     Int32Rect rect = new Int32Rect(i * subwindow.imageWidth, j * subwindow.imageHeight, subwindow.imageWidth, subwindow.imageHeight);
                                     CroppedBitmap croppedBitmap = new CroppedBitmap(newBitmap, rect);
                                     WriteableBitmap writeableBitmap = new WriteableBitmap(croppedBitmap);
-                                    newLayers[0].Add(writeableBitmap);
+                                    if(BitmapIsEmpy(writeableBitmap) == false) newLayers[0].Add(writeableBitmap);
                                 }
                             }
                         }
@@ -161,6 +161,18 @@ namespace BakalarskaPrace
                 }
             }
             return null;
+        }
+
+        private bool BitmapIsEmpy(WriteableBitmap bitmap) 
+        {
+            for (int x = 0; x < bitmap.PixelWidth; x++)
+            {
+                for (int y = 0; y < bitmap.PixelHeight; y++)
+                {
+                    if(bitmap.GetPixel(x, y).A != 0) return false;
+                }
+            }
+            return true;
         }
 
         //Proměnná onlyPNG je využitá pokude se jedná o exportování barevné palety
@@ -246,9 +258,10 @@ namespace BakalarskaPrace
             int width = layers[0].PixelWidth;
             int height = layers[0].PixelHeight;
             int emptyRow;
-            int size = (int)Math.Ceiling(Math.Sqrt(layers.Count));
+            double temp = Math.Sqrt(layers.Count);
+            int size = (int)Math.Ceiling(temp);
 
-            if (Math.Sqrt(layers.Count) > Math.Floor(Math.Sqrt(layers.Count)) + 0.5) emptyRow = 0;
+            if (temp > Math.Floor(temp) + 0.5) emptyRow = 0;
             else emptyRow = -1;
 
             int finalWidth = width * size;
@@ -258,19 +271,19 @@ namespace BakalarskaPrace
 
             using (finalBitmap.GetBitmapContext())
             {
-                for (int k = 0; k < size; k++) 
+                for (int i = 0; i < size; i++) 
                 {
-                    for (int l = 0; l < size; l++)
+                    for (int j = 0; j < size; j++)
                     {
-                        if ((l * size) + k < layers.Count)
+                        if ((j * size) + i < layers.Count)
                         {
                             //Procházení bitmapy
-                            for (int i = 0; i < width; i++)
+                            for (int x = 0; x < width; x++)
                             {
-                                for (int j = 0; j < height; j++)
+                                for (int y = 0; y < height; y++)
                                 {
-                                    Color color = layers[(l * size) + k].GetPixel(i, j);
-                                    finalBitmap.SetPixel(i + (k * width), j + (l * height), color);
+                                    Color color = layers[(j * size) + i].GetPixel(x, y);
+                                    finalBitmap.SetPixel(x + (i * width), y + (j * height), color);
                                 }
                             }
                         }

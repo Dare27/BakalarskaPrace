@@ -12,7 +12,7 @@ namespace BakalarskaPrace.FiltersFolder
     {
         public WriteableBitmap GenerateFilter(WriteableBitmap currentBitmap, WriteableBitmap nextBitmap, int width, int height)
         {
-            WriteableBitmap newBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+            WriteableBitmap newBitmap = BitmapFactory.New(width, height);
             for (int i = 0; i < width; i++)
             {
                 for (int j = 0; j < height; j++)

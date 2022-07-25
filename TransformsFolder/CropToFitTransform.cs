@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
@@ -36,29 +37,29 @@ namespace BakalarskaPrace.TransformsFolder
                 int currentDownPixelY = 0;
 
                 //Projít dolu a doprava 
-                for (int i = 0; i < width; i++)
+                for (int x = 0; x < width; x++)
                 {
-                    for (int j = 0; j < height; j++)
+                    for (int y = 0; y < height; y++)
                     {
-                        Color color = bitmap.GetPixel(i, j);
+                        Color color = bitmap.GetPixel(x, y);
                         if (color.A != 0)
                         {
-                            if (currentRightPixelX < i) currentRightPixelX = i;
-                            if (currentDownPixelY < j) currentDownPixelY = j;
+                            if (currentRightPixelX < x) currentRightPixelX = x;
+                            if (currentDownPixelY < y) currentDownPixelY = y;
                         }
                     }
                 }
 
                 //Projít nahoru a doleva
-                for (int i = width; i >= 0; i--)
+                for (int x = width; x >= 0; x--)
                 {
-                    for (int j = height; j >= 0; j--)
+                    for (int y = height; y >= 0; y--)
                     {
-                        Color color = bitmap.GetPixel(i, j);
+                        Color color = bitmap.GetPixel(x, y);
                         if (color.A != 0)
                         {
-                            if (currentLeftPixelX > i) currentLeftPixelX = i;
-                            if (currentTopPixelY > j) currentTopPixelY = j;
+                            if (currentLeftPixelX > x) currentLeftPixelX = x;
+                            if (currentTopPixelY > y) currentTopPixelY = y;
                         }
                     }
                 }
@@ -70,31 +71,17 @@ namespace BakalarskaPrace.TransformsFolder
                 if (currentDownPixelY > downPixelY) downPixelY = currentDownPixelY;
             }
 
-            int newWidth = rightPixelX - leftPixelX + 1;
-            int newHeight = downPixelY - topPixelY + 1;
-            if (newWidth > 0 && newHeight > 0)
+            int croppedWidth = rightPixelX - leftPixelX + 1;
+            int croppedHeight = downPixelY - topPixelY + 1;
+            if (croppedWidth > 0 && croppedHeight > 0)
             {
                 for (int k = 0; k < layers.Count; k++)
                 {
                     for (int l = 0; l < layers[k].Count; l++)
                     {
-                        WriteableBitmap newBitmap = BitmapFactory.New(newWidth, newHeight);
-                        //Získání pixelů z aktuální bitmapy
-                        using (newBitmap.GetBitmapContext())
-                        {
-                            for (int i = leftPixelX; i <= rightPixelX; i++)
-                            {
-                                for (int j = topPixelY; j <= downPixelY; j++)
-                                {
-                                    Color color = layers[k][l].GetPixel(i, j);
-                                    if (color.A != 0)
-                                    {
-                                        //Vytvoření pixelu, který je posunutý v nové bitmapě 
-                                        newBitmap.SetPixel(i - leftPixelX, j - topPixelY, color);
-                                    }
-                                }
-                            }
-                        }
+                        Int32Rect rect = new Int32Rect(leftPixelX, topPixelY, croppedWidth, croppedHeight);
+                        CroppedBitmap croppedBitmap = new CroppedBitmap(layers[k][l], rect);
+                        WriteableBitmap newBitmap = new WriteableBitmap(croppedBitmap);
                         layers[k][l] = newBitmap;
                     }
                 }

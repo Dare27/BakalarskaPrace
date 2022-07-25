@@ -14,11 +14,12 @@ namespace BakalarskaPrace.TransformsFolder
         public void GenerateTransform(List<List<WriteableBitmap>> layers, int newWidth, int newHeight, string position)
         {
             List<WriteableBitmap> bitmaps = new List<WriteableBitmap>();
-            for (int j = 0; j < layers.Count; j++)
+
+            foreach (List<WriteableBitmap> layer in layers) 
             {
-                for (int i = 0; i < layers[j].Count; i++)
+                foreach (WriteableBitmap bitmap in layer)
                 {
-                    bitmaps.Add(layers[j][i]);
+                    bitmaps.Add(bitmap);
                 }
             }
 
@@ -40,60 +41,59 @@ namespace BakalarskaPrace.TransformsFolder
                 if (newWidth < width)
                 {
                     croppedWidth = newWidth;
-                    if (position.Contains("ĺeft")) startPosX = 0;
-                    else if (position.Contains("middle")) startPosX = (width / 2) - (newWidth / 2);
+                    if (position.Contains("left")) startPosX = 0;
                     else if (position.Contains("right")) startPosX = width - newWidth;
+                    else if (position.Contains("middle")) startPosX = (width / 2) - (newWidth / 2);
                 }
                 else
                 {
                     croppedWidth = width;
-                    if (position.Contains("ĺeft")) endPosX = 0;
-                    else if (position.Contains("middle")) endPosX = (newWidth - width) / 2;
+                    if (position.Contains("left")) endPosX = 0;
                     else if (position.Contains("right")) endPosX = newWidth - width;
+                    else if (position.Contains("middle")) endPosX = (newWidth - width) / 2;
                 }
 
                 if (newHeight < height)
                 {
                     croppedHeight = newHeight;
                     if (position.Contains("top")) startPosY = 0;
-                    else if (position.Contains("middle")) startPosY = (height / 2) - (newHeight / 2);
                     else if (position.Contains("bottom")) startPosY = height - newHeight;
+                    else if (position.Contains("middle")) startPosY = (height / 2) - (newHeight / 2);
                 }
                 else
                 {
                     croppedHeight = height;
                     if (position.Contains("top")) endPosY = 0;
-                    else if (position.Contains("middle")) endPosY = (newHeight - height) / 2;
                     else if (position.Contains("bottom")) endPosY = newHeight - height;
+                    else if (position.Contains("middle")) endPosY = (newHeight - height) / 2;
                 }
 
                 Int32Rect rect = new Int32Rect(startPosX, startPosY, croppedWidth, croppedHeight);
 
-                for (int k = 0; k < layers.Count; k++)
+                for (int i = 0; i < layers.Count; i++)
                 {
-                    for (int l = 0; l < layers[k].Count; l++)
+                    for (int j = 0; j < layers[i].Count; j++)
                     {
-                        CroppedBitmap croppedBitmap = new CroppedBitmap(layers[k][l], rect);
+                        CroppedBitmap croppedBitmap = new CroppedBitmap(layers[i][j], rect);
                         WriteableBitmap newBitmap = new WriteableBitmap(croppedBitmap);
                         WriteableBitmap finalBitmap = BitmapFactory.New(newWidth, newHeight);
 
                         //Zapsání pixelů ze staré bitmapy do nové
                         using (newBitmap.GetBitmapContext())
                         {
-                            for (int i = 0; i < croppedWidth; i++)
+                            for (int x = 0; x < croppedWidth; x++)
                             {
-                                for (int j = 0; j < croppedHeight; j++)
+                                for (int y = 0; y < croppedHeight; y++)
                                 {
-                                    Color color = newBitmap.GetPixel(i, j);
-                                    finalBitmap.SetPixel(i + endPosX, j + endPosY, color);
+                                    Color color = newBitmap.GetPixel(x, y);
+                                    finalBitmap.SetPixel(x + endPosX, y + endPosY, color);
                                 }
                             }
                         }
 
-                        layers[k][l] = finalBitmap;
+                        layers[i][j] = finalBitmap;
                     }
                 }
-
             }
         }
     }

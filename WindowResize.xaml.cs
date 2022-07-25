@@ -62,9 +62,10 @@ namespace BakalarskaPrace
             }
             else
             {
-                if (heightTextBox != null)
+                bool widthParsed = int.TryParse(widthTextBox.Text, out newWidth);
+                if (heightTextBox != null && widthParsed)
                 {
-                    lastSizeValue = int.Parse(widthTextBox.Text);
+                    lastSizeValue = newWidth;
                 }
             }
         }
@@ -77,9 +78,10 @@ namespace BakalarskaPrace
             }
             else
             {
-                if (widthTextBox != null)
+                bool heightParsed = int.TryParse(heightTextBox.Text, out newHeight);
+                if (widthTextBox != null && heightParsed)
                 {
-                    lastSizeValue = int.Parse(heightTextBox.Text);
+                    lastSizeValue = newHeight;
                 }
             }
         }

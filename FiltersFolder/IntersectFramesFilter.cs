@@ -12,7 +12,7 @@ namespace BakalarskaPrace.FiltersFolder
     {
         public WriteableBitmap GenerateFilter(WriteableBitmap currentBitmap, WriteableBitmap nextBitmap, int width, int height)
         {
-            WriteableBitmap newBitmap = new WriteableBitmap(width, height, 1, 1, PixelFormats.Bgra32, null);
+            WriteableBitmap newBitmap = BitmapFactory.New(width, height);
 
             for (int i = 0; i < width; i++)
             {
@@ -21,19 +21,12 @@ namespace BakalarskaPrace.FiltersFolder
                     //Získání barvy pixelu z obou bitmap 
                     Color color01 = currentBitmap.GetPixel(i, j);
                     Color color02 = nextBitmap.GetPixel(i, j);
-                    Color finalColor;
-
+                    
                     //Smíchání barev a zapsání barvy do nové bitmapy
-                    if (color01.A != 0 && color02.A != 0)
-                    {
-                        finalColor = AlphaBlending(true, color02, color01);
-                    }
-                    else
-                    {
-                        finalColor = Color.FromArgb(0, 0, 0, 0);
-                    }
-
-                    newBitmap.SetPixel(i, j, finalColor);
+                    if (color01.A != 0 && color02.A != 0) {
+                        Color finalColor = AlphaBlending(true, color02, color01);
+                        newBitmap.SetPixel(i, j, finalColor);
+                    } 
                 }
             }
 

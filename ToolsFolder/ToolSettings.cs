@@ -20,14 +20,22 @@ namespace BakalarskaPrace
                 byte g;
                 byte b;
 
-                if (backgroundColor.A != 0)
+                if (backgroundColor.A != 0 && foregroundColor.A != 0)
                 {
                     r = (byte)(((foregroundColor.A * foregroundColor.R) + ((255 - foregroundColor.A) * backgroundColor.R)) / 255);
                     g = (byte)(((foregroundColor.A * foregroundColor.G) + ((255 - foregroundColor.A) * backgroundColor.G)) / 255);
                     b = (byte)(((foregroundColor.A * foregroundColor.B) + ((255 - foregroundColor.A) * backgroundColor.B)) / 255);
                 }
+                else if (foregroundColor.A == 0) 
+                {
+                    a = (byte)backgroundColor.A;
+                    r = (byte)backgroundColor.R;
+                    g = (byte)backgroundColor.G;
+                    b = (byte)backgroundColor.B;
+                }
                 else
                 {
+                    a = foregroundColor.A;
                     r = foregroundColor.R;
                     g = foregroundColor.G;
                     b = foregroundColor.B;

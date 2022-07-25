@@ -50,8 +50,21 @@ namespace BakalarskaPrace
         {
             for (int i = 0; i < layerPreviewImages.Count; i++)
             {
-                if (i < previewLayers.Count) layerPreviewImages[i].Source = previewLayers[i][animationIndex];
-                else layerPreviewImages[i].Source = null;
+                if (i < previewLayers.Count)
+                {
+                    if (animationIndex < previewLayers[i].Count && animationIndex > 0)
+                    {
+                        layerPreviewImages[i].Source = previewLayers[i][animationIndex];
+                    }
+                    else 
+                    {
+                        layerPreviewImages[i].Source = null;
+                    }
+                }
+                else 
+                {
+                    layerPreviewImages[i].Source = null;
+                } 
             }
         }
 
