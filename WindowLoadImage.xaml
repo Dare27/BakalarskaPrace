@@ -7,7 +7,9 @@
         mc:Ignorable="d"
         Title="Import image" Height="194" Width="346"
         WindowStartupLocation="CenterScreen"
-        Background="#2b2b2b">
+        Background="#2b2b2b"
+        ResizeMode="NoResize"
+        >
     <StackPanel HorizontalAlignment="Stretch" Margin="10" Panel.ZIndex="10">
         <CheckBox Name="ImportImageCheckBox" Checked="ImportImage_Checked" Unchecked="ImportImage_Unchecked" Content="Import as a single image"  Margin="0,2" IsChecked="true" Foreground="White" Height="25"/>
         <CheckBox Name="ImportSpritesheetCheckBox" Checked="ImportSpritesheet_Checked" Unchecked="ImportSpritesheet_Unchecked" Content="Import as spritesheet"  Margin="0,2" Foreground="White" Height="25"/>

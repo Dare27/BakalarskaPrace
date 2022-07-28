@@ -5,9 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BakalarskaPrace"
         mc:Ignorable="d"
-        Title="Create Animation" Height="177" Width="343"
+        Title="Create animation" Height="177" Width="343"
         WindowStartupLocation="CenterScreen"
-        Background="#2b2b2b">
+        Background="#2b2b2b"
+        ResizeMode="NoResize"
+        >
     <StackPanel Margin="10" Panel.ZIndex="10">
         <StackPanel Orientation="Horizontal" Margin="0,2" Height="25">
             <Label Content="Width:" Width="50"/>

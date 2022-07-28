@@ -12,7 +12,7 @@ namespace BakalarskaPrace.ToolsFolder
     {
         //V případě této aplikace musí být použit 4-straná verze tohoto algoritmu aby se zábránilo únikům v rozích
         //Rekurzivní verze může způsobit StackOverflowException při větších velikostech, proto musí být použíta nerekurzivní verzi tohoto alg.
-        public void GeneratePoints(WriteableBitmap bitmap, System.Drawing.Point point, Color color, bool alphaBledning, List<System.Drawing.Point> undoPoints, List<Color> undoColors)
+        public void GeneratePoints(WriteableBitmap bitmap, System.Drawing.Point point, Color color, bool alphaBledning, Dictionary<System.Drawing.Point, Color> undoPointColors/*, List<System.Drawing.Point> undoPoints, List<Color> undoColors*/)
         {
             Stack<System.Drawing.Point> points = new Stack<System.Drawing.Point>();
             Color seedColor = bitmap.GetPixel(point.X, point.Y);
@@ -27,8 +27,7 @@ namespace BakalarskaPrace.ToolsFolder
                     Color currentColor = bitmap.GetPixel(currentPoint.X, currentPoint.Y);
                     if (currentColor == seedColor && seedColor != finalColor)
                     {
-                        undoPoints.Add(currentPoint);
-                        undoColors.Add(bitmap.GetPixel(currentPoint.X, currentPoint.Y));
+                        undoPointColors.Add(currentPoint, currentColor);
                         bitmap.SetPixel(currentPoint.X, currentPoint.Y, finalColor);
                         points.Push(new System.Drawing.Point(currentPoint.X + 1, currentPoint.Y));
                         points.Push(new System.Drawing.Point(currentPoint.X - 1, currentPoint.Y));

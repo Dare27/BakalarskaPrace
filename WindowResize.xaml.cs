@@ -36,11 +36,14 @@ namespace BakalarskaPrace
 
         private void Resize_Click(object sender, RoutedEventArgs e)
         {
-            newWidth = int.Parse(widthTextBox.Text);
-            newHeight = int.Parse(heightTextBox.Text);
-            maintainAspectRatio = maintainAspectRatioCheckBox.IsChecked.GetValueOrDefault();
-            //resizeContent = resizeContentCheckBox.IsChecked.GetValueOrDefault();
-            this.Close();
+            bool widthParsed = int.TryParse(widthTextBox.Text, out newWidth);
+            bool heightParsed = int.TryParse(heightTextBox.Text, out newHeight);
+            if(widthParsed && heightParsed && newWidth > 0 && newHeight > 0 && newWidth < 513 && newHeight < 513)
+            {
+                maintainAspectRatio = maintainAspectRatioCheckBox.IsChecked.GetValueOrDefault();
+                //resizeContent = resizeContentCheckBox.IsChecked.GetValueOrDefault();
+                this.Close();
+            }
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)

@@ -10,7 +10,7 @@ namespace BakalarskaPrace.ToolsFolder
 {
     internal class DitheringTool: ToolSettings
     {
-        public void GeneratePoints(List<System.Drawing.Point> points, Color color01, Color color02, WriteableBitmap bitmap, int strokeThickness, bool alphaBlending, List<System.Drawing.Point> undoPoints, List<Color> undoColors)
+        public void GeneratePoints(List<System.Drawing.Point> points, Color color01, Color color02, WriteableBitmap bitmap, int strokeThickness, bool alphaBlending, Dictionary<System.Drawing.Point, Color> undoPointColors/*, List<System.Drawing.Point> undoPoints, List<Color> undoColors*/)
         {
             foreach (System.Drawing.Point point in points)
             {
@@ -31,9 +31,8 @@ namespace BakalarskaPrace.ToolsFolder
                         if (x + i < bitmap.PixelWidth && x + i > -1 && y + j < bitmap.PixelHeight && y + j > -1)
                         {
                             System.Drawing.Point newPoint = new System.Drawing.Point(x + i, y + j);
-                            if (!undoPoints.Contains(newPoint))
+                            if(undoPointColors.ContainsKey(newPoint))
                             {
-                                undoPoints.Add(newPoint);
                                 if ((x + i + y + j) % 2 == 0)
                                 {
                                     color = color01;
@@ -46,7 +45,7 @@ namespace BakalarskaPrace.ToolsFolder
                                 backgroundColor = bitmap.GetPixel(x + i, y + j);
                                 color = AlphaBlending(alphaBlending, color, backgroundColor);
                                 bitmap.SetPixel(x + i, y + j, color);
-                                undoColors.Add(backgroundColor);
+                                undoPointColors.Add(newPoint, backgroundColor);
                             }
                         }
                     }

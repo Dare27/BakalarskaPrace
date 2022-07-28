@@ -10,7 +10,7 @@ namespace BakalarskaPrace.ToolsFolder
 {
     internal class ColorReplacementTool : ToolSettings, IBucket
     {
-        public void GeneratePoints(WriteableBitmap bitmap, System.Drawing.Point point, Color color, bool alphaBlending, List<System.Drawing.Point> undoPoints, List<Color> undoColors)
+        public void GeneratePoints(WriteableBitmap bitmap, System.Drawing.Point point, Color color, bool alphaBlending, Dictionary<System.Drawing.Point, Color> undoPointColors/*, List<System.Drawing.Point> undoPoints, List<Color> undoColors*/)
         {
             Color seedColor = bitmap.GetPixel(point.X, point.Y);
             Color finalColor = AlphaBlending(alphaBlending, color, seedColor);
@@ -22,8 +22,7 @@ namespace BakalarskaPrace.ToolsFolder
                     if (currentColor == seedColor)
                     {
                         System.Drawing.Point currentPoint = new System.Drawing.Point(i, j);
-                        undoPoints.Add(currentPoint);
-                        undoColors.Add(currentColor);
+                        undoPointColors.Add(currentPoint, currentColor);
                         bitmap.SetPixel(i, j, finalColor);
                     }
                 }

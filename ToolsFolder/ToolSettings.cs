@@ -48,7 +48,7 @@ namespace BakalarskaPrace
             }
         }
 
-        public List<System.Drawing.Point> StrokeThicknessSetter(WriteableBitmap bitmap, System.Drawing.Point point, Color color, bool alphaBlending, int thickness, List<Color> undoColors, List<System.Drawing.Point> undoPoints, bool previewBitmap = false)
+        public List<System.Drawing.Point> StrokeThicknessSetter(WriteableBitmap bitmap, System.Drawing.Point point, Color color, bool alphaBlending, int thickness, Dictionary<System.Drawing.Point, Color> undoPointColors /*, List<Color> undoColors, List<System.Drawing.Point> undoPoints*/, bool previewBitmap = false)
         {
             int width = bitmap.PixelWidth;
             int height = bitmap.PixelHeight;
@@ -77,9 +77,13 @@ namespace BakalarskaPrace
                         }
                         else
                         {
-                            if (!undoPoints.Contains(newPoint))
+                            /*if (!undoPoints.Contains(newPoint))
                             {
                                 undoPoints.Add(newPoint);
+                                points.Add(newPoint);
+                            }*/
+                            if (!undoPointColors.ContainsKey(newPoint))
+                            {
                                 points.Add(newPoint);
                             }
                         }
@@ -94,7 +98,13 @@ namespace BakalarskaPrace
                     Color currentColor = bitmap.GetPixel(generatedPoint.X, generatedPoint.Y);
                     if (previewBitmap == false)
                     {
-                        undoColors.Add(currentColor);
+                        //undoColors.Add(currentColor);
+                        //undoPointColors.Add(point, color);
+                        if (!undoPointColors.ContainsKey(generatedPoint))
+                        {
+                            Console.WriteLine(generatedPoint.X + " " + generatedPoint.Y);
+                            undoPointColors.Add(generatedPoint, currentColor);
+                        }
                     }
                     Color finalColor = AlphaBlending(alphaBlending, color, currentColor);
                     bitmap.SetPixel(generatedPoint.X, generatedPoint.Y, finalColor);
