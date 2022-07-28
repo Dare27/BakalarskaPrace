@@ -4,7 +4,7 @@ Nedílnou součástí desktopové aplikace je implementace následujících funk
 1.	možnost vytvořit novou animaci s uživatelem zvolenou šířkou/výškou
 2.	možnost vytvoření nového snímku v animaci
 3.	náhled animace
-4.	štětec pro kreslení a mazání o velikosti 1 až 4 pixel y
+4.	štětec pro kreslení a mazání o velikosti 1 až 4 pixely
 5.	symetrické kreslení 
 6.	výběr barvy pro kreslení, včetně její úrovně průhlednosti
 7.	možnost vytvoření vlastní barevné palety 
@@ -14,9 +14,4 @@ Nedílnou součástí desktopové aplikace je implementace následujících funk
 11.	uložení animace po jednotlivě jdoucích snímcích do png obrázku a opětovné načtení obrázku s převedením do animace
 12.	možnost uložit animaci do formátu gif 
 
-Osnova:
-1.	úvod do problematiky a definice základních termínů
-2.	rešerše a zhodnocení existujících řešení
-3.	návrh aplikace
-4.	implementace jednotlivých nástrojů
-5.	zhodnocení použitelnosti
+Pro zobrazení kódu je potřeba Visual Studio 2022. Spustitelný soubor se nachází ve složce bin/Debug pod názvem BakalarskaPrace.exe. 
