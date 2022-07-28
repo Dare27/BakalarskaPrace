@@ -52,7 +52,7 @@ namespace BakalarskaPrace
             {
                 if (i < previewLayers.Count)
                 {
-                    if (animationIndex < previewLayers[i].Count && animationIndex > 0)
+                    if (animationIndex < previewLayers[i].Count && animationIndex >= 0)
                     {
                         layerPreviewImages[i].Source = previewLayers[i][animationIndex];
                     }
@@ -68,8 +68,9 @@ namespace BakalarskaPrace
             }
         }
 
-        public void FramesPerSecond(int currentFPSTarget, int currentBitmapIndex)
+        public void FramesPerSecond(int FPSTarget, int currentBitmapIndex)
         {
+            currentFPSTarget = FPSTarget;
             if (currentFPSTarget != 0)
             {
                 timerInterval = 1000 / currentFPSTarget;
@@ -92,8 +93,14 @@ namespace BakalarskaPrace
             }
             else
             {
+
                 playAnimation = true;
-                timer.Start();
+                if (currentFPSTarget != 0)
+                {
+                    timerInterval = 1000 / currentFPSTarget;
+                    timer.Interval = timerInterval;
+                    timer.Start();
+                }
             }
             return playAnimation;
         }

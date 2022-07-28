@@ -46,18 +46,6 @@ namespace BakalarskaPrace.TransformsFolder
                         {
                             if (currentRightPixelX < x) currentRightPixelX = x;
                             if (currentDownPixelY < y) currentDownPixelY = y;
-                        }
-                    }
-                }
-
-                //Projít nahoru a doleva
-                for (int x = width; x >= 0; x--)
-                {
-                    for (int y = height; y >= 0; y--)
-                    {
-                        Color color = bitmap.GetPixel(x, y);
-                        if (color.A != 0)
-                        {
                             if (currentLeftPixelX > x) currentLeftPixelX = x;
                             if (currentTopPixelY > y) currentTopPixelY = y;
                         }

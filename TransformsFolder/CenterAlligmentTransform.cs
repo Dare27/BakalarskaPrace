@@ -29,19 +29,7 @@ namespace BakalarskaPrace.TransformsFolder
                         if (color.A != 0)
                         {
                             if (x > rightPixel) rightPixel = x;
-                            if (y > downPixel) downPixel = y;
-                        }
-                    }
-                }
-
-                //Projít nahoru a doleva
-                for (int x = bitmaps[0].PixelWidth; x >= 0; x--)
-                {
-                    for (int y = bitmaps[0].PixelHeight; y >= 0; y--)
-                    {
-                        Color color = bitmaps[k].GetPixel(x, y);
-                        if (color.A != 0)
-                        {
+                            if (y > downPixel) downPixel = y; 
                             if (x < leftPixel) leftPixel = x;
                             if (y < topPixel) topPixel = y;
                         }

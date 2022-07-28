@@ -62,6 +62,11 @@ namespace BakalarskaPrace
         private ColorPalette colorPalette = new ColorPalette();
         private Preview preview = new Preview();
 
+        private BitmapImage iconOinionChecked = new BitmapImage(new Uri("Files/Images/Dark-theme/onion-checked.png", UriKind.Relative));
+        private BitmapImage iconOinion = new BitmapImage(new Uri("Files/Images/Dark-theme/onion.png", UriKind.Relative));
+        private BitmapImage iconPlay = new BitmapImage(new Uri("Files/Images/Dark-theme/play.png", UriKind.Relative));
+        private BitmapImage iconPause = new BitmapImage(new Uri("Files/Images/Dark-theme/pause.png", UriKind.Relative));
+
         public MainWindow()
         {
             InitializeComponent();
@@ -569,10 +574,16 @@ namespace BakalarskaPrace
             {
                 onionSkinningImages[i].Source = null;
             }
+
             if (onionSkinning == true) 
             {
                 if (currentBitmapIndex > 0) onionSkinningImages[0].Source = layers[currentLayerIndex][currentBitmapIndex - 1];
                 if (currentBitmapIndex < layers[currentLayerIndex].Count - 1) onionSkinningImages[1].Source = layers[currentLayerIndex][currentBitmapIndex + 1];
+                OnionImage.Source = iconOinionChecked;
+            }
+            else
+            {
+                OnionImage.Source = iconOinion;
             }
         }
 
@@ -893,16 +904,14 @@ namespace BakalarskaPrace
 
         private void Play_Click(object sender, RoutedEventArgs e)
         {
-            BitmapImage image;
             if (preview.Play(currentBitmapIndex) == true)
             {
-                image = new BitmapImage(new Uri("Files/Images/Dark-theme/pause.png", UriKind.Relative));
+                playImage.Source = iconPause;
             }
             else
             {
-                image = new BitmapImage(new Uri("Files/Images/Dark-theme/play.png", UriKind.Relative));
+                playImage.Source = iconPlay;
             }
-            playImage.Source = image;
         }
 
         //Animation controls

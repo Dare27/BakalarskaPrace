@@ -83,7 +83,7 @@
                     <WrapPanel HorizontalAlignment="Right" VerticalAlignment="Bottom" Orientation="Vertical">
                         <Button Style="{StaticResource MaterialDesignIconButton}" Click="OnionSkinning_Click" Width="30" Height="30" Margin="0,0,3,3" Cursor="Hand" Background="#4C000000">
                             <StackPanel Margin="3">
-                                <Image Source="/Files/Images/Dark-theme/onion.png" Height="20"/>
+                                <Image Source="/Files/Images/Dark-theme/onion.png" Name="OnionImage"  Height="20"/>
                             </StackPanel>
                         </Button>
                         <Button Style="{StaticResource MaterialDesignIconButton}" Click="Center_Click" Width="30" Height="30" Margin="0,0,3,3" Cursor="Hand" Background="#4C000000">
