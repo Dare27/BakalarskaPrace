@@ -77,11 +77,6 @@ namespace BakalarskaPrace
                         }
                         else
                         {
-                            /*if (!undoPoints.Contains(newPoint))
-                            {
-                                undoPoints.Add(newPoint);
-                                points.Add(newPoint);
-                            }*/
                             if (!undoPointColors.ContainsKey(newPoint))
                             {
                                 points.Add(newPoint);
@@ -98,13 +93,7 @@ namespace BakalarskaPrace
                     Color currentColor = bitmap.GetPixel(generatedPoint.X, generatedPoint.Y);
                     if (previewBitmap == false)
                     {
-                        //undoColors.Add(currentColor);
-                        //undoPointColors.Add(point, color);
-                        if (!undoPointColors.ContainsKey(generatedPoint))
-                        {
-                            Console.WriteLine(generatedPoint.X + " " + generatedPoint.Y);
-                            undoPointColors.Add(generatedPoint, currentColor);
-                        }
+                        undoPointColors.Add(generatedPoint, currentColor);
                     }
                     Color finalColor = AlphaBlending(alphaBlending, color, currentColor);
                     bitmap.SetPixel(generatedPoint.X, generatedPoint.Y, finalColor);

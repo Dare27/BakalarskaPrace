@@ -1083,7 +1083,6 @@ namespace BakalarskaPrace
                 //Odstranit tlačítka
                 for (int i = previewButtons.Count - 1; i >= layers[currentLayerIndex].Count; i--) 
                 {
-                    Console.WriteLine(i);
                     ImagePreviews.Children.Remove(previewButtons[i]);
                 }
             }
